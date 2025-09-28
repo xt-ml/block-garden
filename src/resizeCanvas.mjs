@@ -18,6 +18,7 @@ export function resizeCanvas(doc, configSignals) {
       cnvs.style.height = "100vh";
 
       configSignals.canvasScale.set(1);
+      configSignals.fogScale.set(36);
 
       return;
     }
@@ -34,7 +35,12 @@ export function resizeCanvas(doc, configSignals) {
 
     doc.body.classList.add(`resolution-${size}`);
 
+    if (currentResolution === 800) {
+      configSignals.fogScale.set(24);
+    }
+
     // Updated scale calculation
-    configSignals.canvasScale.set(size / 400);
+    configSignals.fogScale.set(12);
+    configSignals.canvasScale.set(size / currentResolution);
   }
 }

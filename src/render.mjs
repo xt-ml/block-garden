@@ -1,9 +1,11 @@
 import { configSignals, stateSignals } from "./state.mjs";
 import { renderPlayer } from "./renderPlayer.mjs";
-import { renderMapFog } from "./mapFog.mjs";
+import { renderMapFog, renderMapFogScaled, updateMapFog } from "./mapFog.mjs";
+
+let isFogScaled = false;
 
 // Render world
-export function render(canvas, isFogEnabled) {
+export function render(canvas) {
   const TILE_SIZE = configSignals.TILE_SIZE.get();
   const WORLD_WIDTH = configSignals.WORLD_WIDTH.get();
   const WORLD_HEIGHT = configSignals.WORLD_HEIGHT.get();
@@ -64,8 +66,33 @@ export function render(canvas, isFogEnabled) {
 
   renderPlayer(ctx);
 
+  // update map fog based on player position
+  const isFogEnabled = configSignals.fogMode.get() === "fog";
+
+  if (isFogEnabled) {
+    updateMapFog(TILE_SIZE);
+  }
+
   // Render map fog overlay if enabled
   if (isFogEnabled && ctx && canvas) {
-    renderMapFog(ctx, canvas);
+    if (isFogScaled === true) {
+      renderMapFogScaled(
+        ctx,
+        canvas,
+        TILE_SIZE,
+        WORLD_WIDTH,
+        WORLD_HEIGHT,
+        camera,
+        configSignals.fogScale.get(),
+      );
+
+      return;
+    }
+
+    if (stateSignals.player.get().velocityY < 0) {
+      isFogScaled = configSignals.isFogScaled.get();
+    }
+
+    renderMapFog(ctx, canvas, TILE_SIZE, WORLD_WIDTH, WORLD_HEIGHT, camera);
   }
 }

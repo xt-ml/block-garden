@@ -6,6 +6,8 @@ import { updateMapFog } from "./mapFog.mjs";
 import { updatePlayer } from "./updatePlayer.mjs";
 import { updateUI } from "./updateUI.mjs";
 
+const canvas = globalThis.document?.getElementById("canvas");
+
 // Game loop
 export function gameLoop(gThis) {
   updatePlayer(gThis);
@@ -15,19 +17,12 @@ export function gameLoop(gThis) {
     gThis.spriteGarden,
   );
 
-  // update map fog based on player position
-  const isFogEnabled = configSignals.fogMode.get() === "fog";
-  if (isFogEnabled) {
-    updateMapFog();
-  }
-
-  const canvas = gThis.document?.getElementById("canvas");
-  render(canvas, isFogEnabled);
+  render(canvas);
 
   updateUI(gThis.document, getCurrentGameState(stateSignals, configSignals));
 
   // Increment game time every frame (we store seconds as fractional)
   stateSignals.gameTime.set(stateSignals.gameTime.get() + 1 / 60);
-  // console.log(JSON.stringify(getCurrentGameState(stateSignals, configSignals))); debugger;
+
   requestAnimationFrame(() => gameLoop(gThis));
 }

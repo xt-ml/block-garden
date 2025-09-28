@@ -46,14 +46,10 @@ function inspectTile(e, el) {
     worldY >= 0 &&
     worldY < WORLD_HEIGHT
   ) {
-    const column = world[worldX];
-    if (!column) {
-      el.title = `Tile: Unknown (${worldX}, ${worldY})`;
-      return;
-    }
+    // Use the OptimizedWorld getTile method instead of array access
+    const tile = world.getTile ? world.getTile(worldX, worldY) : null;
 
-    const tile = column[worldY];
-    if (!tile) {
+    if (!tile || tile === TILES.AIR) {
       el.title = `Tile: AIR (${worldX}, ${worldY})`;
       return;
     }

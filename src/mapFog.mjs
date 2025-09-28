@@ -1,9 +1,7 @@
-// mapFog.mjs
-import { configSignals, stateSignals } from "./state.mjs";
+import { stateSignals } from "./state.mjs";
 
 // Update explored map based on player position
-export function updateMapFog() {
-  const TILE_SIZE = configSignals.TILE_SIZE.get();
+export function updateMapFog(TILE_SIZE) {
   const player = stateSignals.player.get();
   const exploredMap = stateSignals.exploredMap?.get() || {};
 
@@ -41,51 +39,114 @@ export function updateMapFog() {
   }
 }
 
-// Check if a tile is explored
-export function isTileExplored(tileX, tileY) {
-  const exploredMap = stateSignals.exploredMap?.get() || {};
-
-  return exploredMap[`${tileX},${tileY}`] === true;
-}
-
 // Render map fog overlay
-export function renderMapFog(ctx, canvas) {
+export function renderMapFog(
+  ctx,
+  canvas,
+  TILE_SIZE,
+  WORLD_WIDTH,
+  WORLD_HEIGHT,
+  camera,
+) {
   if (!ctx || !canvas) return;
 
-  const TILE_SIZE = configSignals.TILE_SIZE.get();
-  const WORLD_WIDTH = configSignals.WORLD_WIDTH.get();
-  const WORLD_HEIGHT = configSignals.WORLD_HEIGHT.get();
-  const camera = stateSignals.camera.get();
-  const FOG_COLOR = "rgba(0, 0, 0, 1)";
+  const exploredMap = stateSignals.exploredMap?.get() || {};
 
-  // Calculate visible area
   const tilesX = Math.ceil(canvas.width / TILE_SIZE) + 1;
   const tilesY = Math.ceil(canvas.height / TILE_SIZE) + 1;
   const startX = Math.floor(camera.x / TILE_SIZE);
   const startY = Math.floor(camera.y / TILE_SIZE);
+  const cameraOffsetX = camera.x % TILE_SIZE;
+  const cameraOffsetY = camera.y % TILE_SIZE;
 
-  // Draw fog over unexplored tiles
-  ctx.fillStyle = FOG_COLOR;
+  ctx.fillStyle = "#000000";
 
+  // Process tiles in the same order as the batched version to avoid hatching
   for (let x = 0; x < tilesX; x++) {
+    const worldX = startX + x;
+    if (worldX < 0 || worldX >= WORLD_WIDTH) continue;
+
+    const screenX = Math.round(x * TILE_SIZE - cameraOffsetX);
+
     for (let y = 0; y < tilesY; y++) {
-      const worldX = startX + x;
       const worldY = startY + y;
+      if (worldY < 0 || worldY >= WORLD_HEIGHT) continue;
 
-      // Check bounds
-      if (
-        worldX >= 0 &&
-        worldX < WORLD_WIDTH &&
-        worldY >= 0 &&
-        worldY < WORLD_HEIGHT
-      ) {
-        // If tile is not explored, draw fog
-        if (!isTileExplored(worldX, worldY)) {
-          const screenX = Math.round(x * TILE_SIZE - (camera.x % TILE_SIZE));
-          const screenY = Math.round(y * TILE_SIZE - (camera.y % TILE_SIZE));
+      // Check explored map directly
+      if (!exploredMap[`${worldX},${worldY}`]) {
+        const screenY = Math.round(y * TILE_SIZE - cameraOffsetY);
+        ctx.fillRect(screenX, screenY, TILE_SIZE, TILE_SIZE);
+      }
+    }
+  }
+}
 
-          ctx.fillRect(screenX, screenY, TILE_SIZE, TILE_SIZE);
+// Scaled fog for performance
+export function renderMapFogScaled(
+  ctx,
+  canvas,
+  TILE_SIZE,
+  WORLD_WIDTH,
+  WORLD_HEIGHT,
+  camera,
+  FOG_SCALE = 2,
+) {
+  if (!ctx || !canvas) return;
+
+  const exploredMap = stateSignals.exploredMap?.get() || {};
+
+  // Render fog at scaled up for better performance
+  const blockSize = TILE_SIZE * FOG_SCALE;
+
+  // Calculate how many fog blocks we need to cover the screen
+  const blocksX = Math.ceil(canvas.width / blockSize) + 1;
+  const blocksY = Math.ceil(canvas.height / blockSize) + 1;
+
+  // Find the starting world coordinate in terms of fog blocks
+  const startBlockX = Math.floor(camera.x / blockSize);
+  const startBlockY = Math.floor(camera.y / blockSize);
+
+  // Camera offset for fog blocks
+  const cameraOffsetX = camera.x % blockSize;
+  const cameraOffsetY = camera.y % blockSize;
+
+  ctx.fillStyle = "#000000";
+
+  // Process each fog block
+  for (let blockX = 0; blockX < blocksX; blockX++) {
+    const worldBlockX = startBlockX + blockX;
+    const screenX = Math.round(blockX * blockSize - cameraOffsetX);
+
+    for (let blockY = 0; blockY < blocksY; blockY++) {
+      const worldBlockY = startBlockY + blockY;
+      const screenY = Math.round(blockY * blockSize - cameraOffsetY);
+
+      // Check if this entire block should be fogged
+      // A block is fogged if ALL tiles in it are unexplored
+      let shouldFog = true;
+
+      // Check each tile in this fog block
+      for (let dx = 0; dx < FOG_SCALE && shouldFog; dx++) {
+        for (let dy = 0; dy < FOG_SCALE && shouldFog; dy++) {
+          const tileX = worldBlockX * FOG_SCALE + dx;
+          const tileY = worldBlockY * FOG_SCALE + dy;
+
+          // If tile is within world bounds and is explored, don't fog this block
+          if (
+            tileX >= 0 &&
+            tileX < WORLD_WIDTH &&
+            tileY >= 0 &&
+            tileY < WORLD_HEIGHT &&
+            exploredMap[`${tileX},${tileY}`]
+          ) {
+            shouldFog = false;
+          }
         }
+      }
+
+      // Draw fog block if needed
+      if (shouldFog) {
+        ctx.fillRect(screenX, screenY, blockSize, blockSize);
       }
     }
   }

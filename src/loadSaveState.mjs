@@ -23,7 +23,11 @@ export function loadSaveState(gThis, saveState) {
         console.log(`Converting world: ${WORLD_WIDTH}x${WORLD_HEIGHT}`);
 
         // Create OptimizedWorld with proper configuration and convert the world data
-        const optimizedWorld = OptimizedWorld.fromArray(worldData, WORLD_WIDTH, WORLD_HEIGHT);
+        const optimizedWorld = OptimizedWorld.fromArray(
+          worldData,
+          WORLD_WIDTH,
+          WORLD_HEIGHT,
+        );
 
         // Verify the conversion
         let tileCount = 0;

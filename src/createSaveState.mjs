@@ -40,6 +40,8 @@ export function createSaveState(gThis) {
       FRICTION: gThis.spriteGarden.config.FRICTION.get(),
       MAX_FALL_SPEED: gThis.spriteGarden.config.MAX_FALL_SPEED.get(),
       fogMode: gThis.spriteGarden.config.fogMode.get(),
+      fogScale: gThis.spriteGarden.config.fogScale.get(),
+      isFogScaled: gThis.spriteGarden.config.isFogScaled.get(),
       breakMode: gThis.spriteGarden.config.breakMode.get(),
     },
     state: {

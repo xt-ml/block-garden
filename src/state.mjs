@@ -42,6 +42,8 @@ export const configSignals = {
   MAX_FALL_SPEED: new Signal.State(15),
   // Fog mode setting - "fog" || "clear"
   fogMode: new Signal.State("fog"),
+  fogScale: new Signal.State(12),
+  isFogScaled: new Signal.State(true),
   // Break mode setting
   breakMode: new Signal.State("regular"),
   // Tile types - keeping as static object since they don't change
