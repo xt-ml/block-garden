@@ -1,4 +1,5 @@
-import { configSignals, stateSignals } from "./state.mjs";
+import { addMossToCaves } from "./generateMoss.mjs";
+import { configSignals, stateSignals, updateState } from "./state.mjs";
 import { generateCaves } from "./generateCaves.mjs";
 import { generateHeightMap } from "./generateHeightMap.mjs";
 import { generateWaterSources, simulateWaterPhysics } from "./waterPhysics.mjs";
@@ -8,7 +9,10 @@ import { OptimizedWorld } from "./optimizedWorld.mjs";
 import { resetMapFog } from "./mapFog.mjs";
 import { updateInventoryDisplay } from "./updateInventoryDisplay.mjs";
 import { updateUI } from "./updateUI.mjs";
-import { isSolid } from "./isSolid.mjs";
+
+function getRandomInRange(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 
 // Generate world
 export function generateWorld(doc) {
@@ -36,15 +40,26 @@ export function generateWorld(doc) {
       if (y > surfaceHeight) {
         const depth = y - surfaceHeight;
 
-        if (depth < 3) {
-          world.setTile(x, y, biome.subTile);
-        } else if (depth < 15) {
-          if (Math.random() < 0.1) {
-            world.setTile(x, y, TILES.COAL);
+        // Surface layer (grass/snow) - deeper for these specific tiles
+        if (depth < 2) {
+          if (
+            biome.surfaceTile === TILES.GRASS ||
+            biome.surfaceTile === TILES.SNOW
+          ) {
+            world.setTile(x, y, biome.surfaceTile);
           } else {
-            world.setTile(x, y, TILES.STONE);
+            world.setTile(x, y, biome.subTile);
           }
-        } else if (depth < 30) {
+        } else if (depth < getRandomInRange(20, 50)) {
+          // Sub-surface layer
+        if (Math.random() < 0.1) {
+          world.setTile(x, y, TILES.COAL);
+        } else if (Math.random() < 0.95) {
+          world.setTile(x, y, biome.subTile);
+        } else {
+          world.setTile(x, y, TILES.STONE);
+        }
+        } else if (depth < getRandomInRange(50, 90)) {
           if (Math.random() < 0.05) {
             world.setTile(x, y, TILES.IRON);
           } else if (Math.random() < 0.02) {
@@ -52,8 +67,10 @@ export function generateWorld(doc) {
           } else {
             world.setTile(x, y, TILES.STONE);
           }
-        } else if (y > WORLD_HEIGHT - 5) {
+        } else if (y > WORLD_HEIGHT - 2) {
           world.setTile(x, y, TILES.BEDROCK);
+        } else if (y > WORLD_HEIGHT - 4) {
+          world.setTile(x, y, TILES.LAVA);
         } else {
           if (Math.random() < 0.01) {
             world.setTile(x, y, TILES.LAVA);
@@ -115,7 +132,7 @@ export function generateWorld(doc) {
         };
         const seedType = cropToSeed[crop.id];
         if (seedType) {
-          globalThis.spriteGarden.updateState("seedInventory", (inv) => ({
+          updateState("seedInventory", (inv) => ({
             ...inv,
             [seedType]: (inv && inv[seedType] ? inv[seedType] : 0) + 2,
           }));
@@ -129,6 +146,9 @@ export function generateWorld(doc) {
 
   // Generate caves with seeded randomization
   generateCaves();
+
+  // Add moss to cave surfaces after cave generation
+  addMossToCaves(stateSignals.world.get(), WORLD_WIDTH, WORLD_HEIGHT, TILES);
 
   // Generate water sources using seeded noise
   const currentWorld = stateSignals.world.get();
@@ -197,36 +217,44 @@ export function generateNewWorld(doc, newSeed = null) {
         const tileX = Math.floor(x);
         const tileY = Math.floor(y);
 
+        // Check if current position is air and the tile below is solid
         if (
           world.getTile(tileX, tileY) === TILES.AIR &&
+          tileY + 1 < WORLD_HEIGHT &&
           world.getTile(tileX, tileY + 1) &&
-          isSolid(world.getTile(tileX, tileY + 1))
+          world.getTile(tileX, tileY + 1).solid // Check the solid property directly
         ) {
-          const updatedPlayer = {
-            ...player,
-            x: x * TILE_SIZE,
-            y: y * TILE_SIZE,
-            velocityX: 0,
-            velocityY: 0,
-            lastDirection: 0,
-          };
-          stateSignals.player.set(updatedPlayer);
-          updateInventoryDisplay(doc, stateSignals);
-          return;
+          // Also ensure there's enough vertical clearance (2-3 tiles high)
+          let hasVerticalClearance = true;
+
+          for (let checkY = tileY - 2; checkY <= tileY; checkY++) {
+            if (checkY >= 0 && world.getTile(tileX, checkY) !== TILES.AIR) {
+              hasVerticalClearance = false;
+
+              break;
+            }
+          }
+
+          if (hasVerticalClearance) {
+            const updatedPlayer = {
+              ...player,
+              x: x * TILE_SIZE,
+              y: y * TILE_SIZE,
+              velocityX: 0,
+              velocityY: 0,
+              lastDirection: 0,
+            };
+
+            stateSignals.player.set(updatedPlayer);
+
+            updateInventoryDisplay(doc, stateSignals);
+            return;
+          }
         }
       }
     }
   }
 
-  // Fallback spawn location
-  const updatedPlayer = {
-    ...player,
-    x: spawnX * TILE_SIZE,
-    y: spawnY * TILE_SIZE,
-    velocityX: 0,
-    velocityY: 0,
-    lastDirection: 0,
-  };
   stateSignals.player.set(updatedPlayer);
   updateInventoryDisplay(doc, stateSignals);
 }

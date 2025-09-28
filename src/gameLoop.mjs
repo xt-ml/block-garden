@@ -2,15 +2,30 @@ import { configSignals, stateSignals } from "./state.mjs";
 import { getCurrentGameState } from "./getCurrentGameState.mjs";
 import { render } from "./render.mjs";
 import { updateCrops } from "./updateCrops.mjs";
-import { updateMapFog } from "./mapFog.mjs";
 import { updatePlayer } from "./updatePlayer.mjs";
 import { updateUI } from "./updateUI.mjs";
 
 const canvas = globalThis.document?.getElementById("canvas");
 
 // Game loop
-export function gameLoop(gThis) {
-  updatePlayer(gThis);
+export function gameLoop(
+  gThis,
+  FRICTION,
+  GRAVITY,
+  MAX_FALL_SPEED,
+  TILE_SIZE,
+  WORLD_HEIGHT,
+  WORLD_WIDTH,
+) {
+  updatePlayer(
+    gThis,
+    FRICTION,
+    GRAVITY,
+    MAX_FALL_SPEED,
+    TILE_SIZE,
+    WORLD_HEIGHT,
+    WORLD_WIDTH,
+  );
 
   updateCrops(
     getCurrentGameState(stateSignals, configSignals),
@@ -24,5 +39,15 @@ export function gameLoop(gThis) {
   // Increment game time every frame (we store seconds as fractional)
   stateSignals.gameTime.set(stateSignals.gameTime.get() + 1 / 60);
 
-  requestAnimationFrame(() => gameLoop(gThis));
+  requestAnimationFrame(() =>
+    gameLoop(
+      gThis,
+      FRICTION,
+      GRAVITY,
+      MAX_FALL_SPEED,
+      TILE_SIZE,
+      WORLD_HEIGHT,
+      WORLD_WIDTH,
+    ),
+  );
 }

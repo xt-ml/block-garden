@@ -3,18 +3,19 @@ import { configSignals, stateSignals } from "./state.mjs";
 import { isKeyPressed } from "./isKeyPressed.mjs";
 
 // Update player physics
-export function updatePlayer(gThis) {
-  const GRAVITY = configSignals.GRAVITY.get();
-  const FRICTION = configSignals.FRICTION.get();
-  const MAX_FALL_SPEED = configSignals.MAX_FALL_SPEED.get();
-  const TILE_SIZE = configSignals.TILE_SIZE.get();
-  const WORLD_WIDTH = configSignals.WORLD_WIDTH.get();
-  const WORLD_HEIGHT = configSignals.WORLD_HEIGHT.get();
-
+export function updatePlayer(
+  gThis,
+  FRICTION,
+  GRAVITY,
+  MAX_FALL_SPEED,
+  TILE_SIZE,
+  WORLD_HEIGHT,
+  WORLD_WIDTH,
+) {
   const player = stateSignals.player.get();
   const camera = stateSignals.camera.get();
 
-  const updatedPlayer = { ...player };
+  const updatedPlayer = player;
 
   updatedPlayer.velocityY += GRAVITY;
   if (updatedPlayer.velocityY > MAX_FALL_SPEED) {
@@ -146,7 +147,7 @@ export function updatePlayer(gThis) {
   const targetCameraY =
     updatedPlayer.y + updatedPlayer.height / 2 - canvas.height / 2;
 
-  const updatedCamera = { ...camera };
+  const updatedCamera = camera;
 
   updatedCamera.x += (targetCameraX - updatedCamera.x) * 0.1;
   updatedCamera.y += (targetCameraY - updatedCamera.y) * 0.1;

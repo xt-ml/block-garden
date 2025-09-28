@@ -43,5 +43,20 @@ export async function initGame(doc, cnvs) {
     .setItem("sprite-garden-version", version)
     .then((v) => console.log(`Sprite Garden version: ${v}`));
 
-  gameLoop(globalThis);
+  const FRICTION = configSignals.FRICTION.get();
+  const GRAVITY = configSignals.GRAVITY.get();
+  const MAX_FALL_SPEED = configSignals.MAX_FALL_SPEED.get();
+  const TILE_SIZE = configSignals.TILE_SIZE.get();
+  const WORLD_HEIGHT = configSignals.WORLD_HEIGHT.get();
+  const WORLD_WIDTH = configSignals.WORLD_WIDTH.get();
+
+  gameLoop(
+    globalThis,
+    FRICTION,
+    GRAVITY,
+    MAX_FALL_SPEED,
+    TILE_SIZE,
+    WORLD_HEIGHT,
+    WORLD_WIDTH,
+  );
 }

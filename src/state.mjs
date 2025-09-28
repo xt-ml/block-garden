@@ -42,7 +42,7 @@ export const configSignals = {
   MAX_FALL_SPEED: new Signal.State(15),
   // Fog mode setting - "fog" || "clear"
   fogMode: new Signal.State("fog"),
-  fogScale: new Signal.State(12),
+  fogScale: new Signal.State(8),
   isFogScaled: new Signal.State(true),
   // Break mode setting
   breakMode: new Signal.State("regular"),
@@ -50,6 +50,7 @@ export const configSignals = {
   TILES: {
     AIR: getT({ id: 0, color: "#87CEEB" }),
     WATER: getT({ id: 4, color: "#4169E1" }),
+    MOSS: getT({ id: 32, color: "#556B2F", solid: false, farmable: false }),
     CLAY: getT({ id: 6, color: "#CD853F", solid: true, farmable: true }),
     DIRT: getT({ id: 2, color: "#8B4513", solid: true, farmable: true }),
     GRASS: getT({ id: 1, color: "#90EE90", solid: true, farmable: true }),
@@ -158,7 +159,7 @@ export const stateSignals = {
     height: 8,
     velocityX: 0,
     velocityY: 0,
-    speed: 3,
+    speed: 2.75,
     jumpPower: 12,
     onGround: false,
     color: "#FF69B4",
@@ -231,6 +232,38 @@ export const computedSignals = {
   }),
 };
 
+export function updateState(key, updater) {
+  const current = stateSignals[key]?.get();
+
+  if (current !== undefined) {
+    stateSignals[key].set(updater(current));
+  }
+}
+
+export function updateConfig(key, updater) {
+  const current = configSignals[key]?.get();
+
+  if (current !== undefined) {
+    configSignals[key].set(updater(current));
+  }
+}
+
+export function setConfig(key, value) {
+  return configSignals[key]?.set(value);
+}
+
+export function getConfig(key) {
+  return configSignals[key]?.get();
+}
+
+export function setState(key, value) {
+  return stateSignals[key]?.set(value);
+}
+
+export function getState(key) {
+  return stateSignals[key]?.get();
+}
+
 export function initState(gThis, version) {
   configSignals.version.set(version);
 
@@ -241,22 +274,12 @@ export function initState(gThis, version) {
     state: stateSignals,
     computed: computedSignals,
     // Helper methods to get/set values
-    setConfig: (key, value) => configSignals[key]?.set(value),
-    getConfig: (key) => configSignals[key]?.get(),
-    updateConfig: (key, updater) => {
-      const current = configSignals[key]?.get();
-      if (current !== undefined) {
-        configSignals[key].set(updater(current));
-      }
-    },
-    setState: (key, value) => stateSignals[key]?.set(value),
-    getState: (key) => stateSignals[key]?.get(),
-    updateState: (key, updater) => {
-      const current = stateSignals[key]?.get();
-      if (current !== undefined) {
-        stateSignals[key].set(updater(current));
-      }
-    },
+    setConfig,
+    getConfig,
+    updateConfig,
+    setState,
+    getState,
+    updateState,
     loadSaveState,
     createSaveState,
   };
