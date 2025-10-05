@@ -350,26 +350,13 @@ export function updateWaterPhysics({
   }
 
   waterPhysicsConfig.frameCounter = 0;
-
-  let worldChanged = false;
-  const processedTiles = new Set();
   const newQueue = new Set();
 
-  // Process a limited number of tiles per update
-  let processed = 0;
-
-  // Process max 50 tiles per update
-  const maxToProcess = Math.min(currentQueue.size, 50);
+  // Process ALL tiles to ensure water settles completely
+  let anyWaterMoved = false;
 
   for (const key of currentQueue) {
-    if (processed >= maxToProcess) {
-      // Keep remaining tiles for next update
-      newQueue.add(key);
-      continue;
-    }
-
     const [x, y] = key.split(",").map(Number);
-    processed++;
 
     // Check if this tile has water that should flow
     const tile = currentWorld.getTile(x, y);
@@ -392,7 +379,6 @@ export function updateWaterPhysics({
         ) {
           if (currentWorld.getTile(neighbor.x, neighbor.y) === tiles.LAVA) {
             touchesLava = true;
-
             break;
           }
         }
@@ -401,8 +387,6 @@ export function updateWaterPhysics({
       if (touchesLava) {
         // Water + Lava = Bedrock
         currentWorld.setTile(x, y, tiles.BEDROCK);
-
-        worldChanged = true;
 
         // Check neighbors for more water that might interact
         for (const neighbor of neighbors) {
@@ -415,6 +399,7 @@ export function updateWaterPhysics({
             newQueue.add(`${neighbor.x},${neighbor.y}`);
           }
         }
+        anyWaterMoved = true;
         continue;
       }
 
@@ -426,19 +411,20 @@ export function updateWaterPhysics({
           // Water flows down into air
           currentWorld.setTile(x, y, tiles.AIR);
           currentWorld.setTile(x, y + 1, tiles.WATER);
-          worldChanged = true;
 
           // Add the new water position and surrounding tiles to check next
           newQueue.add(`${x},${y + 1}`);
-          newQueue.add(`${x - 1},${y + 1}`);
-          newQueue.add(`${x + 1},${y + 1}`);
-          newQueue.add(`${x},${y + 2}`);
+          if (x > 0) newQueue.add(`${x - 1},${y + 1}`);
+          if (x < worldWidth - 1) newQueue.add(`${x + 1},${y + 1}`);
+          if (y + 2 < worldHeight) newQueue.add(`${x},${y + 2}`);
+          anyWaterMoved = true;
+          continue; // Skip sideways movement since we're falling
         } else if (below === tiles.LAVA) {
           // Water falling onto lava becomes bedrock
           currentWorld.setTile(x, y, tiles.AIR);
           currentWorld.setTile(x, y + 1, tiles.BEDROCK);
-
-          worldChanged = true;
+          anyWaterMoved = true;
+          continue;
         } else if (below && below.solid) {
           // Water can't flow down, try sideways
           const leftEmpty =
@@ -473,36 +459,74 @@ export function updateWaterPhysics({
             currentWorld.setTile(x, y, tiles.AIR);
             currentWorld.setTile(newX, y, tiles.WATER);
 
-            worldChanged = true;
-
             newQueue.add(`${newX},${y}`);
             newQueue.add(`${newX},${y + 1}`);
+            anyWaterMoved = true;
           } else if (leftEmpty || rightEmpty) {
             // Flow sideways even if can't fall (spread on flat surface)
-            // Only flow with reduced probability to prevent infinite spreading
-            if (Math.random() < 0.3) {
-              let flowDirection = 0;
+            let flowDirection = 0;
 
-              if (leftEmpty && rightEmpty) {
-                flowDirection = Math.random() < 0.5 ? -1 : 1;
-              } else if (leftEmpty) {
-                flowDirection = -1;
-              } else {
-                flowDirection = 1;
+            if (leftEmpty && rightEmpty) {
+              flowDirection = Math.random() < 0.5 ? -1 : 1;
+            } else if (leftEmpty) {
+              flowDirection = -1;
+            } else {
+              flowDirection = 1;
+            }
+
+            const newX = x + flowDirection;
+
+            // Check if the destination has solid ground beneath it
+            if (y + 1 < worldHeight) {
+              const belowDest = currentWorld.getTile(newX, y + 1);
+              if (belowDest && belowDest.solid) {
+                currentWorld.setTile(x, y, tiles.AIR);
+                currentWorld.setTile(newX, y, tiles.WATER);
+
+                newQueue.add(`${newX},${y}`);
+                anyWaterMoved = true;
               }
+            }
+          }
+        }
+      }
+    } else if (tile !== tiles.WATER) {
+      // This tile doesn't have water, but check if there's water above that needs to fall
+      if (y > 0) {
+        const above = currentWorld.getTile(x, y - 1);
+        if (above === tiles.WATER) {
+          newQueue.add(`${x},${y - 1}`);
+        }
+      }
+    }
+  }
 
-              const newX = x + flowDirection;
+  // Scan for any suspended water that might have been missed
+  if (anyWaterMoved) {
+    // Add a wider check around areas where water moved
+    for (const key of newQueue) {
+      const [x, y] = key.split(",").map(Number);
 
-              // Check if the destination has solid ground beneath it
-              if (y + 1 < worldHeight) {
-                const belowDest = currentWorld.getTile(newX, y + 1);
-                if (belowDest && belowDest.solid) {
-                  currentWorld.setTile(x, y, tiles.AIR);
-                  currentWorld.setTile(newX, y, tiles.WATER);
+      // Check surrounding area for suspended water
+      for (let dx = -2; dx <= 2; dx++) {
+        for (let dy = -2; dy <= 2; dy++) {
+          const checkX = x + dx;
+          const checkY = y + dy;
 
-                  worldChanged = true;
+          if (
+            checkX >= 0 &&
+            checkX < worldWidth &&
+            checkY >= 0 &&
+            checkY < worldHeight
+          ) {
+            const checkTile = currentWorld.getTile(checkX, checkY);
 
-                  newQueue.add(`${newX},${y}`);
+            if (checkTile === tiles.WATER) {
+              // Check if this water has air below (suspended)
+              if (checkY + 1 < worldHeight) {
+                const below = currentWorld.getTile(checkX, checkY + 1);
+                if (below === tiles.AIR) {
+                  newQueue.add(`${checkX},${checkY}`);
                 }
               }
             }
@@ -512,6 +536,11 @@ export function updateWaterPhysics({
     }
   }
 
-  // Update the queue with remaining tiles
-  waterPhysicsQueue.set(newQueue);
+  // If water moved, keep the queue active; otherwise clear it
+  if (anyWaterMoved && newQueue.size > 0) {
+    waterPhysicsQueue.set(newQueue);
+  } else {
+    // Water has fully settled, clear the queue
+    waterPhysicsQueue.set(new Set());
+  }
 }

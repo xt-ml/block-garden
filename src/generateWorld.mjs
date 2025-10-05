@@ -321,10 +321,10 @@ export function generateNewWorld({
 
   // set seed inventory
   seedInventory.set({
-    WHEAT: 2,
+    WHEAT: 1,
     CARROT: 1,
     MUSHROOM: 1,
-    CACTUS: 0,
+    CACTUS: 1,
     WALNUT: 0,
   });
 

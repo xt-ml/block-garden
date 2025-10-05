@@ -1,5 +1,3 @@
-import { renderPlayer } from "./renderPlayer.mjs";
-
 // Render world
 export function render(
   canvas,
@@ -15,21 +13,39 @@ export function render(
   isFogScaled,
   fogScale,
   exploredMap,
+  previousState,
+  interpolation,
 ) {
+  const currentPlayer = player.get();
   const currentCamera = camera.get();
   const currentWorld = world.get();
 
+  // Calculate interpolated positions
+  const interpolatedPlayerX =
+    previousState.player.x +
+    (currentPlayer.x - previousState.player.x) * interpolation;
+  const interpolatedPlayerY =
+    previousState.player.y +
+    (currentPlayer.y - previousState.player.y) * interpolation;
+  const interpolatedCameraX =
+    previousState.camera.x +
+    (currentCamera.x - previousState.camera.x) * interpolation;
+  const interpolatedCameraY =
+    previousState.camera.y +
+    (currentCamera.y - previousState.camera.y) * interpolation;
+
   const ctx = canvas?.getContext("2d");
-  if (ctx) {
-    ctx.fillStyle = "#87CEEB";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-  }
+  if (!ctx) return;
 
-  const tilesX = Math.ceil(canvas?.width / tileSize) + 1;
-  const tilesY = Math.ceil(canvas?.height / tileSize) + 1;
+  // Clear canvas
+  ctx.fillStyle = "#87CEEB";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  const startX = Math.floor(currentCamera.x / tileSize);
-  const startY = Math.floor(currentCamera.y / tileSize);
+  // Render world tiles
+  const tilesX = Math.ceil(canvas.width / tileSize) + 1;
+  const tilesY = Math.ceil(canvas.height / tileSize) + 1;
+  const startX = Math.floor(interpolatedCameraX / tileSize);
+  const startY = Math.floor(interpolatedCameraY / tileSize);
 
   for (let x = 0; x < tilesX; x++) {
     for (let y = 0; y < tilesY; y++) {
@@ -43,12 +59,9 @@ export function render(
         worldY < worldHeight
       ) {
         const tile = currentWorld.getTile(worldX, worldY);
-
-        // skip empty tiles
         if (!tile || tile === tiles.AIR) continue;
 
         let color = tile.color;
-
         if (viewMode.get() === "xray") {
           if (tile === tiles.COAL) color = "#FFFF00";
           else if (tile === tiles.IRON) color = "#FF6600";
@@ -60,8 +73,8 @@ export function render(
 
         ctx.fillStyle = color;
         ctx.fillRect(
-          Math.round(x * tileSize - (currentCamera.x % tileSize)),
-          Math.round(y * tileSize - (currentCamera.y % tileSize)),
+          Math.round(x * tileSize - (interpolatedCameraX % tileSize)),
+          Math.round(y * tileSize - (interpolatedCameraY % tileSize)),
           tileSize,
           tileSize,
         );
@@ -69,27 +82,48 @@ export function render(
     }
   }
 
-  renderPlayer(ctx, camera, player);
+  // Render player with interpolated position
+  const screenX = interpolatedPlayerX - interpolatedCameraX;
+  const screenY = interpolatedPlayerY - interpolatedCameraY;
 
-  // update fog map based on player position
+  ctx.fillStyle = currentPlayer.color;
+  ctx.fillRect(screenX, screenY, currentPlayer.width, currentPlayer.height);
+  ctx.strokeStyle = "#000000";
+  ctx.lineWidth = 1;
+  ctx.strokeRect(screenX, screenY, currentPlayer.width, currentPlayer.height);
+
+  // Player eyes
+  ctx.fillStyle = "#000000";
+  ctx.fillRect(screenX + 1, screenY + 1, 1, 1);
+  ctx.fillRect(screenX + 4, screenY + 1, 1, 1);
+
+  // Update fog map based on actual player position (not interpolated)
   const isFogEnabled = fogMode.get() === "fog";
-
   if (isFogEnabled) {
     exploredMap.updateFromPlayer(player, tileSize);
   }
 
-  // Render map fog overlay if enabled
+  // Render fog overlay with interpolated camera
   if (isFogEnabled && ctx && canvas) {
+    // Create temporary camera object for fog rendering
+    const interpolatedCameraObj = {
+      get: () => ({ x: interpolatedCameraX, y: interpolatedCameraY }),
+    };
+
     if (isFogScaled.get()) {
-      exploredMap.renderScaled(ctx, canvas, tileSize, camera, fogScale.get());
-      return;
+      exploredMap.renderScaled(
+        ctx,
+        canvas,
+        tileSize,
+        interpolatedCameraObj,
+        fogScale.get(),
+      );
+    } else {
+      const { velocityX, velocityY } = currentPlayer;
+      if (Math.abs(velocityX) > 0.1 || Math.abs(velocityY) > 0.1) {
+        isFogScaled.set(true);
+      }
+      exploredMap.render(ctx, canvas, tileSize, interpolatedCameraObj);
     }
-
-    const { velocityX, velocityY } = player.get();
-    if (velocityX > 0 || velocityY > 0) {
-      isFogScaled.set(true);
-    }
-
-    exploredMap.render(ctx, canvas, tileSize, camera);
   }
 }

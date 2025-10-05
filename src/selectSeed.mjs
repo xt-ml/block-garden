@@ -1,5 +1,3 @@
-import { updateInventoryDisplay } from "./updateInventoryDisplay.mjs";
-
 // Farming functions
 export function selectSeed(doc, state, event) {
   const [seedType] = Object.keys(event.currentTarget.dataset);
@@ -15,6 +13,4 @@ export function selectSeed(doc, state, event) {
   state.selectedSeedType.set(newSelected);
 
   console.log(`New selected: ${newSelected}`);
-
-  // updateInventoryDisplay(doc, state);
 }

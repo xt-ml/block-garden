@@ -1,5 +1,3 @@
-import { updateInventoryDisplay } from "./updateInventoryDisplay.mjs";
-
 // Material selection function
 export function selectMaterial(doc, state, event) {
   const [materialType] = Object.keys(event.currentTarget.dataset);
@@ -17,6 +15,4 @@ export function selectMaterial(doc, state, event) {
   state.selectedMaterialType.set(newSelected);
 
   console.log(`New selected material: ${newSelected}`);
-
-  // updateInventoryDisplay(doc, state);
 }

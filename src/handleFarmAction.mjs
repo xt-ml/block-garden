@@ -28,8 +28,8 @@ function harvestMaturePlant({
 
   // Give seeds when harvesting mature plant
   if (structure.seedType) {
-    // 3-6 seeds
-    const seedsGained = 3 + Math.floor(Math.random() * 4);
+    // 1-3 seeds
+    const seedsGained = 1 + Math.floor(Math.random() * 3);
 
     updateState("seedInventory", (inv) => ({
       ...inv,

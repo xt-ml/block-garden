@@ -1,6 +1,5 @@
 import { mapEditorState } from "./mapEditor.mjs";
 import { markWaterRegionDirty } from "./waterPhysics.mjs";
-import { updateInventoryDisplay } from "./updateInventoryDisplay.mjs";
 import { updateState } from "./state.mjs";
 
 // Helper function to check if a tile position is part of a mature plant structure

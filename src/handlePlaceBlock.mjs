@@ -111,17 +111,13 @@ export function handlePlaceBlock({
   }
 
   // Place the block
-  // const currentWorld = game.state.world.get();
   world.setTile(targetX, targetY, tileToPlace);
-  // game.state.world.set(currentWorld);
 
   // Remove one unit from materials inventory
   updateState("materialsInventory", (inv) => ({
     ...inv,
     [selectedMaterialType]: inv[selectedMaterialType] - 1,
   }));
-
-  // updateInventoryDisplay(doc, game.state);
 
   console.log(
     `Placed ${selectedMaterialType} at (${targetX}, ${targetY}), ${
