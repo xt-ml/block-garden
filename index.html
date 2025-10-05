@@ -1,13 +1,14 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <base href="/" />
     <title>Sprite Garden</title>
     <meta charset="utf-8" />
     <meta
       content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover"
       name="viewport"
     />
-    <meta name="description" content="Sprite Garden - Grow sprites" />
+    <meta name="description" content="Sprite Garden - Grow Sprites" />
     <meta name="theme-color" content="#000000" />
     <link rel="stylesheet" href="styles.css" type="text/css" />
     <link rel="manifest" href="manifest.json" />
@@ -22,11 +23,50 @@
         <div class="ui-grid__corner ui-grid__corner--top-left">
           <div id="stats">
             <div class="ui-grid__corner--heading">🌱 Sprite Garden</div>
-            <div class="ui-grid__corner--container" hidden>
+            <div class="ui-grid__corner--container" hidden="hidden">
               <div>Biome: <span id="currentBiome">Forest</span></div>
               <div>Depth: <span id="currentDepth">Surface</span></div>
               <div>Total Seeds: <span id="seedCount">0</span></div>
               <div>Time: <span id="gameTime">0</span>s</div>
+
+              <div
+                style="
+                  margin-top: 15px;
+                  border-top: 1px solid #ccc;
+                  padding-top: 10px;
+                "
+              >
+                <button
+                  id="aboutBtn"
+                  style="
+                    background: #4caf50;
+                    border: none;
+                    border-radius: 0.25rem;
+                    color: white;
+                    cursor: pointer;
+                    padding: 0.5rem 1rem;
+                    margin: 0.25rem;
+                    width: calc(100% - 0.5rem);
+                  "
+                >
+                  ℹ️ About
+                </button>
+                <button
+                  id="privacyBtn"
+                  style="
+                    background: #2196f3;
+                    border: none;
+                    border-radius: 0.25rem;
+                    color: white;
+                    cursor: pointer;
+                    padding: 0.5rem 1rem;
+                    margin: 0.25rem;
+                    width: calc(100% - 0.5rem);
+                  "
+                >
+                  🔒 Privacy
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -34,11 +74,11 @@
         <div class="ui-grid__corner ui-grid__corner--top-right">
           <div id="settings">
             <div class="ui-grid__corner--heading">⚙️ Settings</div>
-            <div class="ui-grid__corner--container" hidden>
+            <div class="ui-grid__corner--container" hidden="hidden">
               <div id="resolution">
                 <select id="resolutionSelect">
                   <option value="400">400x400</option>
-                  <option hidden value="fullscreen">Fullscreen</option>
+                  <option hidden="hidden" value="fullscreen">Fullscreen</option>
                   <option value="800">800x800</option>
                 </select>
               </div>
@@ -52,12 +92,12 @@
               <button id="toggleBreakMode">
                 ⛏️ <span id="breakModeText">Dig Regular</span>
               </button>
-              <div id="mapEditor" hidden>
+              <div id="mapEditor" hidden="hidden">
                 <div class="ui-grid__corner--sub-heading">🗺️ Map Editor</div>
                 <button id="toggleMapEditor">
                   📝 <span id="mapEditorText">Enable Editor</span>
                 </button>
-                <div id="mapEditorControls" hidden>
+                <div id="mapEditorControls" hidden="hidden">
                   <div>
                     Brush Size:
                     <select id="brushSizeSelect">
@@ -264,7 +304,7 @@
         <div class="ui-grid__corner ui-grid__corner--bottom-left">
           <div id="controls">
             <div class="ui-grid__corner--heading">⌨️ Controls</div>
-            <div class="ui-grid__corner--container" hidden>
+            <div class="ui-grid__corner--container" hidden="hidden">
               <div class="control-instruction">w/↑/Space: Jump</div>
               <div class="control-instruction">f: Plant/Harvest</div>
               <div class="control-instruction">r: Break Block</div>
@@ -280,29 +320,29 @@
         <div class="ui-grid__corner ui-grid__corner--bottom-right">
           <div id="inventory">
             <div class="ui-grid__corner--heading" id="seeds">🎒 Inventory</div>
-            <div class="ui-grid__corner--container" hidden>
+            <div class="ui-grid__corner--container" hidden="hidden">
               <div class="ui-grid__corner--sub-heading">🫘 Seeds</div>
               <div class="ui-grid__corner--sub-section">
                 <div>Selected: <span id="selectedSeed">None</span></div>
                 <div>
-                  <button class="seed-btn" data-wheat>
+                  <button class="seed-btn" data-wheat="data-wheat">
                     🌾 <span id="wheatCount">0</span>
                   </button>
-                  <button class="seed-btn" data-carrot>
+                  <button class="seed-btn" data-carrot="data-carrot">
                     🥕 <span id="carrotCount">0</span>
                   </button>
-                  <button class="seed-btn" data-mushroom>
+                  <button class="seed-btn" data-mushroom="data-mushroom">
                     🍄 <span id="mushroomCount">0</span>
                   </button>
-                  <button class="seed-btn" data-cactus>
+                  <button class="seed-btn" data-cactus="data-cactus">
                     🌵 <span id="cactusCount">0</span>
                   </button>
-                  <button class="seed-btn" data-walnut>
+                  <button class="seed-btn" data-walnut="data-walnut">
                     🥜 <span id="walnutCount">0</span>
                   </button>
                   <button
                     class="seed-btn"
-                    data-berry_bush
+                    data-berry_bush="data-berry_bush"
                     style="
                       background: #dc143c;
                       border: 1px solid #000;
@@ -317,7 +357,7 @@
 
                   <button
                     class="seed-btn"
-                    data-bamboo
+                    data-bamboo="data-bamboo"
                     style="
                       background: #90ee90;
                       border: 1px solid #000;
@@ -332,7 +372,7 @@
 
                   <button
                     class="seed-btn"
-                    data-sunflower
+                    data-sunflower="data-sunflower"
                     style="
                       background: #ffd700;
                       border: 1px solid #000;
@@ -347,7 +387,7 @@
 
                   <button
                     class="seed-btn"
-                    data-corn
+                    data-corn="data-corn"
                     style="
                       background: #f0e68c;
                       border: 1px solid #000;
@@ -362,7 +402,7 @@
 
                   <button
                     class="seed-btn"
-                    data-pine_tree
+                    data-pine_tree="data-pine_tree"
                     style="
                       background: #2e5930;
                       border: 1px solid #000;
@@ -377,7 +417,7 @@
 
                   <button
                     class="seed-btn"
-                    data-willow_tree
+                    data-willow_tree="data-willow_tree"
                     style="
                       background: #8fbc8f;
                       border: 1px solid #000;
@@ -392,7 +432,7 @@
 
                   <button
                     class="seed-btn"
-                    data-fern
+                    data-fern="data-fern"
                     style="
                       background: #3cb371;
                       border: 1px solid #000;
@@ -419,31 +459,31 @@
                 <div class="ui-grid__corner--sub-section">
                   <div>Selected: <span id="selectedMaterial">None</span></div>
                   <div>
-                    <button class="material-btn" data-dirt>
+                    <button class="material-btn" data-dirt="data-dirt">
                       🟤 <span id="dirtCount">0</span>
                     </button>
-                    <button class="material-btn" data-stone>
+                    <button class="material-btn" data-stone="data-stone">
                       🪨 <span id="stoneCount">0</span>
                     </button>
 
-                    <button class="material-btn" data-wood>
+                    <button class="material-btn" data-wood="data-wood">
                       🪵 <span id="woodCount">0</span>
                     </button>
-                    <button class="material-btn" data-sand>
+                    <button class="material-btn" data-sand="data-sand">
                       🏖️ <span id="sandCount">0</span>
                     </button>
 
-                    <button class="material-btn" data-clay>
+                    <button class="material-btn" data-clay="data-clay">
                       🧱 <span id="clayCount">0</span>
                     </button>
-                    <button class="material-btn" data-coal>
+                    <button class="material-btn" data-coal="data-coal">
                       ⚫ <span id="coalCount">0</span>
                     </button>
 
-                    <button class="material-btn" data-iron>
+                    <button class="material-btn" data-iron="data-iron">
                       🔩 <span id="ironCount">0</span>
                     </button>
-                    <button class="material-btn" data-gold>
+                    <button class="material-btn" data-gold="data-gold">
                       🟡 <span id="goldCount">0</span>
                     </button>
                   </div>
@@ -454,7 +494,7 @@
         </div>
       </div>
 
-      <div class="seed-controls" hidden>
+      <div class="seed-controls" hidden="hidden">
         <h4>World Generation</h4>
 
         <div class="seed-controls__actions">
@@ -487,7 +527,7 @@
       </div>
 
       <!-- Mobile Touch Controls -->
-      <div id="touchControls" hidden>
+      <div id="touchControls" hidden="hidden">
         <div class="dpad-container">
           <div class="dpad">
             <div class="touch-btn up-left" data-key="upleft">↖</div>

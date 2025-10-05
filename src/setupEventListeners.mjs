@@ -13,6 +13,8 @@ import { resizeCanvas } from "./resizeCanvas.mjs";
 import { runCompress } from "./compression.mjs";
 import { selectMaterial } from "./selectMaterial.mjs";
 import { selectSeed } from "./selectSeed.mjs";
+import { showAboutDialog } from "./aboutDialog.mjs";
+import { showPrivacyDialog } from "./privacyDialog.mjs";
 import { showStorageDialog } from "./storageDialog.mjs";
 import { toggleBreakMode } from "./toggleBreakMode.mjs";
 
@@ -25,6 +27,38 @@ export function setupGlobalEventListeners(gThis) {
   // Input handling
   gThis.spriteGarden.keys = {};
   gThis.spriteGarden.touchKeys = {};
+
+  setupDialogButtons(gThis);
+}
+
+function setupDialogButtons(gThis) {
+  const doc = gThis.document;
+
+  // About button
+  const aboutBtn = doc.getElementById("aboutBtn");
+  if (aboutBtn) {
+    aboutBtn.addEventListener("click", async function () {
+      try {
+        await showAboutDialog(gThis);
+      } catch (error) {
+        console.error("Failed to open about dialog:", error);
+        alert("Failed to open about dialog. Check console for details.");
+      }
+    });
+  }
+
+  // Privacy button
+  const privacyBtn = doc.getElementById("privacyBtn");
+  if (privacyBtn) {
+    privacyBtn.addEventListener("click", async function () {
+      try {
+        await showPrivacyDialog(gThis);
+      } catch (error) {
+        console.error("Failed to open privacy dialog:", error);
+        alert("Failed to open privacy dialog. Check console for details.");
+      }
+    });
+  }
 }
 
 function handleCornerClick(e) {

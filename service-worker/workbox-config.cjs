@@ -2,13 +2,15 @@ module.exports = {
   globDirectory: "./",
   globPatterns: [
     "**/**.css",
+    "**/**.gif",
     "**/**.html",
-    "**/**.mjs",
+    "**/**.ico",
     "**/**.js",
+    "**/**.json",
+    "**/**.mjs",
     "**/**.png",
   ],
   globIgnores: [
-    "**/assets/**.gif",
     "**/bin/**",
     "**/node_modules/**",
     "service-worker.js",
@@ -16,6 +18,9 @@ module.exports = {
     "workbox-*.js",
   ],
   swDest: "./service-worker.js",
+  sourcemap: false,
+  // https://developer.chrome.com/docs/workbox/modules/workbox-build#property-BasePartial-maximumFileSizeToCacheInBytes
+  maximumFileSizeToCacheInBytes: 2097152 * 3,
   // define runtime caching rules
   runtimeCaching: [
     {

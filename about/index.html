@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Sprite Garden - About</title>
+    <base href="/" />
+    <meta charset="utf-8" />
+    <meta
+      content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover"
+      name="viewport"
+    />
+    <meta name="description" content="Sprite Garden - Grow Sprites" />
+    <meta name="theme-color" content="#000000" />
+    <link rel="manifest" href="manifest.json" />
+    <link rel="icon" href="assets/icons/favicon.ico" type="image/x-icon" />
+    <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png" />
+  </head>
+  <body style="background-color: #fff; padding: 0 2rem">
+    <div id="about-content">
+      <div
+        style="
+          align-items: center;
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 1rem;
+          padding-top: 1rem;
+        "
+      >
+        <h1>
+          <a href="https://kherrick.github.io/sprite-garden/">Sprite Garden</a>
+        </h1>
+        <button
+          hidden="hidden"
+          id="closeAboutDialog"
+          style="
+            background: #f44;
+            border: none;
+            border-radius: 0.25rem;
+            color: #fff;
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 0.5rem 1rem;
+          "
+        >
+          &times;
+        </button>
+      </div>
+
+      <h2 style="margin: 0">About Sprite Garden</h2>
+
+      <div style="line-height: 1.6">
+        <p>
+          Sprite Garden is a 2D sandbox exploration and farming game that runs
+          entirely in your web browser. Explore procedurally generated worlds,
+          discover different biomes, mine resources, and cultivate a variety of
+          crops.
+        </p>
+        <a href="https://kherrick.github.io/sprite-garden/">
+          <img
+            src="assets/sprite-garden-time-lapse.gif"
+            desc="A time lapse of a garden in Sprite Garden"
+            title="Sprite Garden - Time Lapse"
+          />
+        </a>
+        <h3 style="margin-top: 1.5rem">Features</h3>
+        <ul style="margin-left: 1.5rem">
+          <li>
+            <strong>Procedural World Generation</strong> - Each world is unique,
+            generated from a shareable seed
+          </li>
+          <li>
+            <strong>Multiple Biomes</strong> - Explore forests, deserts,
+            tundras, and swamps, each with unique characteristics
+          </li>
+          <li>
+            <strong>Farming System</strong> - Plant and harvest 12 different
+            crop types with realistic growth cycles
+          </li>
+          <li>
+            <strong>Resource Mining</strong> - Dig for valuable resources like
+            coal, iron, and gold
+          </li>
+          <li>
+            <strong>Cave Systems</strong> - Discover underground caves filled
+            with resources and challenges
+          </li>
+          <li>
+            <strong>Building</strong> - Use collected materials to place blocks
+            and shape the world
+          </li>
+          <li>
+            <strong>Save &amp; Load</strong> - Your progress can be saved on
+            device or as a file to share
+          </li>
+        </ul>
+        <h3 style="margin-top: 1.5rem">Privacy by Design</h3>
+        <p>
+          Sprite Garden is <strong>private by design</strong>. All game data is
+          processed and stored locally on your device. No personal information
+          is collected, transmitted, or stored on external servers. Your game
+          worlds, progress, and preferences never leave your device, unless
+          shared by you.
+        </p>
+        <p>
+          Read more about the
+          <a
+            href="privacy"
+            id="privacyLinkInAbout"
+            style="color: #2196f3; cursor: pointer"
+            >Sprite Garden Privacy Policy</a
+          >.
+        </p>
+        <h3 style="margin-top: 1.5rem">Controls</h3>
+        <div
+          style="
+            background: #e0e0e0;
+            border-radius: 0.25rem;
+            margin-bottom: 1.5rem;
+            margin-top: 0.5rem;
+            padding: 1rem;
+          "
+        >
+          <p style="margin: 0.25rem 0">
+            <strong>Movement:</strong> W/A/S/D or Arrow Keys
+          </p>
+          <p style="margin: 0.25rem 0"><strong>Jump:</strong> W, ↑, or Space</p>
+          <p style="margin: 0.25rem 0"><strong>Plant/Harvest:</strong> F</p>
+          <p style="margin: 0.25rem 0"><strong>Break Block:</strong> R</p>
+          <p style="margin: 0.25rem 0">
+            <strong>Place Block:</strong> U/I/O/J/K/L/M/,/.
+          </p>
+          <p style="margin: 0.25rem 0">
+            <strong>World State Menu:</strong> Ctrl+S
+          </p>
+          <p style="margin: 0.25rem 0">
+            <strong>Inspect Tiles:</strong> Mouse hover
+          </p>
+          <p style="margin: 0.25rem 0">
+            <strong>Tap the bottom corner panel for mobile controls.</strong>
+          </p>
+        </div>
+        <a href="https://kherrick.github.io/sprite-garden/">
+          <img
+            src="assets/sprite-garden-animation.gif"
+            desc="An animation of Sprite Garden gameplay"
+            title="Sprite Garden - Gameplay Animation"
+          />
+        </a>
+        <h3 style="margin-top: 1.5rem">Tips for New Players</h3>
+        <ul style="margin-left: 1.5rem">
+          <li>
+            Start by exploring your immediate surroundings to understand the
+            biome
+          </li>
+          <li>Harvest natural crops to build up your seed inventory</li>
+          <li>
+            Look for farmable ground (dirt, grass, clay, sand) to plant seeds
+          </li>
+          <li>
+            Different crops grow at different rates - mushrooms are fastest,
+            trees are slowest
+          </li>
+          <li>
+            Mine resources by breaking blocks (R key) - you'll collect materials
+            automatically
+          </li>
+          <li>Fog clears as exploration progresses</li>
+          <li>Save your game frequently using the World State menu (Ctrl+S)</li>
+          <li>Share interesting world seeds with friends!</li>
+        </ul>
+        <h3 style="margin-top: 1.5rem">Open Source</h3>
+        <p>
+          Sprite Garden is open source software. Visit
+          <a href="https://github.com/kherrick/sprite-garden">
+            the project repository
+          </a>
+          to view the code, report issues, or to contribute.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>
