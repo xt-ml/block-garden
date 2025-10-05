@@ -1,5 +1,5 @@
 import { createSaveState } from "./createSaveState.mjs";
-import { gameConfig, gameState } from "./state.mjs";
+// import { gameConfig, gameState } from "./state.mjs";
 import { generateNewWorld } from "./generateWorld.mjs";
 
 export const mapEditorState = {
@@ -11,20 +11,28 @@ export const mapEditorState = {
 };
 
 // Initialize map editor mode
-export function initMapEditor(doc) {
+export function initMapEditor(doc, fogMode, viewMode) {
   // Add map editor UI to the existing UI
-  setupMapEditorControls(doc);
+  setupMapEditorControls({
+    doc,
+    fogMode,
+    viewMode,
+  });
 }
 
 // Setup map editor controls
-function setupMapEditorControls(doc) {
+function setupMapEditorControls({ doc, fogMode, viewMode }) {
   // Toggle map editor mode
   const toggleBtn = doc.getElementById("toggleMapEditor");
   if (toggleBtn) {
     toggleBtn.addEventListener("click", () => {
       mapEditorState.isEnabled = !mapEditorState.isEnabled;
 
-      updateMapEditorUI(doc);
+      updateMapEditorUI({
+        doc,
+        fogMode,
+        viewMode,
+      });
     });
   }
 
@@ -82,14 +90,16 @@ function setupMapEditorControls(doc) {
       if (
         confirm("Reset to generated world? This will lose all editor changes.")
       ) {
-        generateNewWorld(doc);
+        generateNewWorld({
+          doc,
+        });
       }
     });
   }
 }
 
 // Update map editor UI state
-function updateMapEditorUI(doc) {
+function updateMapEditorUI({ doc, fogMode, viewMode }) {
   const mapEditorText = doc.getElementById("mapEditorText");
   const mapEditorControls = doc.getElementById("mapEditorControls");
 
@@ -99,12 +109,12 @@ function updateMapEditorUI(doc) {
       mapEditorControls.removeAttribute("hidden");
 
       // Disable fog in editor mode for better visibility
-      gameConfig.fogMode.set("clear");
+      fogMode.set("clear");
 
       // Switch to normal view mode for editing
-      gameState.viewMode.set("normal");
+      viewMode.set("normal");
     } else {
-      gameConfig.fogMode.set("fog");
+      fogMode.set("fog");
 
       mapEditorText.textContent = "Enable Editor";
       mapEditorControls.setAttribute("hidden", "");
@@ -135,27 +145,56 @@ function selectTile(doc, tileType) {
 }
 
 // Handle canvas clicks for tile placement
-export function handleMapEditorClick(x, y) {
+export function handleMapEditorClick({
+  x,
+  y,
+  cnvs,
+  camera,
+  scale,
+  tiles,
+  tileSize,
+  worldHeight,
+  worldWidth,
+  world,
+}) {
   if (!mapEditorState.isEnabled || !mapEditorState.selectedTile) {
     // Not in editor mode or no tile selected
     return false;
   }
 
-  const tileSize = gameConfig.TILE_SIZE.get();
-  const camera = gameState.camera.get();
-
   // Convert screen coordinates to world tile coordinates
   const worldX = Math.floor((x + camera.x) / tileSize);
   const worldY = Math.floor((y + camera.y) / tileSize);
 
-  paintTiles(worldX, worldY);
+  paintTiles({
+    centerX: worldX,
+    centerY: worldY,
+    camera,
+    scale,
+    tiles,
+    tileSize,
+    worldHeight,
+    worldWidth,
+    world,
+  });
 
   // Handled by map editor
   return true;
 }
 
 // Handle dragging for continuous painting
-export function handleMapEditorDrag(x, y, isStart = false) {
+export function handleMapEditorDrag({
+  x,
+  y,
+  isStart = false,
+  camera,
+  scale,
+  tiles,
+  tileSize,
+  worldHeight,
+  worldWidth,
+  world,
+}) {
   if (!mapEditorState.isEnabled || !mapEditorState.selectedTile) {
     return false;
   }
@@ -165,8 +204,8 @@ export function handleMapEditorDrag(x, y, isStart = false) {
     mapEditorState.lastPaintedTile = null;
   }
 
-  const tileSize = gameConfig.TILE_SIZE.get();
-  const camera = gameState.camera.get();
+  // const tileSize = gameConfig.TILE_SIZE.get();
+  // const camera = gameState.camera.get();
 
   const worldX = Math.floor((x + camera.x) / tileSize);
   const worldY = Math.floor((y + camera.y) / tileSize);
@@ -174,7 +213,17 @@ export function handleMapEditorDrag(x, y, isStart = false) {
   // Only paint if we've moved to a different tile
   const currentTileKey = `${worldX},${worldY}`;
   if (mapEditorState.lastPaintedTile !== currentTileKey) {
-    paintTiles(worldX, worldY);
+    paintTiles({
+      centerX: worldX,
+      centerY: worldY,
+      camera,
+      scale,
+      tiles,
+      tileSize,
+      worldHeight,
+      worldWidth,
+      world,
+    });
 
     mapEditorState.lastPaintedTile = currentTileKey;
   }
@@ -188,17 +237,24 @@ export function handleMapEditorDragEnd() {
 }
 
 // Paint tiles at the specified location with current brush size
-function paintTiles(centerX, centerY) {
-  const tiles = gameConfig.TILES;
-  const worldWidth = gameConfig.WORLD_WIDTH.get();
-  const worldHeight = gameConfig.WORLD_HEIGHT.get();
+function paintTiles({
+  centerX,
+  centerY,
+  camera,
+  scale,
+  tiles,
+  tileSize,
+  worldHeight,
+  worldWidth,
+  world,
+}) {
   const selectedTileType = tiles[mapEditorState.selectedTile];
 
   if (!selectedTileType) {
     return;
   }
 
-  const currentWorld = gameState.world.get();
+  // const currentWorld = gameState.world.get();
   const brushRadius = Math.floor(mapEditorState.brushSize / 2);
 
   let hasChanges = false;
@@ -223,18 +279,18 @@ function paintTiles(centerX, centerY) {
       }
 
       // Paint the tile
-      if (currentWorld.getTile(x, y) !== selectedTileType) {
-        currentWorld.setTile(x, y, selectedTileType);
+      if (world.getTile(x, y) !== selectedTileType) {
+        world.setTile(x, y, selectedTileType);
 
         hasChanges = true;
       }
     }
   }
 
-  if (hasChanges) {
-    // Update the world state
-    gameState.world.set(currentWorld);
-  }
+  // if (hasChanges) {
+  //   // Update the world state
+  //   gameState.world.set(currentWorld);
+  // }
 }
 
 // Clear the entire map

@@ -1,39 +1,44 @@
-import { updateInventoryDisplay } from "./updateInventoryDisplay.mjs";
+import { updateState } from "./state.mjs";
 
 // Helper function to get tile from material type
-function getTileFromMaterial(materialType, TILES) {
+function getTileFromMaterial(materialType, tiles) {
   const materialToTile = {
-    DIRT: TILES.DIRT,
-    STONE: TILES.STONE,
-    WOOD: TILES.TREE_TRUNK,
-    SAND: TILES.SAND,
-    CLAY: TILES.CLAY,
-    COAL: TILES.COAL,
-    IRON: TILES.IRON,
-    GOLD: TILES.GOLD,
+    DIRT: tiles.DIRT,
+    STONE: tiles.STONE,
+    WOOD: tiles.TREE_TRUNK,
+    SAND: tiles.SAND,
+    CLAY: tiles.CLAY,
+    COAL: tiles.COAL,
+    IRON: tiles.IRON,
+    GOLD: tiles.GOLD,
   };
 
   return materialToTile[materialType] || null;
 }
 
-export function handlePlaceBlock(currentState, game, doc, key) {
-  const { player, world, TILES, TILE_SIZE, WORLD_WIDTH, WORLD_HEIGHT } =
-    currentState;
-
-  const selectedMaterial = game.state.selectedMaterialType.get();
-  if (!selectedMaterial) {
+export function handlePlaceBlock({
+  key,
+  materialsInventory,
+  player,
+  selectedMaterialType,
+  tiles,
+  tileSize,
+  world,
+  worldHeight,
+  worldWidth,
+}) {
+  if (!selectedMaterialType) {
     console.log("No material selected for placement");
     return;
   }
 
-  const materialsInventory = game.state.materialsInventory.get();
-  if (materialsInventory[selectedMaterial] <= 0) {
-    console.log(`No ${selectedMaterial} available to place`);
+  if (materialsInventory[selectedMaterialType] <= 0) {
+    console.log(`No ${selectedMaterialType} available to place`);
     return;
   }
 
-  const playerTileX = Math.floor((player.x + player.width / 2) / TILE_SIZE);
-  const playerTileY = Math.floor((player.y + player.height / 2) / TILE_SIZE);
+  const playerTileX = Math.floor((player.x + player.width / 2) / tileSize);
+  const playerTileY = Math.floor((player.y + player.height / 2) / tileSize);
 
   let targetX, targetY;
 
@@ -79,9 +84,9 @@ export function handlePlaceBlock(currentState, game, doc, key) {
   // Check if placement position is valid
   if (
     targetX < 0 ||
-    targetX >= WORLD_WIDTH ||
+    targetX >= worldWidth ||
     targetY < 0 ||
-    targetY >= WORLD_HEIGHT
+    targetY >= worldHeight
   ) {
     console.log(
       `Cannot place block outside world bounds at (${targetX}, ${targetY})`,
@@ -91,7 +96,7 @@ export function handlePlaceBlock(currentState, game, doc, key) {
 
   // Check if the target position is already occupied by a solid block
   const currentTile = world.getTile(targetX, targetY);
-  if (currentTile && currentTile !== TILES.AIR && currentTile.solid) {
+  if (currentTile && currentTile !== tiles.AIR && currentTile.solid) {
     console.log(
       `Cannot place block at (${targetX}, ${targetY}) - position occupied`,
     );
@@ -99,28 +104,28 @@ export function handlePlaceBlock(currentState, game, doc, key) {
   }
 
   // Get the tile to place
-  const tileToPlace = getTileFromMaterial(selectedMaterial, TILES);
+  const tileToPlace = getTileFromMaterial(selectedMaterialType, tiles);
   if (!tileToPlace) {
-    console.log(`Invalid material type: ${selectedMaterial}`);
+    console.log(`Invalid material type: ${selectedMaterialType}`);
     return;
   }
 
   // Place the block
-  const currentWorld = game.state.world.get();
-  currentWorld.setTile(targetX, targetY, tileToPlace);
-  game.state.world.set(currentWorld);
+  // const currentWorld = game.state.world.get();
+  world.setTile(targetX, targetY, tileToPlace);
+  // game.state.world.set(currentWorld);
 
   // Remove one unit from materials inventory
-  game.updateState("materialsInventory", (inv) => ({
+  updateState("materialsInventory", (inv) => ({
     ...inv,
-    [selectedMaterial]: inv[selectedMaterial] - 1,
+    [selectedMaterialType]: inv[selectedMaterialType] - 1,
   }));
 
-  updateInventoryDisplay(doc, game.state);
+  // updateInventoryDisplay(doc, game.state);
 
   console.log(
-    `Placed ${selectedMaterial} at (${targetX}, ${targetY}), ${
-      game.state.materialsInventory.get()[selectedMaterial]
+    `Placed ${selectedMaterialType} at (${targetX}, ${targetY}), ${
+      materialsInventory[selectedMaterialType] - 1
     } remaining`,
   );
 }

@@ -16,5 +16,5 @@ export function selectSeed(doc, state, event) {
 
   console.log(`New selected: ${newSelected}`);
 
-  updateInventoryDisplay(doc, state);
+  // updateInventoryDisplay(doc, state);
 }

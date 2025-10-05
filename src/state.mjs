@@ -24,6 +24,19 @@ if (params.has("seed")) {
   INITIAL_WORLD_SEED = getRandomSeed();
 }
 
+// Add to gameConfig - configuration for runtime water physics
+export const waterPhysicsConfig = {
+  // How often to update water physics (every N frames)
+  updateInterval: 10, // Update every 10 frames (~6 times per second at 60fps)
+  frameCounter: 0,
+  // Maximum iterations per update to prevent CPU overload
+  maxIterationsPerUpdate: 5,
+  // How many tiles around changed areas to check
+  checkRadius: 15,
+  // Track areas that need water physics updates
+  dirtyRegions: new Set(),
+};
+
 // Create reactive signals for all configuration and state
 export const gameConfig = {
   version: new Signal.State(""),
@@ -59,17 +72,17 @@ export const gameConfig = {
     STONE: getT({ id: 3, color: "#696969", solid: true }),
     TREE_LEAVES: getT({ id: 11, color: "#228B22", solid: true, crop: true }),
     TREE_TRUNK: getT({ id: 10, color: "#59392B", solid: true, crop: true }),
-    WHEAT: getT({ id: 12, color: "#DAA520", crop: true, growthTime: 240 }),
-    CARROT: getT({ id: 13, color: "#FF8C00", crop: true, growthTime: 120 }),
-    MUSHROOM: getT({ id: 14, color: "#8B0000", crop: true, growthTime: 60 }),
+    WHEAT: getT({ id: 12, color: "#DAA520", crop: true, growthTime: 480 }),
+    CARROT: getT({ id: 13, color: "#FF8C00", crop: true, growthTime: 240 }),
+    MUSHROOM: getT({ id: 14, color: "#8B0000", crop: true, growthTime: 120 }),
     CACTUS: getT({
       id: 15,
       color: "#32CD32",
       solid: true,
       crop: true,
-      growthTime: 960,
+      growthTime: 1920,
     }),
-    WALNUT: getT({ id: 33, color: "#654321", crop: true, growthTime: 480 }),
+    WALNUT: getT({ id: 33, color: "#654321", crop: true, growthTime: 960 }),
     SNOW: getT({ id: 16, color: "#FFFAFA", solid: true, farmable: true }),
     ICE: getT({ id: 17, color: "#B0E0E6", solid: true }),
     LAVA: getT({ id: 18, color: "#FF4500", solid: false }),
@@ -122,6 +135,7 @@ export const gameConfig = {
 };
 
 export const gameState = {
+  waterPhysicsQueue: new Signal.State(new Set()),
   // Tracks which tiles have been explored for map fog
   exploredMap: {},
   seedInventory: new Signal.State({
@@ -181,53 +195,6 @@ export const computedSignals = {
     const inventory = gameState.seedInventory.get();
 
     return Object.values(inventory).reduce((sum, count) => sum + count, 0);
-  }),
-
-  totalMaterials: new Signal.Computed(() => {
-    const inventory = gameState.materialsInventory.get();
-
-    return Object.values(inventory).reduce((sum, count) => sum + count, 0);
-  }),
-
-  playerTilePosition: new Signal.Computed(() => {
-    const player = gameState.player.get();
-    const tileSize = gameConfig.TILE_SIZE.get();
-
-    return {
-      x: Math.floor((player.x + player.width / 2) / tileSize),
-      y: Math.floor(player.y / tileSize),
-    };
-  }),
-
-  currentBiome: new Signal.Computed(() => {
-    const playerPos = computedSignals.playerTilePosition.get();
-    const biomes = gameConfig.BIOMES;
-
-    // getBiome might expect an x coordinate; keep call the same but guard result
-    return (
-      getBiome(playerPos.x, biomes, gameConfig.worldSeed.get()) || {
-        name: "Unknown",
-        trees: false,
-        crops: [],
-      }
-    );
-  }),
-
-  currentDepth: new Signal.Computed(() => {
-    const playerPos = computedSignals.playerTilePosition.get();
-    const surfaceLevel = gameConfig.SURFACE_LEVEL.get();
-
-    if (playerPos.y > surfaceLevel) {
-      const depthLevel = playerPos.y - surfaceLevel;
-
-      if (depthLevel < 15) return "Shallow";
-      else if (depthLevel < 30) return "Deep";
-      else return "Very Deep";
-    } else if (playerPos.y < surfaceLevel - 5) {
-      return "Sky";
-    }
-
-    return "Surface";
   }),
 };
 
@@ -298,4 +265,9 @@ export function initState(gThis, version) {
   BIOMES.SWAMP.surfaceTile = TILES.CLAY;
   BIOMES.SWAMP.subTile = TILES.CLAY;
   BIOMES.SWAMP.crops = [TILES.MUSHROOM];
+
+  return {
+    gameConfig,
+    gameState,
+  };
 }

@@ -1,9 +1,11 @@
 import { mapEditorState } from "./mapEditor.mjs";
+import { markWaterRegionDirty } from "./waterPhysics.mjs";
 import { updateInventoryDisplay } from "./updateInventoryDisplay.mjs";
+import { updateState } from "./state.mjs";
 
 // Helper function to check if a tile position is part of a mature plant structure
 function isMaturePlantPart(x, y, plantStructures) {
-  for (const [key, structure] of Object.entries(plantStructures)) {
+  for (const [key, structure] of Object.entries(plantStructures.get())) {
     if (structure.mature && structure.blocks) {
       if (structure.blocks.find((b) => b.x === x && b.y === y)) {
         return true;
@@ -15,40 +17,47 @@ function isMaturePlantPart(x, y, plantStructures) {
 }
 
 // Helper function to get material type from tile
-function getMaterialFromTile(tile, TILES) {
+function getMaterialFromTile(tile, tiles) {
   const tileToMaterial = {
-    [TILES.DIRT.id]: "DIRT",
-    [TILES.GRASS.id]: "DIRT", // Grass drops dirt
-    [TILES.STONE.id]: "STONE",
-    [TILES.TREE_TRUNK.id]: "WOOD",
-    [TILES.TREE_LEAVES.id]: "WOOD", // Leaves can drop wood occasionally
-    [TILES.SAND.id]: "SAND",
-    [TILES.CLAY.id]: "CLAY",
-    [TILES.COAL.id]: "COAL",
-    [TILES.IRON.id]: "IRON",
-    [TILES.GOLD.id]: "GOLD",
-    [TILES.SNOW.id]: "SAND", // Snow melts to... sand for simplicity
+    [tiles.DIRT.id]: "DIRT",
+    [tiles.GRASS.id]: "DIRT", // Grass drops dirt
+    [tiles.STONE.id]: "STONE",
+    [tiles.TREE_TRUNK.id]: "WOOD",
+    [tiles.TREE_LEAVES.id]: "WOOD", // Leaves can drop wood occasionally
+    [tiles.SAND.id]: "SAND",
+    [tiles.CLAY.id]: "CLAY",
+    [tiles.COAL.id]: "COAL",
+    [tiles.IRON.id]: "IRON",
+    [tiles.GOLD.id]: "GOLD",
+    [tiles.SNOW.id]: "SAND", // Snow melts to... sand for simplicity
   };
 
   return tileToMaterial[tile.id] || null;
 }
 
-function isTreePart(tile, TILES) {
-  return tile === TILES.TREE_TRUNK || tile === TILES.TREE_LEAVES;
+function isTreePart(tile, tiles) {
+  return tile === tiles.TREE_TRUNK || tile === tiles.TREE_LEAVES;
 }
 
-export function handleBreakBlock(currentState, game, doc, mode = "regular") {
+function handleBreakBlock({
+  growthTimers,
+  plantStructures,
+  player,
+  tiles,
+  tileSize,
+  world,
+  worldHeight,
+  worldWidth,
+  mode = "regular",
+}) {
   if (mapEditorState.isEnabled) {
     console.log("Breaking disabled in map editor mode");
 
     return;
   }
 
-  const { player, world, TILES, TILE_SIZE, WORLD_WIDTH, WORLD_HEIGHT } =
-    currentState;
-
-  const playerTileX = Math.floor((player.x + player.width / 2) / TILE_SIZE);
-  const playerTileY = Math.floor((player.y + player.height / 2) / TILE_SIZE);
+  const playerTileX = Math.floor((player.x + player.width / 2) / tileSize);
+  const playerTileY = Math.floor((player.y + player.height / 2) / tileSize);
 
   let blocksToBreak = [];
 
@@ -64,20 +73,20 @@ export function handleBreakBlock(currentState, game, doc, mode = "regular") {
 
         if (
           targetX < 0 ||
-          targetX >= WORLD_WIDTH ||
+          targetX >= worldWidth ||
           targetY < 0 ||
-          targetY >= WORLD_HEIGHT
+          targetY >= worldHeight
         )
           continue;
 
         const tile = world.getTile(targetX, targetY);
         if (
           tile &&
-          tile !== TILES.AIR &&
-          tile !== TILES.BEDROCK &&
-          tile !== TILES.LAVA &&
-          tile !== TILES.WATER && // Don't break water
-          !isMaturePlantPart(targetX, targetY, game.state.plantStructures.get())
+          tile !== tiles.AIR &&
+          tile !== tiles.BEDROCK &&
+          tile !== tiles.LAVA &&
+          tile !== tiles.WATER && // Don't break water
+          !isMaturePlantPart(targetX, targetY, plantStructures)
         ) {
           blocksToBreak.push({ x: targetX, y: targetY, tile, priority: dy });
         }
@@ -89,18 +98,18 @@ export function handleBreakBlock(currentState, game, doc, mode = "regular") {
 
       if (
         targetX >= 0 &&
-        targetX < WORLD_WIDTH &&
+        targetX < worldWidth &&
         targetY >= 0 &&
-        targetY < WORLD_HEIGHT
+        targetY < worldHeight
       ) {
         const tile = world.getTile(targetX, targetY);
         if (
           tile &&
-          tile !== TILES.AIR &&
-          tile !== TILES.BEDROCK &&
-          tile !== TILES.LAVA &&
-          tile !== TILES.WATER &&
-          !isMaturePlantPart(targetX, targetY, game.state.plantStructures.get())
+          tile !== tiles.AIR &&
+          tile !== tiles.BEDROCK &&
+          tile !== tiles.LAVA &&
+          tile !== tiles.WATER &&
+          !isMaturePlantPart(targetX, targetY, plantStructures)
         ) {
           blocksToBreak.push({ x: targetX, y: targetY, tile, priority: 1 });
         }
@@ -120,9 +129,9 @@ export function handleBreakBlock(currentState, game, doc, mode = "regular") {
 
           if (
             targetX < 0 ||
-            targetX >= WORLD_WIDTH ||
+            targetX >= worldWidth ||
             targetY < 0 ||
-            targetY >= WORLD_HEIGHT
+            targetY >= worldHeight
           ) {
             continue;
           }
@@ -133,15 +142,11 @@ export function handleBreakBlock(currentState, game, doc, mode = "regular") {
           // Also exclude mature plant parts (they should be harvested, not broken)
           if (
             tile &&
-            tile !== TILES.AIR &&
-            tile !== TILES.BEDROCK &&
-            tile !== TILES.LAVA &&
-            tile !== TILES.WATER &&
-            !isMaturePlantPart(
-              targetX,
-              targetY,
-              game.state.plantStructures.get(),
-            )
+            tile !== tiles.AIR &&
+            tile !== tiles.BEDROCK &&
+            tile !== tiles.LAVA &&
+            tile !== tiles.WATER &&
+            !isMaturePlantPart(targetX, targetY, plantStructures)
           ) {
             // Prioritize blocks in the direction player is facing
             const priority =
@@ -164,9 +169,9 @@ export function handleBreakBlock(currentState, game, doc, mode = "regular") {
 
           if (
             targetX < 0 ||
-            targetX >= WORLD_WIDTH ||
+            targetX >= worldWidth ||
             targetY < 0 ||
-            targetY >= WORLD_HEIGHT
+            targetY >= worldHeight
           ) {
             continue;
           }
@@ -177,15 +182,11 @@ export function handleBreakBlock(currentState, game, doc, mode = "regular") {
           // Also exclude mature plant parts (they should be harvested, not broken)
           if (
             tile &&
-            tile !== TILES.AIR &&
-            tile !== TILES.BEDROCK &&
-            tile !== TILES.LAVA &&
-            tile !== TILES.WATER &&
-            !isMaturePlantPart(
-              targetX,
-              targetY,
-              game.state.plantStructures.get(),
-            )
+            tile !== tiles.AIR &&
+            tile !== tiles.BEDROCK &&
+            tile !== tiles.LAVA &&
+            tile !== tiles.WATER &&
+            !isMaturePlantPart(targetX, targetY, plantStructures)
           ) {
             blocksToBreak.push({
               x: targetX,
@@ -201,9 +202,9 @@ export function handleBreakBlock(currentState, game, doc, mode = "regular") {
 
   if (blocksToBreak.length > 0) {
     // Break multiple blocks at once
-    const currentWorld = game.state.world.get();
-    const currentTimers = game.state.growthTimers.get();
-    const currentStructures = game.state.plantStructures.get();
+    const currentTimers = growthTimers.get();
+    const currentStructures = plantStructures.get();
+
     const updatedTimers = { ...currentTimers };
     const updatedStructures = { ...currentStructures };
 
@@ -238,11 +239,11 @@ export function handleBreakBlock(currentState, game, doc, mode = "regular") {
           structure.blocks.forEach((plantBlock) => {
             if (
               plantBlock.x >= 0 &&
-              plantBlock.x < WORLD_WIDTH &&
+              plantBlock.x < worldWidth &&
               plantBlock.y >= 0 &&
-              plantBlock.y < WORLD_HEIGHT
+              plantBlock.y < worldHeight
             ) {
-              currentWorld.setTile(plantBlock.x, plantBlock.y, TILES.AIR);
+              world.setTile(plantBlock.x, plantBlock.y, tiles.AIR);
             }
           });
         }
@@ -257,24 +258,24 @@ export function handleBreakBlock(currentState, game, doc, mode = "regular") {
         delete updatedTimers[plantKey];
       } else {
         // Regular block breaking
-        currentWorld.setTile(block.x, block.y, TILES.AIR);
+        world.setTile(block.x, block.y, tiles.AIR);
 
         // Remove from growth timers if it was a crop
         delete updatedTimers[`${block.x},${block.y}`];
 
         // Check if this is a tree part and give chance to drop walnut
-        if (isTreePart(block.tile, TILES) && Math.random() < 0.15) {
+        if (isTreePart(block.tile, tiles) && Math.random() < 0.15) {
           seedUpdates["WALNUT"] = (seedUpdates["WALNUT"] || 0) + 1;
         }
 
         // Give small chance to drop seeds from broken natural crops
         if (block.tile.crop && Math.random() < 0.3) {
           const cropToSeed = {
-            [TILES.WHEAT.id]: "WHEAT",
-            [TILES.CARROT.id]: "CARROT",
-            [TILES.MUSHROOM.id]: "MUSHROOM",
-            [TILES.CACTUS.id]: "CACTUS",
-            [TILES.WALNUT.id]: "WALNUT",
+            [tiles.WHEAT.id]: "WHEAT",
+            [tiles.CARROT.id]: "CARROT",
+            [tiles.MUSHROOM.id]: "MUSHROOM",
+            [tiles.CACTUS.id]: "CACTUS",
+            [tiles.WALNUT.id]: "WALNUT",
           };
 
           const seedType = cropToSeed[block.tile.id];
@@ -284,13 +285,13 @@ export function handleBreakBlock(currentState, game, doc, mode = "regular") {
         }
 
         // Collect materials from broken blocks
-        const materialType = getMaterialFromTile(block.tile, TILES);
+        const materialType = getMaterialFromTile(block.tile, tiles);
         if (materialType) {
           // Special handling for leaves - only sometimes drop wood
-          if (block.tile === TILES.TREE_LEAVES && Math.random() < 0.3) {
+          if (block.tile === tiles.TREE_LEAVES && Math.random() < 0.3) {
             materialUpdates[materialType] =
               (materialUpdates[materialType] || 0) + 1;
-          } else if (block.tile !== TILES.TREE_LEAVES) {
+          } else if (block.tile !== tiles.TREE_LEAVES) {
             materialUpdates[materialType] =
               (materialUpdates[materialType] || 0) + 1;
           }
@@ -299,13 +300,12 @@ export function handleBreakBlock(currentState, game, doc, mode = "regular") {
     });
 
     // Apply updates back to state, world, timers, and structures
-    game.state.world.set(currentWorld);
-    game.state.growthTimers.set(updatedTimers);
-    game.state.plantStructures.set(updatedStructures);
+    growthTimers.set(updatedTimers);
+    plantStructures.set(updatedStructures);
 
     // Update seed inventory if we gained any seeds
     if (Object.keys(seedUpdates).length > 0) {
-      game.updateState("seedInventory", (inv) => {
+      updateState("seedInventory", (inv) => {
         const updated = { ...inv };
 
         Object.entries(seedUpdates).forEach(([seedType, amount]) => {
@@ -318,7 +318,7 @@ export function handleBreakBlock(currentState, game, doc, mode = "regular") {
 
     // Update materials inventory if we gained any materials
     if (Object.keys(materialUpdates).length > 0) {
-      game.updateState("materialsInventory", (inv) => {
+      updateState("materialsInventory", (inv) => {
         const updated = { ...inv };
 
         Object.entries(materialUpdates).forEach(([materialType, amount]) => {
@@ -328,7 +328,74 @@ export function handleBreakBlock(currentState, game, doc, mode = "regular") {
         return updated;
       });
     }
-
-    updateInventoryDisplay(doc, game.state);
   }
+}
+
+export function handleBreakBlockWithWaterPhysics({
+  growthTimers,
+  plantStructures,
+  player,
+  tiles,
+  tileSize,
+  world,
+  worldHeight,
+  worldWidth,
+  mode = "regular",
+  queue,
+}) {
+  const currentPlayer = player.get();
+  const currentWorld = world.get();
+
+  // After breaking blocks, check if any were near water
+  const playerTileX = Math.floor(
+    (currentPlayer.x + currentPlayer.width / 2) / tileSize,
+  );
+  const playerTileY = Math.floor(
+    (currentPlayer.y + currentPlayer.height / 2) / tileSize,
+  );
+
+  // Store original function result
+  const originalResult = handleBreakBlock({
+    growthTimers,
+    plantStructures,
+    player: currentPlayer,
+    tiles,
+    tileSize,
+    world: currentWorld,
+    worldHeight,
+    worldWidth,
+    mode,
+  });
+
+  // Check if we broke any blocks near water
+  const checkRadius = 3;
+  let foundWater = false;
+
+  for (let dx = -checkRadius; dx <= checkRadius; dx++) {
+    for (let dy = -checkRadius; dy <= checkRadius; dy++) {
+      const checkX = playerTileX + dx;
+      const checkY = playerTileY + dy;
+
+      if (
+        checkX >= 0 &&
+        checkX < worldWidth &&
+        checkY >= 0 &&
+        checkY < worldHeight
+      ) {
+        if (currentWorld.getTile(checkX, checkY) === tiles.WATER) {
+          foundWater = true;
+          markWaterRegionDirty({
+            x: checkX,
+            y: checkY,
+            radius: 10,
+            queue,
+            worldWidth,
+            worldHeight,
+          });
+        }
+      }
+    }
+  }
+
+  return originalResult;
 }

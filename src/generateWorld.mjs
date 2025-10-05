@@ -4,26 +4,24 @@ import { generateCaves } from "./generateCaves.mjs";
 import { generateHeightMap } from "./generateHeightMap.mjs";
 import { generateWaterSources, simulateWaterPhysics } from "./waterPhysics.mjs";
 import { getBiome } from "./getBiome.mjs";
-import { getCurrentGameState } from "./getCurrentGameState.mjs";
 import { getRandomSeed } from "./getRandomSeed.mjs";
 import { initializeFog } from "./fogMap.mjs";
-import { updateInventoryDisplay } from "./updateInventoryDisplay.mjs";
-import { updateUI } from "./updateUI.mjs";
 import { WorldMap } from "./worldMap.mjs";
 
 // Generate world
-export function generateWorld(doc) {
-  const biomes = gameConfig.BIOMES;
-  const surfaceLevel = gameConfig.SURFACE_LEVEL.get();
-  const tiles = gameConfig.TILES;
-  const worldHeight = gameConfig.WORLD_HEIGHT.get();
-  const worldWidth = gameConfig.WORLD_WIDTH.get();
-  const worldSeed = gameConfig.worldSeed.get();
-
+export function generateWorld({
+  biomes,
+  surfaceLevel,
+  tiles,
+  tileSize,
+  worldSeed,
+  worldHeight,
+  worldWidth,
+}) {
   console.log(`Generating world with seed: ${worldSeed}`);
 
   // Initialize world
-  const world = new WorldMap(worldWidth, worldHeight);
+  const currentWorld = new WorldMap(worldWidth, worldHeight);
 
   // Generate seeded height map
   const heights = generateHeightMap(worldWidth, surfaceLevel, worldSeed);
@@ -43,40 +41,40 @@ export function generateWorld(doc) {
             biome.surfaceTile === tiles.GRASS ||
             biome.surfaceTile === tiles.SNOW
           ) {
-            world.setTile(x, y, biome.surfaceTile);
+            currentWorld.setTile(x, y, biome.surfaceTile);
           } else {
-            world.setTile(x, y, biome.subTile);
+            currentWorld.setTile(x, y, biome.subTile);
           }
         } else if (depth < getRandomSeed(20, 50)) {
           // Sub-surface layer
           if (Math.random() < 0.1) {
-            world.setTile(x, y, tiles.COAL);
+            currentWorld.setTile(x, y, tiles.COAL);
           } else if (Math.random() < 0.95) {
-            world.setTile(x, y, biome.subTile);
+            currentWorld.setTile(x, y, biome.subTile);
           } else {
-            world.setTile(x, y, tiles.STONE);
+            currentWorld.setTile(x, y, tiles.STONE);
           }
         } else if (depth < getRandomSeed(50, 90)) {
           if (Math.random() < 0.05) {
-            world.setTile(x, y, tiles.IRON);
+            currentWorld.setTile(x, y, tiles.IRON);
           } else if (Math.random() < 0.02) {
-            world.setTile(x, y, tiles.GOLD);
+            currentWorld.setTile(x, y, tiles.GOLD);
           } else {
-            world.setTile(x, y, tiles.STONE);
+            currentWorld.setTile(x, y, tiles.STONE);
           }
         } else if (y > worldHeight - 2) {
-          world.setTile(x, y, tiles.BEDROCK);
+          currentWorld.setTile(x, y, tiles.BEDROCK);
         } else if (y > worldHeight - 4) {
-          world.setTile(x, y, tiles.LAVA);
+          currentWorld.setTile(x, y, tiles.LAVA);
         } else {
           if (Math.random() < 0.01) {
-            world.setTile(x, y, tiles.LAVA);
+            currentWorld.setTile(x, y, tiles.LAVA);
           } else {
-            world.setTile(x, y, tiles.STONE);
+            currentWorld.setTile(x, y, tiles.STONE);
           }
         }
       } else if (y === surfaceHeight) {
-        world.setTile(x, y, biome.surfaceTile);
+        currentWorld.setTile(x, y, biome.surfaceTile);
       }
     }
 
@@ -95,7 +93,7 @@ export function generateWorld(doc) {
       for (let i = 0; i < treeHeight; i++) {
         const y = baseY - i - 1;
         if (y >= 0) {
-          world.setTile(x, y, tiles.TREE_TRUNK);
+          currentWorld.setTile(x, y, tiles.TREE_TRUNK);
 
           treeBlocks.push({ x, y, tile: tiles.TREE_TRUNK });
         }
@@ -124,9 +122,9 @@ export function generateWorld(doc) {
                 leafX === x && leafY >= topY && leafY < baseY;
               if (
                 !isTrunkPosition &&
-                world.getTile(leafX, leafY) === tiles.AIR
+                currentWorld.getTile(leafX, leafY) === tiles.AIR
               ) {
-                world.setTile(leafX, leafY, tiles.TREE_LEAVES);
+                currentWorld.setTile(leafX, leafY, tiles.TREE_LEAVES);
                 treeBlocks.push({
                   x: leafX,
                   y: leafY,
@@ -137,18 +135,6 @@ export function generateWorld(doc) {
           }
         }
       }
-
-      // Register the tree structure so it can be harvested properly
-      const plantKey = `${plantX},${plantY}`;
-      const currentStructures = gameState.plantStructures.get() || {};
-      currentStructures[plantKey] = {
-        seedType: "WALNUT",
-        mature: true,
-        blocks: treeBlocks,
-        baseX: plantX,
-        baseY: plantY,
-      };
-      gameState.plantStructures.set(currentStructures);
     }
 
     // Generate natural crops
@@ -156,8 +142,8 @@ export function generateWorld(doc) {
       const crop = biome.crops[Math.floor(Math.random() * biome.crops.length)];
       const y = surfaceHeight - 1;
 
-      if (y >= 0 && world.getTile(x, y) === tiles.AIR) {
-        world.setTile(x, y, crop);
+      if (y >= 0 && currentWorld.getTile(x, y) === tiles.AIR) {
+        currentWorld.setTile(x, y, crop);
 
         // Add to inventory when found
         const cropToSeed = {
@@ -179,38 +165,47 @@ export function generateWorld(doc) {
     }
   }
 
-  // Set the world in state
-  gameState.world.set(world);
-
   // Generate caves with seeded randomization
-  generateCaves();
+  generateCaves({
+    surfaceLevel,
+    tiles,
+    world: currentWorld,
+    worldHeight,
+    worldWidth,
+  });
 
   // Add moss to cave surfaces after cave generation
-  addMossToCaves(gameState.world.get(), worldWidth, worldHeight, tiles);
+  addMossToCaves({
+    world: currentWorld,
+    worldWidth,
+    worldHeight,
+    tiles,
+  });
 
   // Generate water sources using seeded noise
-  const currentWorld = gameState.world.get();
-  generateWaterSources(
-    currentWorld,
+  generateWaterSources({
+    world: currentWorld,
     heights,
     worldWidth,
     worldHeight,
     surfaceLevel,
     tiles,
-    worldSeed,
-  );
+    seed: worldSeed,
+  });
 
   // Simulate water physics to make water settle naturally
-  console.log("Simulating water physics...");
-  simulateWaterPhysics(currentWorld, worldWidth, worldHeight, tiles, 30);
-
-  // Update the world state with settled water
-  gameState.world.set(currentWorld);
+  simulateWaterPhysics({
+    world: currentWorld,
+    worldWidth,
+    worldHeight,
+    tiles,
+    tileSize,
+    iterations: 30,
+  });
 
   console.log("World generation complete!");
 
-  updateInventoryDisplay(doc, gameState);
-  updateUI(doc, getCurrentGameState(gameState, gameConfig));
+  return currentWorld;
 }
 
 function registerTreeStructures(world, worldWidth, worldHeight, tiles) {
@@ -283,20 +278,49 @@ function registerTreeStructures(world, worldWidth, worldHeight, tiles) {
 }
 
 // Utility functions
-export function generateNewWorld(doc, newSeed = null) {
+export function generateNewWorld({
+  biomes,
+  gameTime,
+  growthTimers,
+  plantStructures,
+  player,
+  seedInventory,
+  surfaceLevel,
+  tiles,
+  tileSize,
+  worldSeed,
+  worldHeight,
+  worldWidth,
+  newSeed = null,
+}) {
+  let currentWorldSeed;
+
   if (newSeed !== null) {
-    gameConfig.worldSeed.set(newSeed.toString());
+    worldSeed.set(newSeed.toString());
+    currentWorldSeed = newSeed;
+  } else {
+    currentWorldSeed = worldSeed.get();
   }
 
-  generateWorld(doc);
+  const currentWorld = generateWorld({
+    biomes,
+    surfaceLevel,
+    tiles,
+    tileSize,
+    worldSeed: currentWorldSeed,
+    worldHeight,
+    worldWidth,
+  });
 
   // Reset game state
-  gameState.growthTimers.set({});
-  gameState.plantStructures.set({});
-  gameState.gameTime.set(0);
+  growthTimers.set({});
+  gameTime.set(0);
+  plantStructures.set(
+    registerTreeStructures(currentWorld, worldWidth, worldHeight, tiles),
+  );
 
   // set seed inventory
-  gameState.seedInventory.set({
+  seedInventory.set({
     WHEAT: 2,
     CARROT: 1,
     MUSHROOM: 1,
@@ -304,24 +328,13 @@ export function generateNewWorld(doc, newSeed = null) {
     WALNUT: 0,
   });
 
-  const player = gameState.player.get();
-  const surfaceLevel = gameConfig.SURFACE_LEVEL.get();
-  const tiles = gameConfig.TILES;
-  const tileSize = gameConfig.TILE_SIZE.get();
-  const world = gameState.world.get();
-  const worldHeight = gameConfig.WORLD_HEIGHT.get();
-  const worldWidth = gameConfig.WORLD_WIDTH.get();
-
-  const treeStructures = registerTreeStructures(
-    world,
-    worldWidth,
+  gameState.exploredMap = initializeFog({
+    fog: null,
+    isFogScaled: gameConfig.isFogScaled,
     worldHeight,
-    tiles,
-  );
-
-  gameState.plantStructures.set(treeStructures);
-
-  initializeFog();
+    worldWidth,
+    exploredMap: gameState.exploredMap,
+  });
 
   // Find a good spawn location
   let spawnX = Math.floor(worldWidth / 2);
@@ -335,16 +348,19 @@ export function generateNewWorld(doc, newSeed = null) {
 
         // Check if current position is air and the tile below is solid
         if (
-          world.getTile(tileX, tileY) === tiles.AIR &&
+          currentWorld.getTile(tileX, tileY) === tiles.AIR &&
           tileY + 1 < worldHeight &&
-          world.getTile(tileX, tileY + 1) &&
-          world.getTile(tileX, tileY + 1).solid // Check the solid property directly
+          currentWorld.getTile(tileX, tileY + 1) &&
+          currentWorld.getTile(tileX, tileY + 1).solid // Check the solid property directly
         ) {
           // Also ensure there's enough vertical clearance (2-3 tiles high)
           let hasVerticalClearance = true;
 
           for (let checkY = tileY - 2; checkY <= tileY; checkY++) {
-            if (checkY >= 0 && world.getTile(tileX, checkY) !== tiles.AIR) {
+            if (
+              checkY >= 0 &&
+              currentWorld.getTile(tileX, checkY) !== tiles.AIR
+            ) {
               hasVerticalClearance = false;
 
               break;
@@ -353,7 +369,7 @@ export function generateNewWorld(doc, newSeed = null) {
 
           if (hasVerticalClearance) {
             const updatedPlayer = {
-              ...player,
+              ...player.get(),
               x: x * tileSize,
               y: y * tileSize,
               velocityX: 0,
@@ -361,16 +377,12 @@ export function generateNewWorld(doc, newSeed = null) {
               lastDirection: 0,
             };
 
-            gameState.player.set(updatedPlayer);
-
-            updateInventoryDisplay(doc, gameState);
-            return;
+            player.set(updatedPlayer);
           }
         }
       }
     }
   }
 
-  gameState.player.set(updatedPlayer);
-  updateInventoryDisplay(doc, gameState);
+  return currentWorld;
 }

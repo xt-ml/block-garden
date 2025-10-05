@@ -1,13 +1,13 @@
 import { terrainNoise, initializeNoise } from "./noise.mjs";
 
-export function generateHeightMap(WORLD_WIDTH, SURFACE_LEVEL, seed) {
+export function generateHeightMap(worldWidth, surfaceLevel, seed) {
   // Initialize the seeded noise generator
   initializeNoise(seed);
 
   const heights = [];
 
-  for (let x = 0; x < WORLD_WIDTH; x++) {
-    let height = SURFACE_LEVEL;
+  for (let x = 0; x < worldWidth; x++) {
+    let height = surfaceLevel;
 
     // Main terrain shape - large rolling hills
     height += terrainNoise(x, parseInt(seed)) * 15;
@@ -25,7 +25,7 @@ export function generateHeightMap(WORLD_WIDTH, SURFACE_LEVEL, seed) {
     }
 
     // Ensure height is within reasonable bounds
-    height = Math.max(10, Math.min(SURFACE_LEVEL * 1.5, height));
+    height = Math.max(10, Math.min(surfaceLevel * 1.5, height));
 
     heights[x] = Math.floor(height);
   }

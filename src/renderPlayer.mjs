@@ -1,20 +1,18 @@
-import { gameState } from "./state.mjs";
-
 // Render player
-export function renderPlayer(ctx) {
-  const player = gameState.player.get();
-  const camera = gameState.camera.get();
+export function renderPlayer(ctx, camera, player) {
+  const currentPlayer = player.get();
+  const currentCamera = camera.get();
 
-  const screenX = player.x - camera.x;
-  const screenY = player.y - camera.y;
+  const screenX = currentPlayer.x - currentCamera.x;
+  const screenY = currentPlayer.y - currentCamera.y;
 
   if (ctx) {
-    ctx.fillStyle = player.color;
-    ctx.fillRect(screenX, screenY, player.width, player.height);
+    ctx.fillStyle = currentPlayer.color;
+    ctx.fillRect(screenX, screenY, currentPlayer.width, currentPlayer.height);
 
     ctx.strokeStyle = "#000000";
     ctx.lineWidth = 1;
-    ctx.strokeRect(screenX, screenY, player.width, player.height);
+    ctx.strokeRect(screenX, screenY, currentPlayer.width, currentPlayer.height);
 
     // Eyes
     ctx.fillStyle = "#000000";

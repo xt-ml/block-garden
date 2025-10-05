@@ -1,15 +1,23 @@
-import { gameConfig, gameState } from "./state.mjs";
 import { renderPlayer } from "./renderPlayer.mjs";
 
 // Render world
-export function render(canvas) {
-  const camera = gameState.camera.get();
-  const tiles = gameConfig.TILES;
-  const tileSize = gameConfig.TILE_SIZE.get();
-  const viewMode = gameState.viewMode.get();
-  const world = gameState.world.get();
-  const worldHeight = gameConfig.WORLD_HEIGHT.get();
-  const worldWidth = gameConfig.WORLD_WIDTH.get();
+export function render(
+  canvas,
+  player,
+  camera,
+  tiles,
+  tileSize,
+  viewMode,
+  world,
+  worldHeight,
+  worldWidth,
+  fogMode,
+  isFogScaled,
+  fogScale,
+  exploredMap,
+) {
+  const currentCamera = camera.get();
+  const currentWorld = world.get();
 
   const ctx = canvas?.getContext("2d");
   if (ctx) {
@@ -20,8 +28,8 @@ export function render(canvas) {
   const tilesX = Math.ceil(canvas?.width / tileSize) + 1;
   const tilesY = Math.ceil(canvas?.height / tileSize) + 1;
 
-  const startX = Math.floor(camera.x / tileSize);
-  const startY = Math.floor(camera.y / tileSize);
+  const startX = Math.floor(currentCamera.x / tileSize);
+  const startY = Math.floor(currentCamera.y / tileSize);
 
   for (let x = 0; x < tilesX; x++) {
     for (let y = 0; y < tilesY; y++) {
@@ -34,14 +42,14 @@ export function render(canvas) {
         worldY >= 0 &&
         worldY < worldHeight
       ) {
-        const tile = world.getTile(worldX, worldY);
+        const tile = currentWorld.getTile(worldX, worldY);
 
         // skip empty tiles
         if (!tile || tile === tiles.AIR) continue;
 
         let color = tile.color;
 
-        if (viewMode === "xray") {
+        if (viewMode.get() === "xray") {
           if (tile === tiles.COAL) color = "#FFFF00";
           else if (tile === tiles.IRON) color = "#FF6600";
           else if (tile === tiles.GOLD) color = "#FFD700";
@@ -52,8 +60,8 @@ export function render(canvas) {
 
         ctx.fillStyle = color;
         ctx.fillRect(
-          Math.round(x * tileSize - (camera.x % tileSize)),
-          Math.round(y * tileSize - (camera.y % tileSize)),
+          Math.round(x * tileSize - (currentCamera.x % tileSize)),
+          Math.round(y * tileSize - (currentCamera.y % tileSize)),
           tileSize,
           tileSize,
         );
@@ -61,34 +69,27 @@ export function render(canvas) {
     }
   }
 
-  renderPlayer(ctx);
+  renderPlayer(ctx, camera, player);
+
   // update fog map based on player position
-  const isFogEnabled = gameConfig.fogMode.get() === "fog";
-  const fog = gameState?.exploredMap;
+  const isFogEnabled = fogMode.get() === "fog";
 
   if (isFogEnabled) {
-    fog.updateFromPlayer(tileSize);
+    exploredMap.updateFromPlayer(player, tileSize);
   }
 
   // Render map fog overlay if enabled
   if (isFogEnabled && ctx && canvas) {
-    if (gameConfig.isFogScaled.get()) {
-      fog.renderScaled(
-        ctx,
-        canvas,
-        tileSize,
-        camera,
-        gameConfig.fogScale.get(),
-      );
-
+    if (isFogScaled.get()) {
+      exploredMap.renderScaled(ctx, canvas, tileSize, camera, fogScale.get());
       return;
     }
 
-    const { velocityX, velocityY } = gameState.player.get();
+    const { velocityX, velocityY } = player.get();
     if (velocityX > 0 || velocityY > 0) {
-      gameConfig.isFogScaled.set(true);
+      isFogScaled.set(true);
     }
 
-    fog.render(ctx, canvas, tileSize, camera);
+    exploredMap.render(ctx, canvas, tileSize, camera);
   }
 }

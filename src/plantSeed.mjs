@@ -1,52 +1,56 @@
-import { updateInventoryDisplay } from "./updateInventoryDisplay.mjs";
+import { updateState } from "./state.mjs";
 
-export function plantSeed(currentState, x, y, seedType, game, doc) {
-  const { state, world, TILES } = currentState;
-
+export function plantSeed({
+  growthTimers,
+  plantStructures,
+  seedInventory,
+  seedType,
+  tiles,
+  world,
+  x,
+  y,
+}) {
   // Check if there's farmable ground below
   const belowTile = world.getTile(x, y + 1);
   if (!belowTile || !belowTile.farmable) {
     console.log(`Cannot plant at (${x}, ${y}) - no farmable ground below`);
+
     return; // Can't plant without farmable ground
   }
 
   const seedTileMap = {
-    WHEAT: TILES.WHEAT_GROWING,
-    CARROT: TILES.CARROT_GROWING,
-    MUSHROOM: TILES.MUSHROOM_GROWING,
-    CACTUS: TILES.CACTUS_GROWING,
-    WALNUT: TILES.TREE_GROWING,
+    WHEAT: tiles.WHEAT_GROWING,
+    CARROT: tiles.CARROT_GROWING,
+    MUSHROOM: tiles.MUSHROOM_GROWING,
+    CACTUS: tiles.CACTUS_GROWING,
+    WALNUT: tiles.TREE_GROWING,
   };
 
-  if (seedTileMap[seedType] && state.seedInventory[seedType] > 0) {
+  if (seedTileMap[seedType] && seedInventory[seedType] > 0) {
     // Update world with initial growing tile
-    const currentWorld = game.state.world.get();
-    currentWorld.setTile(x, y, seedTileMap[seedType]);
-    game.state.world.set(currentWorld);
+    world.setTile(x, y, seedTileMap[seedType]);
 
     // Update seed inventory
-    game.updateState("seedInventory", (inv) => ({
+    updateState("seedInventory", (inv) => ({
       ...inv,
       [seedType]: inv[seedType] - 1,
     }));
 
     // Set growth timer
     const growthKey = `${x},${y}`;
-    const currentTimers = game.state.growthTimers.get();
-    const currentStructures = game.state.plantStructures.get();
 
     // Initialize both timer and structure
-    game.state.growthTimers.set({
-      ...currentTimers,
+    growthTimers.set({
+      ...growthTimers.get(),
       [growthKey]: {
-        timeLeft: TILES[seedType].growthTime,
+        timeLeft: tiles[seedType].growthTime,
         seedType: seedType,
       },
     });
 
     // Initialize plant structure
-    game.state.plantStructures.set({
-      ...currentStructures,
+    plantStructures.set({
+      ...plantStructures.get(),
       [growthKey]: {
         seedType: seedType,
         mature: false,
@@ -56,11 +60,9 @@ export function plantSeed(currentState, x, y, seedType, game, doc) {
       },
     });
 
-    updateInventoryDisplay(doc, game.state);
-
     console.log(
       `Planted ${seedType} at (${x}, ${y}), ${
-        game.state.seedInventory.get()[seedType]
+        seedInventory[seedType] - 1
       } seeds remaining`,
     );
   } else {

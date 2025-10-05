@@ -1,12 +1,5 @@
-import { gameConfig, gameState } from "./state.mjs";
-
 // Check if a position is solid
-export function isSolid(x, y) {
-  const tileSize = gameConfig.TILE_SIZE.get();
-  const worldWidth = gameConfig.WORLD_WIDTH.get();
-  const worldHeight = gameConfig.WORLD_HEIGHT.get();
-  const world = gameState.world.get();
-
+export function isSolid({ tileSize, world, worldHeight, worldWidth, x, y }) {
   const tileX = Math.floor(x / tileSize);
   const tileY = Math.floor(y / tileSize);
 

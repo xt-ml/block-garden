@@ -1,11 +1,13 @@
 import { gameConfig, gameState } from "./state.mjs";
 
-export function createCaveRoom(centerX, centerY, radius) {
-  const worldWidth = gameConfig.WORLD_WIDTH.get();
-  const worldHeight = gameConfig.WORLD_HEIGHT.get();
-  const tiles = gameConfig.TILES;
-  const world = gameState.world.get();
-
+export function createCaveRoom({
+  centerX,
+  centerY,
+  radius,
+  worldWidth,
+  worldHeight,
+  tiles,
+}) {
   for (let x = centerX - radius; x <= centerX + radius; x++) {
     for (let y = centerY - radius; y <= centerY + radius; y++) {
       if (x >= 0 && x < worldWidth && y >= 0 && y < worldHeight) {
@@ -18,12 +20,16 @@ export function createCaveRoom(centerX, centerY, radius) {
   }
 }
 
-export function createCaveTunnel(startX, startY, angle, length, width) {
-  const worldWidth = gameConfig.WORLD_WIDTH.get();
-  const worldHeight = gameConfig.WORLD_HEIGHT.get();
-  const tiles = gameConfig.TILES;
-  const world = gameState.world.get();
-
+export function createCaveTunnel({
+  startX,
+  startY,
+  angle,
+  length,
+  width,
+  worldWidth,
+  worldHeight,
+  tiles,
+}) {
   let currentX = startX;
   let currentY = startY;
 
@@ -47,21 +53,23 @@ export function createCaveTunnel(startX, startY, angle, length, width) {
     }
 
     if (Math.random() < 0.1) {
-      createCaveRoom(
-        Math.floor(currentX),
-        Math.floor(currentY),
-        2 + Math.floor(Math.random() * 2),
-      );
+      createCaveRoom({
+        centerX: Math.floor(currentX),
+        centerY: Math.floor(currentY),
+        radius: 2 + Math.floor(Math.random() * 2),
+      });
     }
   }
 }
 
 // Cave generation functions
-export function generateCaves() {
-  const worldWidth = gameConfig.WORLD_WIDTH.get();
-  const worldHeight = gameConfig.WORLD_HEIGHT.get();
-  const surfaceLevel = gameConfig.SURFACE_LEVEL.get();
-
+export function generateCaves({
+  surfaceLevel,
+  tiles,
+  world,
+  worldHeight,
+  worldWidth,
+}) {
   const caveSeeds = [];
 
   for (let i = 0; i < 25; i++) {
@@ -85,13 +93,13 @@ export function generateCaves() {
 
       const length = 10 + Math.floor(Math.random() * 20);
 
-      createCaveTunnel(
-        seed.x,
-        seed.y,
-        angle,
-        length,
-        1 + Math.floor(Math.random() * 2),
-      );
+      createCaveTunnel({
+        startX: seed.x,
+        startY: seed.y,
+        angle: angle,
+        length: length,
+        width: 1 + Math.floor(Math.random() * 2),
+      });
     }
   });
 

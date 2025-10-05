@@ -9,7 +9,7 @@
 }
 
 body {
-  background: #87ceeb;
+  background: #000;
   font-family: Arial, sans-serif;
   margin: 0;
   overflow: hidden;
@@ -28,7 +28,7 @@ body {
 }
 
 #canvas {
-  background: #87ceeb;
+  background: #000;
   display: block;
   image-rendering: -moz-crisp-edges;
   image-rendering: -webkit-crisp-edges;
@@ -351,7 +351,7 @@ select:focus {
 }
 
 .desktop-resolution #gameContainer {
-  background: #2c3e50;
+  background: #000;
 }
 
 .seed-controls {

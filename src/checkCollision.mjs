@@ -1,7 +1,16 @@
 import { isSolid } from "./isSolid.mjs";
 
 // Check collision with world
-export function checkCollision(x, y, width, height) {
+export function checkCollision({
+  height,
+  tileSize,
+  width,
+  world,
+  worldHeight,
+  worldWidth,
+  x,
+  y,
+}) {
   const points = [
     [x, y],
     [x + width, y],
@@ -13,5 +22,14 @@ export function checkCollision(x, y, width, height) {
     [x + width, y + height / 2],
   ];
 
-  return points.some((point) => isSolid(point[0], point[1]));
+  return points.some((point) =>
+    isSolid({
+      tileSize,
+      world,
+      worldHeight,
+      worldWidth,
+      x: point[0],
+      y: point[1],
+    }),
+  );
 }

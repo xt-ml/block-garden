@@ -1,12 +1,11 @@
 import { gameConfig, gameState } from "./state.mjs";
-import { getCurrentGameState } from "./getCurrentGameState.mjs";
-import { handleBreakBlock } from "./handleBreakBlock.mjs";
+import { handleBreakBlockWithWaterPhysics } from "./handleBreakBlock.mjs";
 import { handleFarmAction } from "./handleFarmAction.mjs";
+import { handlePlaceBlock } from "./handlePlaceBlock.mjs";
 
 // Touch controls
-export function setupTouchControls(gThis) {
-  const touchButtons = gThis.document.querySelectorAll(".touch-btn");
-
+export function setupTouchControls(doc) {
+  const touchButtons = doc.querySelectorAll(".touch-btn");
   touchButtons.forEach((btn) => {
     const key = btn.getAttribute("data-key");
 
@@ -15,23 +14,36 @@ export function setupTouchControls(gThis) {
       e.preventDefault();
       e.stopPropagation();
 
-      gThis.spriteGarden.touchKeys[key] = true;
+      globalThis.spriteGarden.touchKeys[key] = true;
       btn.style.background = "rgba(255, 255, 255, 0.3)";
 
       // Handle special actions
       if (key === "f") {
-        handleFarmAction(
-          getCurrentGameState(gameState, gameConfig),
-          gThis.spriteGarden,
-          gThis.document,
-        );
+        handleFarmAction({
+          growthTimers: gameState.growthTimers,
+          plantStructures: gameState.plantStructures,
+          player: gameState.player.get(),
+          seedInventory: gameState.seedInventory.get(),
+          selectedSeedType: gameState.selectedSeedType.get(),
+          tiles: gameConfig.TILES,
+          tileSize: gameConfig.TILE_SIZE.get(),
+          world: gameState.world.get(),
+          worldHeight: gameConfig.WORLD_HEIGHT.get(),
+          worldWidth: gameConfig.WORLD_WIDTH.get(),
+        });
       } else if (key === "r") {
-        handleBreakBlock(
-          getCurrentGameState(gameState, gameConfig),
-          gThis.spriteGarden,
-          gThis.document,
-          gameConfig.breakMode.get(),
-        );
+        handleBreakBlockWithWaterPhysics({
+          growthTimers: gameState.growthTimers,
+          plantStructures: gameState.plantStructures,
+          player: gameState.player,
+          tiles: gameConfig.TILES,
+          tileSize: gameConfig.TILE_SIZE.get(),
+          world: gameState.world,
+          worldHeight: gameConfig.WORLD_HEIGHT.get(),
+          worldWidth: gameConfig.WORLD_WIDTH.get(),
+          mode: gameConfig.breakMode.get(),
+          queue: gameState.waterPhysicsQueue,
+        });
       }
     });
 
@@ -40,7 +52,7 @@ export function setupTouchControls(gThis) {
       e.preventDefault();
       e.stopPropagation();
 
-      gThis.spriteGarden.touchKeys[key] = false;
+      globalThis.spriteGarden.touchKeys[key] = false;
       btn.style.background = "rgba(0, 0, 0, 0.6)";
     });
 
@@ -49,7 +61,7 @@ export function setupTouchControls(gThis) {
       e.preventDefault();
       e.stopPropagation();
 
-      gThis.spriteGarden.touchKeys[key] = false;
+      globalThis.spriteGarden.touchKeys[key] = false;
       btn.style.background = "rgba(0, 0, 0, 0.6)";
     });
 
@@ -58,22 +70,35 @@ export function setupTouchControls(gThis) {
       e.preventDefault();
       e.stopPropagation();
 
-      gThis.spriteGarden.touchKeys[key] = true;
+      globalThis.spriteGarden.touchKeys[key] = true;
       btn.style.background = "rgba(255, 255, 255, 0.3)";
 
       if (key === "f") {
-        handleFarmAction(
-          getCurrentGameState(gameState, gameConfig),
-          gThis.spriteGarden,
-          gThis.document,
-        );
+        handleFarmAction({
+          growthTimers: gameState.growthTimers,
+          plantStructures: gameState.plantStructures,
+          player: gameState.player.get(),
+          seedInventory: gameState.seedInventory.get(),
+          selectedSeedType: gameState.selectedSeedType.get(),
+          tiles: gameConfig.TILES,
+          tileSize: gameConfig.TILE_SIZE.get(),
+          world: gameState.world.get(),
+          worldHeight: gameConfig.WORLD_HEIGHT.get(),
+          worldWidth: gameConfig.WORLD_WIDTH.get(),
+        });
       } else if (key === "r") {
-        handleBreakBlock(
-          getCurrentGameState(gameState, gameConfig),
-          gThis.spriteGarden,
-          gThis.document,
-          gameConfig.breakMode.get(),
-        );
+        handleBreakBlockWithWaterPhysics({
+          growthTimers: gameState.growthTimers,
+          plantStructures: gameState.plantStructures,
+          player: gameState.player,
+          tiles: gameConfig.TILES,
+          tileSize: gameConfig.TILE_SIZE.get(),
+          world: gameState.world,
+          worldHeight: gameConfig.WORLD_HEIGHT.get(),
+          worldWidth: gameConfig.WORLD_WIDTH.get(),
+          mode: gameConfig.breakMode.get(),
+          queue: gameState.waterPhysicsQueue,
+        });
       }
     });
 
@@ -81,7 +106,7 @@ export function setupTouchControls(gThis) {
       e.preventDefault();
       e.stopPropagation();
 
-      gThis.spriteGarden.touchKeys[key] = false;
+      globalThis.spriteGarden.touchKeys[key] = false;
       btn.style.background = "rgba(0, 0, 0, 0.6)";
     });
 
@@ -89,8 +114,90 @@ export function setupTouchControls(gThis) {
       e.preventDefault();
       e.stopPropagation();
 
-      gThis.spriteGarden.touchKeys[key] = false;
+      globalThis.spriteGarden.touchKeys[key] = false;
       btn.style.background = "rgba(0, 0, 0, 0.6)";
     });
+  });
+
+  // Handle block placement mobile controls
+  doc.querySelectorAll(".touch-btn.place-block").forEach((pb) => {
+    pb.addEventListener("touchstart", () =>
+      handlePlaceBlock({
+        key: pb.dataset.key,
+        materialsInventory: gameState.materialsInventory.get(),
+        player: gameState.player.get(),
+        selectedMaterialType: gameState.selectedMaterialType.get(),
+        tiles: gameConfig.TILES,
+        tileSize: gameConfig.TILE_SIZE.get(),
+        world: gameState.world.get(),
+        worldHeight: gameConfig.WORLD_HEIGHT.get(),
+        worldWidth: gameConfig.WORLD_WIDTH.get(),
+      }),
+    );
+
+    pb.addEventListener("click", () =>
+      handlePlaceBlock({
+        key: pb.dataset.key,
+        materialsInventory: gameState.materialsInventory.get(),
+        player: gameState.player.get(),
+        selectedMaterialType: gameState.selectedMaterialType.get(),
+        tiles: gameConfig.TILES,
+        tileSize: gameConfig.TILE_SIZE.get(),
+        world: gameState.world.get(),
+        worldHeight: gameConfig.WORLD_HEIGHT.get(),
+        worldWidth: gameConfig.WORLD_WIDTH.get(),
+      }),
+    );
+  });
+
+  doc.addEventListener("keyup", (e) => {
+    globalThis.spriteGarden.keys[e.key.toLowerCase()] = false;
+
+    e.preventDefault();
+  });
+
+  // Prevent default touch behaviors
+  doc.addEventListener(
+    "touchstart",
+    (e) => {
+      if (e.target.closest("#touchControls") || e.target === canvas) {
+        e.preventDefault();
+      }
+    },
+    { passive: false },
+  );
+
+  doc.addEventListener(
+    "touchmove",
+    (e) => {
+      if (e.target.closest("#touchControls") || e.target === canvas) {
+        e.preventDefault();
+      }
+    },
+    { passive: false },
+  );
+
+  doc.addEventListener(
+    "touchend",
+    (e) => {
+      if (e.target.closest("#touchControls") || e.target === canvas) {
+        e.preventDefault();
+      }
+    },
+    { passive: false },
+  );
+
+  // Prevent context menu on long press
+  doc.addEventListener("contextmenu", (e) => {
+    if (e.target.closest("#touchControls") || e.target === canvas) {
+      e.preventDefault();
+    }
+  });
+
+  // Prevent zoom on double tap
+  doc.addEventListener("dblclick", (e) => {
+    if (e.target.closest("#touchControls") || e.target === canvas) {
+      e.preventDefault();
+    }
   });
 }

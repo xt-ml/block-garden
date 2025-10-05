@@ -1,4 +1,4 @@
-import { gameConfig, gameState } from "./state.mjs";
+// import { gameConfig, gameState } from "./state.mjs";
 import {
   handleMapEditorClick,
   handleMapEditorDrag,
@@ -6,7 +6,7 @@ import {
   mapEditorState,
 } from "./mapEditor.mjs";
 
-function getPointerPosition(e, el) {
+function getPointerPosition({ e, el, scale }) {
   const rect = el.getBoundingClientRect();
   let clientX, clientY;
 
@@ -18,7 +18,6 @@ function getPointerPosition(e, el) {
     clientY = e.clientY;
   }
 
-  const scale = gameConfig.canvasScale.get();
   const scaleX = (el.width / rect.width) * scale;
   const scaleY = (el.height / rect.height) * scale;
 
@@ -28,15 +27,18 @@ function getPointerPosition(e, el) {
   };
 }
 
-function inspectTile(e, el) {
-  const camera = gameState.camera.get();
-  const tiles = gameConfig.TILES;
-  const tileSize = gameConfig.TILE_SIZE.get();
-  const world = gameState.world.get();
-  const worldHeight = gameConfig.WORLD_HEIGHT.get();
-  const worldWidth = gameConfig.WORLD_WIDTH.get();
-
-  const pos = getPointerPosition(e, el);
+function inspectTile({
+  e,
+  el,
+  camera,
+  scale,
+  tiles,
+  tileSize,
+  world,
+  worldHeight,
+  worldWidth,
+}) {
+  const pos = getPointerPosition({ e, el, scale });
   const worldX = Math.floor((pos.x + camera.x) / tileSize);
   const worldY = Math.floor((pos.y + camera.y) / tileSize);
 
@@ -60,16 +62,49 @@ function inspectTile(e, el) {
   }
 }
 
-function handleMouseDown(e) {
+function handleMouseDown({
+  e,
+  cnvs,
+  camera,
+  scale,
+  tiles,
+  tileSize,
+  worldHeight,
+  worldWidth,
+  world,
+}) {
   const el = e.target;
   const rect = el.getBoundingClientRect();
   const x = e.clientX - rect.left;
   const y = e.clientY - rect.top;
 
   // Check if map editor should handle this click
-  if (handleMapEditorClick(x, y)) {
+  if (
+    handleMapEditorClick({
+      x,
+      y,
+      camera,
+      scale,
+      tiles,
+      tileSize,
+      worldHeight,
+      worldWidth,
+      world,
+    })
+  ) {
     // Start drag for continuous painting
-    handleMapEditorDrag(x, y, true);
+    handleMapEditorDrag({
+      x,
+      y,
+      isStart: true,
+      camera,
+      scale,
+      tiles,
+      tileSize,
+      worldHeight,
+      worldWidth,
+      world,
+    });
 
     e.preventDefault();
 
@@ -78,14 +113,32 @@ function handleMouseDown(e) {
   }
 }
 
-function handleMouseUp(e) {
+function handleMouseUp({
+  e,
+  camera,
+  scale,
+  tiles,
+  tileSize,
+  worldHeight,
+  worldWidth,
+  world,
+}) {
   const el = e.target;
 
   // Always call this to clean up map editor state
   handleMapEditorDragEnd();
 }
 
-function handleMouseMove(e) {
+function handleMouseMove({
+  e,
+  camera,
+  scale,
+  tiles,
+  tileSize,
+  worldHeight,
+  worldWidth,
+  world,
+}) {
   const el = e.target;
 
   const rect = el.getBoundingClientRect();
@@ -95,7 +148,20 @@ function handleMouseMove(e) {
   // Handle map editor dragging
   if (e.buttons === 1 && mapEditorState.isEnabled) {
     // Left mouse button down
-    if (handleMapEditorDrag(x, y)) {
+    if (
+      handleMapEditorDrag({
+        x,
+        y,
+        isStart: false,
+        camera,
+        scale,
+        tiles,
+        tileSize,
+        worldHeight,
+        worldWidth,
+        world,
+      })
+    ) {
       e.preventDefault();
 
       // Don't process tile inspection
@@ -103,10 +169,29 @@ function handleMouseMove(e) {
     }
   }
 
-  inspectTile(e, el);
+  inspectTile({
+    e,
+    el,
+    camera,
+    scale,
+    tiles,
+    tileSize,
+    world,
+    worldHeight,
+    worldWidth,
+  });
 }
 
-function handleTouchStart(e) {
+function handleTouchStart({
+  e,
+  camera,
+  scale,
+  tiles,
+  tileSize,
+  worldHeight,
+  worldWidth,
+  world,
+}) {
   const el = e.target;
 
   if (e.touches.length === 1) {
@@ -116,7 +201,18 @@ function handleTouchStart(e) {
     const y = touch.clientY - rect.top;
 
     if (handleMapEditorClick(x, y)) {
-      handleMapEditorDrag(x, y, true);
+      handleMapEditorDrag({
+        x,
+        y,
+        isStart: true,
+        camera,
+        scale,
+        tiles,
+        tileSize,
+        worldHeight,
+        worldWidth,
+        world,
+      });
 
       e.preventDefault();
 
@@ -124,10 +220,29 @@ function handleTouchStart(e) {
     }
   }
 
-  inspectTile(e, el);
+  inspectTile({
+    e,
+    el,
+    camera,
+    scale,
+    tiles,
+    tileSize,
+    world,
+    worldHeight,
+    worldWidth,
+  });
 }
 
-function handleTouchMove(e) {
+function handleTouchMove({
+  e,
+  camera,
+  scale,
+  tiles,
+  tileSize,
+  worldHeight,
+  worldWidth,
+  world,
+}) {
   const el = e.target;
 
   if (e.touches.length === 1) {
@@ -136,20 +251,63 @@ function handleTouchMove(e) {
     const x = touch.clientX - rect.left;
     const y = touch.clientY - rect.top;
 
-    if (handleMapEditorDrag(x, y)) {
+    if (
+      handleMapEditorDrag({
+        x,
+        y,
+        isStart: false,
+        camera,
+        scale,
+        tiles,
+        tileSize,
+        worldHeight,
+        worldWidth,
+        world,
+      })
+    ) {
       e.preventDefault();
       return;
     }
   }
 
-  inspectTile(e, el);
+  inspectTile({
+    e,
+    el,
+    camera,
+    scale,
+    tiles,
+    tileSize,
+    world,
+    worldHeight,
+    worldWidth,
+  });
 }
 
 // Mouse/touch handling for tile inspection
-export function setupTileInspection(canvasEl) {
-  canvasEl.addEventListener("mousedown", handleMouseDown);
-  canvasEl.addEventListener("mousemove", handleMouseMove);
-  canvasEl.addEventListener("mouseup", handleMouseUp);
-  canvasEl.addEventListener("touchmove", handleTouchMove);
-  canvasEl.addEventListener("touchstart", handleTouchStart);
+export function setupTileInspection({
+  cnvs,
+  camera,
+  scale,
+  tiles,
+  tileSize,
+  worldHeight,
+  worldWidth,
+  world,
+}) {
+  const v = {
+    cnvs,
+    camera,
+    scale,
+    tiles,
+    tileSize,
+    worldHeight,
+    worldWidth,
+    world,
+  };
+
+  cnvs.addEventListener("mousedown", (e) => handleMouseDown({ e, ...v }));
+  cnvs.addEventListener("mousemove", (e) => handleMouseMove({ e, ...v }));
+  cnvs.addEventListener("mouseup", (e) => handleMouseUp({ e, ...v }));
+  cnvs.addEventListener("touchmove", (e) => handleTouchMove({ e, ...v }));
+  cnvs.addEventListener("touchstart", (e) => handleTouchStart({ e, ...v }));
 }

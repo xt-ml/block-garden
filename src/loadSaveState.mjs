@@ -1,11 +1,16 @@
+import { Signal } from "../deps/signal.mjs";
+
 import { initializeFog } from "./fogMap.mjs";
 import { generateNewWorld } from "./generateWorld.mjs";
 import { WorldMap } from "./worldMap.mjs";
 
 export function loadSaveState(gThis, saveState) {
+  const gameConfig = gThis.spriteGarden.config;
+  const gameState = gThis.spriteGarden.state;
+
   // Restore config first
   for (const key in saveState.config) {
-    if (gThis.spriteGarden.config[key]?.set) {
+    if (gameConfig[key]?.set) {
       gThis.spriteGarden.setConfig(key, saveState.config[key]);
     }
   }
@@ -20,9 +25,19 @@ export function loadSaveState(gThis, saveState) {
       }
     }
 
+    const worldHeight = saveState.config.WORLD_HEIGHT;
+    const worldWidth = saveState.config.WORLD_WIDTH;
+
     // convert explored map data
     if (key === "exploredMap") {
-      initializeFog(saveState.state.exploredMap);
+      initializeFog({
+        fog: null,
+        isFogScaled: new Signal.State(saveState.config.isFogScaled),
+        tiles: saveState.config.tiles,
+        worldHeight,
+        worldWidth,
+        exploredMap: saveState.state.exploredMap,
+      });
     }
 
     // convert world map data
@@ -30,16 +45,13 @@ export function loadSaveState(gThis, saveState) {
       const worldData = saveState.state[key];
 
       if (worldData && Array.isArray(worldData) && worldData.length > 0) {
-        const worldWidth = saveState.config.WORLD_WIDTH;
-        const worldHeight = saveState.config.WORLD_HEIGHT;
-
         console.log(`Converting world: ${worldWidth}x${worldHeight}`);
 
         // Create WorldMap with proper configuration and convert the world data
         const worldMap = WorldMap.fromArray(worldData, worldWidth, worldHeight);
 
         // get tiles from config
-        const tiles = gThis.spriteGarden.config.TILES;
+        const tiles = gameConfig.TILES;
 
         // Verify the conversion
         let tileCount = 0;
@@ -55,17 +67,32 @@ export function loadSaveState(gThis, saveState) {
 
         console.log(`Converted world contains ${tileCount} non-air tiles`);
 
-        gThis.spriteGarden.config.isFogScaled.set(false);
-        gThis.spriteGarden.state.world.set(worldMap);
+        gameConfig.isFogScaled.set(false);
+        gameState.world.set(worldMap);
 
         console.log("World converted successfully");
       } else {
         console.error("Invalid world data in save state:", worldData);
 
         // Generate new world as fallback
-        generateNewWorld(gThis.document);
+        const currentWorld = generateNewWorld({
+          biomes: gameConfig.BIOMES,
+          gameTime: gameState.gameTime,
+          growthTimers: gameState.growthTimers,
+          plantStructures: gameState.plantStructures,
+          player: gameState.player,
+          seedInventory: gameState.seedInventory,
+          surfaceLevel: gameConfig.SURFACE_LEVEL.get(),
+          tiles: gameConfig.TILES,
+          tileSize: gameConfig.TILE_SIZE.get(),
+          worldHeight: gameConfig.WORLD_HEIGHT.get(),
+          worldWidth: gameConfig.WORLD_WIDTH.get(),
+          worldSeed: gameConfig.worldSeed,
+        });
+
+        gameState.world.set(currentWorld);
       }
-    } else if (gThis.spriteGarden.state[key]?.set) {
+    } else if (gameState[key]?.set) {
       gThis.spriteGarden.setState(key, saveState.state[key]);
     }
   }

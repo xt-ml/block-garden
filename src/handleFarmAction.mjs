@@ -1,21 +1,27 @@
+import { updateState } from "./state.mjs";
+
 import { harvestCrop } from "./harvestCrop.mjs";
 import { plantSeed } from "./plantSeed.mjs";
 
-function harvestMaturePlant(currentState, structure, structureKey, game, doc) {
-  const { TILES, WORLD_WIDTH, WORLD_HEIGHT } = currentState;
-
-  // Clear all blocks in the plant structure
-  const currentWorld = game.state.world.get();
-
+function harvestMaturePlant({
+  growthTimers,
+  plantStructures,
+  structure,
+  structureKey,
+  tiles,
+  world,
+  worldHeight,
+  worldWidth,
+}) {
   if (structure.blocks) {
     structure.blocks.forEach((block) => {
       if (
         block.x >= 0 &&
-        block.x < WORLD_WIDTH &&
+        block.x < worldWidth &&
         block.y >= 0 &&
-        block.y < WORLD_HEIGHT
+        block.y < worldHeight
       ) {
-        currentWorld.setTile(block.x, block.y, TILES.AIR);
+        world.setTile(block.x, block.y, tiles.AIR);
       }
     });
   }
@@ -25,7 +31,7 @@ function harvestMaturePlant(currentState, structure, structureKey, game, doc) {
     // 3-6 seeds
     const seedsGained = 3 + Math.floor(Math.random() * 4);
 
-    game.updateState("seedInventory", (inv) => ({
+    updateState("seedInventory", (inv) => ({
       ...inv,
       [structure.seedType]: inv[structure.seedType] + seedsGained,
     }));
@@ -35,34 +41,32 @@ function harvestMaturePlant(currentState, structure, structureKey, game, doc) {
     );
   }
 
-  // Update world state
-  game.state.world.set(currentWorld);
-
   // Remove the plant structure and any associated timers
-  const currentStructures = game.state.plantStructures.get();
-  const currentTimers = game.state.growthTimers.get();
-
+  const currentStructures = plantStructures.get();
   const updatedStructures = { ...currentStructures };
-  const updatedTimers = { ...currentTimers };
+  const updatedTimers = { ...growthTimers.get() };
 
   delete updatedStructures[structureKey];
   delete updatedTimers[structureKey];
 
-  game.state.plantStructures.set(updatedStructures);
-  game.state.growthTimers.set(updatedTimers);
-
-  // Update inventory display
-  import("./updateInventoryDisplay.mjs").then(({ updateInventoryDisplay }) => {
-    updateInventoryDisplay(doc, game.state);
-  });
+  plantStructures.set(updatedStructures);
+  growthTimers.set(updatedTimers);
 }
 
-export function handleFarmAction(currentState, game, doc) {
-  const { player, state, TILE_SIZE, TILES, WORLD_HEIGHT, WORLD_WIDTH, world } =
-    currentState;
-
-  const playerTileX = Math.floor((player.x + player.width / 2) / TILE_SIZE);
-  const playerTileY = Math.floor((player.y + player.height / 2) / TILE_SIZE);
+export function handleFarmAction({
+  growthTimers,
+  plantStructures,
+  player,
+  seedInventory,
+  selectedSeedType,
+  tiles,
+  tileSize,
+  world,
+  worldHeight,
+  worldWidth,
+}) {
+  const playerTileX = Math.floor((player.x + player.width / 2) / tileSize);
+  const playerTileY = Math.floor((player.y + player.height / 2) / tileSize);
 
   // Check multiple positions for farming actions
   const farmingPositions = [];
@@ -100,9 +104,9 @@ export function handleFarmAction(currentState, game, doc) {
 
     if (
       targetX < 0 ||
-      targetX >= WORLD_WIDTH ||
+      targetX >= worldWidth ||
       targetY < 0 ||
-      targetY >= WORLD_HEIGHT
+      targetY >= worldHeight
     ) {
       continue;
     }
@@ -110,12 +114,12 @@ export function handleFarmAction(currentState, game, doc) {
     const currentTile = world.getTile(targetX, targetY);
 
     // Check if this position is part of a mature plant structure
-    const plantStructures = game.state.plantStructures.get();
     let harvestableStructure = null;
     let structureKey = null;
 
+    const currentStructures = plantStructures.get();
     // Look for mature plant structures that contain this tile
-    for (const [key, structure] of Object.entries(plantStructures)) {
+    for (const [key, structure] of Object.entries(currentStructures)) {
       if (structure.mature && structure.blocks) {
         // Check if any block in the structure matches our target position
         const matchingBlock = structure.blocks.find(
@@ -133,38 +137,49 @@ export function handleFarmAction(currentState, game, doc) {
 
     // If we found a mature plant structure, harvest it
     if (harvestableStructure && structureKey) {
-      harvestMaturePlant(
-        currentState,
-        harvestableStructure,
+      harvestMaturePlant({
+        growthTimers,
+        plantStructures,
+        structure: harvestableStructure,
         structureKey,
-        game,
-        doc,
-      );
+        tiles,
+        world,
+        worldHeight,
+        worldWidth,
+      });
 
       // Exit after successful harvest
       return;
     }
     // Check for simple crops (fallback for any remaining simple crop tiles)
     else if (currentTile && currentTile.crop) {
-      harvestCrop(currentState, targetX, targetY, currentTile, game, doc);
+      harvestCrop({
+        cropTile: currentTile,
+        tiles,
+        world,
+        x: targetX,
+        y: targetY,
+      });
 
       // Exit after successful harvest
       return;
     }
     // Plant seeds if the tile is empty and we have seeds selected
     else if (
-      currentTile === TILES.AIR &&
-      state.selectedSeedType &&
-      state.seedInventory[state.selectedSeedType] > 0
+      currentTile === tiles.AIR &&
+      selectedSeedType &&
+      seedInventory[selectedSeedType] > 0
     ) {
-      plantSeed(
-        currentState,
-        targetX,
-        targetY,
-        state.selectedSeedType,
-        game,
-        doc,
-      );
+      plantSeed({
+        growthTimers,
+        plantStructures,
+        seedInventory,
+        seedType: selectedSeedType,
+        tiles,
+        world,
+        x: targetX,
+        y: targetY,
+      });
 
       // Exit after successful planting
       return;

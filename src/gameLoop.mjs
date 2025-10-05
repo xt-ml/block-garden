@@ -1,50 +1,120 @@
-import { gameConfig, gameState } from "./state.mjs";
-import { getCurrentGameState } from "./getCurrentGameState.mjs";
 import { render } from "./render.mjs";
-import { updateCrops } from "./updateCrops.mjs";
-import { updatePlayer } from "./updatePlayer.mjs";
-import { updateUI } from "./updateUI.mjs";
 
-const canvas = globalThis.document?.getElementById("canvas");
+import { updateBiomeUI } from "./updateBiomeUI.mjs";
+import { updateCrops } from "./updateCrops.mjs";
+import { updateDepthUI } from "./updateDepthUI.mjs";
+import { updatePlayer } from "./updatePlayer.mjs";
+import { updateWaterPhysics } from "./waterPhysics.mjs";
+
+const canvas = globalThis.document.getElementById("canvas");
 
 // Game loop
 export function gameLoop(
   gThis,
-  FRICTION,
-  GRAVITY,
-  MAX_FALL_SPEED,
-  TILE_SIZE,
-  WORLD_HEIGHT,
-  WORLD_WIDTH,
+  worldSeed,
+  biomes,
+  surfaceLevel,
+  friction,
+  gravity,
+  maxFallSpeed,
+  tileSize,
+  tiles,
+  worldHeight,
+  worldWidth,
+  growthTimers,
+  plantStructures,
+  waterPhysicsQueue,
+  world,
+  camera,
+  player,
+  viewMode,
+  fogMode,
+  isFogScaled,
+  fogScale,
+  exploredMap,
+  gameTime,
+  biomeEl,
+  depthEl,
 ) {
   updatePlayer(
     gThis,
-    FRICTION,
-    GRAVITY,
-    MAX_FALL_SPEED,
-    TILE_SIZE,
-    WORLD_HEIGHT,
-    WORLD_WIDTH,
+    friction,
+    gravity,
+    maxFallSpeed,
+    tileSize,
+    worldHeight,
+    worldWidth,
+    world,
+    camera,
+    player,
   );
 
-  updateCrops(getCurrentGameState(gameState, gameConfig), gThis.spriteGarden);
+  updateCrops(
+    growthTimers,
+    plantStructures,
+    tiles,
+    world,
+    worldHeight,
+    worldWidth,
+  );
 
-  render(canvas);
+  updateWaterPhysics({
+    world,
+    waterPhysicsQueue,
+    worldWidth,
+    tiles,
+    worldHeight,
+  });
 
-  updateUI(gThis.document, getCurrentGameState(gameState, gameConfig));
+  render(
+    canvas,
+    player,
+    camera,
+    tiles,
+    tileSize,
+    viewMode,
+    world,
+    worldHeight,
+    worldWidth,
+    fogMode,
+    isFogScaled,
+    fogScale,
+    exploredMap,
+  );
+
+  updateBiomeUI(biomeEl, player, biomes, tileSize, worldWidth, worldSeed);
+  updateDepthUI(depthEl, player, surfaceLevel, tileSize);
 
   // Increment game time every frame (we store seconds as fractional)
-  gameState.gameTime.set(gameState.gameTime.get() + 1 / 60);
+  gameTime.set(gameTime.get() + 1 / 60);
 
   requestAnimationFrame(() =>
     gameLoop(
       gThis,
-      FRICTION,
-      GRAVITY,
-      MAX_FALL_SPEED,
-      TILE_SIZE,
-      WORLD_HEIGHT,
-      WORLD_WIDTH,
+      worldSeed,
+      biomes,
+      surfaceLevel,
+      friction,
+      gravity,
+      maxFallSpeed,
+      tileSize,
+      tiles,
+      worldHeight,
+      worldWidth,
+      growthTimers,
+      plantStructures,
+      waterPhysicsQueue,
+      world,
+      camera,
+      player,
+      viewMode,
+      fogMode,
+      isFogScaled,
+      fogScale,
+      exploredMap,
+      gameTime,
+      biomeEl,
+      depthEl,
     ),
   );
 }

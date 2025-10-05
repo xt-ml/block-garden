@@ -1,5 +1,3 @@
-import { gameConfig, gameState } from "./state.mjs";
-
 export class FogMap {
   constructor(width, height) {
     this.width = width;
@@ -20,7 +18,9 @@ export class FogMap {
     if (x < 0 || x >= this.width || y < 0 || y >= this.height) {
       return false;
     }
+
     const index = y * this.width + x;
+
     return this.data[index] === 1;
   }
 
@@ -29,20 +29,25 @@ export class FogMap {
     if (x < 0 || x >= this.width || y < 0 || y >= this.height) {
       return false;
     }
+
     const index = y * this.width + x;
     const wasExplored = this.data[index] === 1;
+
     this.data[index] = 1;
+
     return !wasExplored; // Return true if this was a new exploration
   }
 
   // Mark multiple tiles as explored (returns true if any were newly explored)
   setExploredBatch(tiles) {
     let anyUpdated = false;
+
     for (const tile of tiles) {
       if (this.setExplored(tile.x, tile.y)) {
         anyUpdated = true;
       }
     }
+
     return anyUpdated;
   }
 
@@ -61,6 +66,7 @@ export class FogMap {
       for (const key in fogObj) {
         if (fogObj[key]) {
           const [x, y] = key.split(",").map(Number);
+
           fog.setExplored(x, y);
         }
       }
@@ -83,12 +89,17 @@ export class FogMap {
   }
 
   // Update explored map based on player position
-  updateFromPlayer(tileSize, fogRevealRadius = 15) {
-    const player = gameState.player.get();
+  updateFromPlayer(player, tileSize, fogRevealRadius = 15) {
+    const currentPlayer = player.get();
 
     // Calculate player's tile position
-    const playerTileX = Math.floor((player.x + player.width / 2) / tileSize);
-    const playerTileY = Math.floor((player.y + player.height / 2) / tileSize);
+    const playerTileX = Math.floor(
+      (currentPlayer.x + currentPlayer.width / 2) / tileSize,
+    );
+
+    const playerTileY = Math.floor(
+      (currentPlayer.y + currentPlayer.height / 2) / tileSize,
+    );
 
     let mapUpdated = false;
 
@@ -113,31 +124,40 @@ export class FogMap {
 
   // Render map fog overlay
   render(ctx, canvas, tileSize, camera) {
-    if (!ctx || !canvas) return;
+    if (!ctx || !canvas) {
+      return;
+    }
+
+    const currentCamera = camera.get();
 
     const tilesX = Math.ceil(canvas.width / tileSize) + 1;
     const tilesY = Math.ceil(canvas.height / tileSize) + 1;
-    const startX = Math.floor(camera.x / tileSize);
-    const startY = Math.floor(camera.y / tileSize);
-    const cameraOffsetX = camera.x % tileSize;
-    const cameraOffsetY = camera.y % tileSize;
+    const startX = Math.floor(currentCamera.x / tileSize);
+    const startY = Math.floor(currentCamera.y / tileSize);
+    const cameraOffsetX = currentCamera.x % tileSize;
+    const cameraOffsetY = currentCamera.y % tileSize;
 
     ctx.fillStyle = "#000000";
 
     // Process tiles in the same order as the original
     for (let x = 0; x < tilesX; x++) {
       const worldX = startX + x;
-      if (worldX < 0 || worldX >= this.width) continue;
+      if (worldX < 0 || worldX >= this.width) {
+        continue;
+      }
 
       const screenX = Math.round(x * tileSize - cameraOffsetX);
 
       for (let y = 0; y < tilesY; y++) {
         const worldY = startY + y;
-        if (worldY < 0 || worldY >= this.height) continue;
+        if (worldY < 0 || worldY >= this.height) {
+          continue;
+        }
 
         // Check if tile is unexplored
         if (!this.isExplored(worldX, worldY)) {
           const screenY = Math.round(y * tileSize - cameraOffsetY);
+
           ctx.fillRect(screenX, screenY, tileSize, tileSize);
         }
       }
@@ -148,6 +168,9 @@ export class FogMap {
   renderScaled(ctx, canvas, tileSize, camera, fogScale = 2) {
     if (!ctx || !canvas) return;
 
+    // get current camera
+    const currentCamera = camera.get();
+
     // Render fog at scaled size for better performance
     const blockSize = tileSize * fogScale;
 
@@ -156,12 +179,12 @@ export class FogMap {
     const blocksY = Math.ceil(canvas.height / blockSize) + 1;
 
     // Find the starting world coordinate in terms of fog blocks
-    const startBlockX = Math.floor(camera.x / blockSize);
-    const startBlockY = Math.floor(camera.y / blockSize);
+    const startBlockX = Math.floor(currentCamera.x / blockSize);
+    const startBlockY = Math.floor(currentCamera.y / blockSize);
 
     // Camera offset for fog blocks
-    const cameraOffsetX = camera.x % blockSize;
-    const cameraOffsetY = camera.y % blockSize;
+    const cameraOffsetX = currentCamera.x % blockSize;
+    const cameraOffsetY = currentCamera.y % blockSize;
 
     ctx.fillStyle = "#000000";
 
@@ -207,20 +230,23 @@ export class FogMap {
 }
 
 // Initialize fog
-export function initializeFog(fog = null) {
-  const worldWidth = gameConfig.WORLD_WIDTH.get();
-  const worldHeight = gameConfig.WORLD_HEIGHT.get();
-
-  gameConfig.isFogScaled.set(false);
+export function initializeFog({
+  fog,
+  worldWidth,
+  worldHeight,
+  isFogScaled,
+  exploredMap,
+}) {
+  isFogScaled.set(false);
 
   let fogMap = new FogMap(worldWidth, worldHeight);
 
   // Convert existing explored map if it exists
-  const existingMap = fog ?? gameState?.exploredMap;
+  const existingMap = fog ?? exploredMap;
   if (existingMap && Object.keys(existingMap).length > 0) {
     fogMap = FogMap.fromObject(existingMap, worldWidth, worldHeight);
   }
 
-  // Store the optimized fog instance
-  gameState.exploredMap = fogMap;
+  //return optimized fog instance
+  return fogMap;
 }

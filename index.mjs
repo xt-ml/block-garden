@@ -1,8 +1,9 @@
 import { initGame } from "./src/initGame.mjs";
 
-const doc = globalThis.document;
+const gThis = globalThis;
+const doc = gThis.document;
 
 // Start the game
 doc.addEventListener("DOMContentLoaded", async function () {
-  await initGame(doc, doc.getElementById("canvas"));
+  await initGame(gThis, doc, doc.getElementById("canvas"));
 });

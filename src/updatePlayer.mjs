@@ -11,15 +11,17 @@ export function updatePlayer(
   tileSize,
   worldHeight,
   worldWidth,
+  world,
+  camera,
+  player,
 ) {
-  const player = gameState.player.get();
-  const camera = gameState.camera.get();
+  const currentPlayer = player.get();
+  const currentCamera = camera.get();
+  const currentWorld = world.get();
 
-  const updatedPlayer = player;
-
-  updatedPlayer.velocityY += gravity;
-  if (updatedPlayer.velocityY > maxFallSpeed) {
-    updatedPlayer.velocityY = maxFallSpeed;
+  currentPlayer.velocityY += gravity;
+  if (currentPlayer.velocityY > maxFallSpeed) {
+    currentPlayer.velocityY = maxFallSpeed;
   }
 
   // Handle horizontal movement and track direction
@@ -30,27 +32,27 @@ export function updatePlayer(
   if (isKeyPressed(gThis, "upleft")) {
     horizontalInput = -1;
     verticalInput = -1;
-    updatedPlayer.lastDirection = -1;
+    currentPlayer.lastDirection = -1;
   } else if (isKeyPressed(gThis, "upright")) {
     horizontalInput = 1;
     verticalInput = -1;
-    updatedPlayer.lastDirection = 1;
+    currentPlayer.lastDirection = 1;
   } else if (isKeyPressed(gThis, "downleft")) {
     horizontalInput = -1;
     verticalInput = 1;
-    updatedPlayer.lastDirection = -1;
+    currentPlayer.lastDirection = -1;
   } else if (isKeyPressed(gThis, "downright")) {
     horizontalInput = 1;
     verticalInput = 1;
-    updatedPlayer.lastDirection = 1;
+    currentPlayer.lastDirection = 1;
   } else {
     // Check for individual directional inputs
     if (isKeyPressed(gThis, "a") || isKeyPressed(gThis, "arrowleft")) {
       horizontalInput = -1;
-      updatedPlayer.lastDirection = -1;
+      currentPlayer.lastDirection = -1;
     } else if (isKeyPressed(gThis, "d") || isKeyPressed(gThis, "arrowright")) {
       horizontalInput = 1;
-      updatedPlayer.lastDirection = 1;
+      currentPlayer.lastDirection = 1;
     }
 
     // Vertical input for diagonal movement (not jumping)
@@ -61,20 +63,20 @@ export function updatePlayer(
 
   // Apply horizontal movement with minimum movement threshold
   if (horizontalInput !== 0) {
-    const targetVelocity = horizontalInput * updatedPlayer.speed;
+    const targetVelocity = horizontalInput * currentPlayer.speed;
 
     // If we're starting from zero velocity or changing direction, apply minimal acceleration
     if (
-      Math.abs(updatedPlayer.velocityX) < 0.5 ||
-      Math.sign(updatedPlayer.velocityX) !== Math.sign(targetVelocity)
+      Math.abs(currentPlayer.velocityX) < 0.5 ||
+      Math.sign(currentPlayer.velocityX) !== Math.sign(targetVelocity)
     ) {
-      updatedPlayer.velocityX = targetVelocity * 0.3; // Much slower initial movement
+      currentPlayer.velocityX = targetVelocity * 0.3; // Much slower initial movement
     } else {
-      updatedPlayer.velocityX = targetVelocity;
+      currentPlayer.velocityX = targetVelocity;
     }
   } else {
-    updatedPlayer.velocityX *= friction;
-    updatedPlayer.lastDirection = 0;
+    currentPlayer.velocityX *= friction;
+    currentPlayer.lastDirection = 0;
   }
 
   // Handle jumping (including diagonal up movements)
@@ -84,85 +86,87 @@ export function updatePlayer(
       isKeyPressed(gThis, " ") ||
       isKeyPressed(gThis, "upleft") ||
       isKeyPressed(gThis, "upright")) &&
-    updatedPlayer.onGround
+    currentPlayer.onGround
   ) {
-    updatedPlayer.velocityY = -updatedPlayer.jumpPower;
-    updatedPlayer.onGround = false;
+    currentPlayer.velocityY = -currentPlayer.jumpPower;
+    currentPlayer.onGround = false;
   }
 
   // For diagonal movement, apply a slight speed reduction to maintain balance
   if (horizontalInput !== 0 && verticalInput !== 0) {
     const diagonalSpeedMultiplier = 0.707; // 1/√2 for proper diagonal speed
-    updatedPlayer.velocityX *= diagonalSpeedMultiplier;
+    currentPlayer.velocityX *= diagonalSpeedMultiplier;
   }
 
   // Move horizontally
-  const newX = updatedPlayer.x + updatedPlayer.velocityX;
+  const newX = currentPlayer.x + currentPlayer.velocityX;
   if (
-    !checkCollision(
-      newX,
-      updatedPlayer.y,
-      updatedPlayer.width,
-      updatedPlayer.height,
-    )
+    !checkCollision({
+      height: currentPlayer.height,
+      tileSize,
+      width: currentPlayer.width,
+      world: currentWorld,
+      worldHeight,
+      worldWidth,
+      x: newX,
+      y: currentPlayer.y,
+    })
   ) {
-    updatedPlayer.x = newX;
+    currentPlayer.x = newX;
   } else {
-    updatedPlayer.velocityX = 0;
+    currentPlayer.velocityX = 0;
   }
 
   // Move vertically
-  const newY = updatedPlayer.y + updatedPlayer.velocityY;
+  const newY = currentPlayer.y + currentPlayer.velocityY;
   if (
-    !checkCollision(
-      updatedPlayer.x,
-      newY,
-      updatedPlayer.width,
-      updatedPlayer.height,
-    )
+    !checkCollision({
+      height: currentPlayer.height,
+      tileSize,
+      width: currentPlayer.width,
+      world: currentWorld,
+      worldHeight,
+      worldWidth,
+      x: currentPlayer.x,
+      y: newY,
+    })
   ) {
-    updatedPlayer.y = newY;
-    updatedPlayer.onGround = false;
+    currentPlayer.y = newY;
+    currentPlayer.onGround = false;
   } else {
-    if (updatedPlayer.velocityY > 0) {
-      updatedPlayer.onGround = true;
+    if (currentPlayer.velocityY > 0) {
+      currentPlayer.onGround = true;
     }
-    updatedPlayer.velocityY = 0;
+    currentPlayer.velocityY = 0;
   }
 
   // Keep player in world bounds
-  updatedPlayer.x = Math.max(
+  currentPlayer.x = Math.max(
     0,
-    Math.min(updatedPlayer.x, worldWidth * tileSize - updatedPlayer.width),
+    Math.min(currentPlayer.x, worldWidth * tileSize - currentPlayer.width),
   );
-  updatedPlayer.y = Math.max(
+  currentPlayer.y = Math.max(
     0,
-    Math.min(updatedPlayer.y, worldHeight * tileSize - updatedPlayer.height),
+    Math.min(currentPlayer.y, worldHeight * tileSize - currentPlayer.height),
   );
 
   // Update camera to follow player
   const canvas = gThis.document?.getElementById("canvas");
   const targetCameraX =
-    updatedPlayer.x + updatedPlayer.width / 2 - canvas.width / 2;
+    currentPlayer.x + currentPlayer.width / 2 - canvas.width / 2;
   const targetCameraY =
-    updatedPlayer.y + updatedPlayer.height / 2 - canvas.height / 2;
+    currentPlayer.y + currentPlayer.height / 2 - canvas.height / 2;
 
-  const updatedCamera = camera;
-
-  updatedCamera.x += (targetCameraX - updatedCamera.x) * 0.1;
-  updatedCamera.y += (targetCameraY - updatedCamera.y) * 0.1;
+  currentCamera.x += (targetCameraX - currentCamera.x) * 0.1;
+  currentCamera.y += (targetCameraY - currentCamera.y) * 0.1;
 
   // Keep camera in bounds
-  updatedCamera.x = Math.max(
+  currentCamera.x = Math.max(
     0,
-    Math.min(updatedCamera.x, worldWidth * tileSize - canvas.width),
+    Math.min(currentCamera.x, worldWidth * tileSize - canvas.width),
   );
-  updatedCamera.y = Math.max(
+  currentCamera.y = Math.max(
     0,
-    Math.min(updatedCamera.y, worldHeight * tileSize - canvas.height),
+    Math.min(currentCamera.y, worldHeight * tileSize - canvas.height),
   );
-
-  // Set player and camera state
-  gameState.player.set(updatedPlayer);
-  gameState.camera.set(updatedCamera);
 }

@@ -1,79 +1,105 @@
 import { effect } from "../deps/signal.mjs";
 
-import { computedSignals, gameConfig, gameState } from "./state.mjs";
 import { updateInventoryDisplay } from "./updateInventoryDisplay.mjs";
 
-export function setupEffects(doc) {
+export function setupEffects({
+  breakMode,
+  doc,
+  fogMode,
+  gameTime,
+  materialsInventory,
+  seedInventory,
+  selectedMaterialType,
+  selectedSeedType,
+  totalSeeds,
+  viewMode,
+  worldSeed,
+}) {
   // Set up reactive effects for UI updates
   effect(() => {
-    // Auto-update inventory display when seed inventory changes
-    const inventory = gameState.seedInventory.get();
-    updateInventoryDisplay(doc, gameState);
+    // Auto-update inventory display when materials or seeds change
+    updateInventoryDisplay({
+      doc: doc,
+      materialsInventory: materialsInventory.get(),
+      seedInventory: seedInventory.get(),
+    });
   });
 
   effect(() => {
-    // Auto-update inventory display when materials inventory changes
-    const materialsInventory = gameState.materialsInventory.get();
-    updateInventoryDisplay(doc, gameState);
+    const seedInput = doc.getElementById("worldSeedInput");
+
+    if (seedInput && !seedInput.value) {
+      const currentSeedDisplay = doc.getElementById("currentSeed");
+      const currentWorldSeed = worldSeed.get();
+
+      if (currentSeedDisplay && currentWorldSeed) {
+        seedInput.value = currentWorldSeed;
+        currentSeedDisplay.textContent = currentWorldSeed;
+
+        return;
+      }
+
+      const randomSeed = getRandomSeed();
+
+      seedInput.value = randomSeed;
+      currentSeedDisplay.textContent = randomSeed;
+    }
   });
 
   effect(() => {
-    // Auto-update UI when computed values change
-    const biome = computedSignals.currentBiome.get() || { name: "Unknown" };
-    const depth = computedSignals.currentDepth.get();
-    const gameTime = gameState.gameTime.get();
-    const viewMode = gameState.viewMode.get();
-
-    const currentBiomeEl = doc.getElementById("currentBiome");
-    if (currentBiomeEl) currentBiomeEl.textContent = biome.name;
-
-    const currentDepthEl = doc.getElementById("currentDepth");
-    if (currentDepthEl) currentDepthEl.textContent = depth;
-
+    // Auto-update gameState
+    const currentGameTime = gameTime.get();
     const gameTimeEl = doc.getElementById("gameTime");
-    if (gameTimeEl) gameTimeEl.textContent = Math.floor(gameTime);
+    if (gameTimeEl) {
+      gameTimeEl.textContent = Math.floor(currentGameTime);
+    }
+  });
+
+  effect(() => {
+    // Auto-update viewMode
+    const currentViewMode = viewMode.get();
 
     const viewModeTextEl = doc.getElementById("viewModeText");
     if (viewModeTextEl) {
       viewModeTextEl.textContent =
-        viewMode === "normal" ? "View Normal" : "View X-Ray";
+        currentViewMode === "normal" ? "View Normal" : "View X-Ray";
     }
   });
 
   effect(() => {
-    // Auto-update fogMode mode display
-    const fogMode = gameConfig.fogMode.get();
+    // Auto-update fogMode
+    const currentFogMode = fogMode.get();
 
     const fogModeTextEl = doc.getElementById("fogModeText");
     if (fogModeTextEl) {
-      fogModeTextEl.textContent = fogMode === "fog" ? "Fog" : "Clear";
+      fogModeTextEl.textContent = currentFogMode === "fog" ? "Fog" : "Clear";
     }
   });
 
   effect(() => {
-    // Auto-update break mode display
-    const breakMode = gameConfig.breakMode.get();
+    // Auto-update breakMode
+    const currentBreakMode = breakMode.get();
 
     const breakModeTextEl = doc.getElementById("breakModeText");
     if (breakModeTextEl) {
       breakModeTextEl.textContent =
-        breakMode === "regular" ? "Dig Regular" : "Dig Extra";
+        currentBreakMode === "regular" ? "Dig Regular" : "Dig Extra";
     }
   });
 
   effect(() => {
     // Auto-update total seeds display
-    const totalSeeds = computedSignals.totalSeeds.get();
+    const currentTotalSeeds = totalSeeds.get();
 
     const seedCountEl = doc.getElementById("seedCount");
     if (seedCountEl) {
-      seedCountEl.textContent = totalSeeds;
+      seedCountEl.textContent = currentTotalSeeds;
     }
   });
 
   effect(() => {
     // Auto-update selected seed display
-    const selectedSeed = gameState.selectedSeedType.get();
+    const selectedSeed = selectedSeedType.get();
 
     const selectedSeedEl = doc.getElementById("selectedSeed");
     if (selectedSeedEl) {
@@ -83,7 +109,7 @@ export function setupEffects(doc) {
 
   effect(() => {
     // Auto-update selected material display
-    const selectedMaterial = gameState.selectedMaterialType.get();
+    const selectedMaterial = selectedMaterialType.get();
 
     const selectedMaterialEl = doc.getElementById("selectedMaterial");
     if (selectedMaterialEl) {

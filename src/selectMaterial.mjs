@@ -18,5 +18,5 @@ export function selectMaterial(doc, state, event) {
 
   console.log(`New selected material: ${newSelected}`);
 
-  updateInventoryDisplay(doc, state);
+  // updateInventoryDisplay(doc, state);
 }

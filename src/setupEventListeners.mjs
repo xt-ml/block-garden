@@ -4,9 +4,8 @@ import { copyToClipboard } from "./copyToClipboard.mjs";
 import { createSaveState } from "./createSaveState.mjs";
 import { gameConfig, gameState } from "./state.mjs";
 import { generateNewWorld } from "./generateWorld.mjs";
-import { getCurrentGameState } from "./getCurrentGameState.mjs";
 import { getRandomSeed } from "./getRandomSeed.mjs";
-import { handleBreakBlock } from "./handleBreakBlock.mjs";
+import { handleBreakBlockWithWaterPhysics } from "./handleBreakBlock.mjs";
 import { handleFarmAction } from "./handleFarmAction.mjs";
 import { handlePlaceBlock } from "./handlePlaceBlock.mjs";
 import { loadSaveState } from "./loadSaveState.mjs";
@@ -16,7 +15,6 @@ import { selectMaterial } from "./selectMaterial.mjs";
 import { selectSeed } from "./selectSeed.mjs";
 import { showStorageDialog } from "./storageDialog.mjs";
 import { toggleBreakMode } from "./toggleBreakMode.mjs";
-import { toggleView } from "./toggleView.mjs";
 
 export function setupGlobalEventListeners(gThis) {
   // Setup event listeners
@@ -98,104 +96,52 @@ export function setupDocumentEventListeners(gThis) {
 
     // Handle farming actions
     if (e.key.toLowerCase() === "f") {
-      handleFarmAction(
-        getCurrentGameState(gameState, gameConfig),
-        gThis.spriteGarden,
-        doc,
-      );
-    } else if (e.key.toLowerCase() === "r") {
-      handleBreakBlock(
-        getCurrentGameState(gameState, gameConfig),
-        gThis.spriteGarden,
-        doc,
-        gameConfig.breakMode.get(),
-      );
+      handleFarmAction({
+        growthTimers: gameState.growthTimers,
+        plantStructures: gameState.plantStructures,
+        player: gameState.player.get(),
+        seedInventory: gameState.seedInventory.get(),
+        selectedSeedType: gameState.selectedSeedType.get(),
+        tiles: gameConfig.TILES,
+        tileSize: gameConfig.TILE_SIZE.get(),
+        world: gameState.world.get(),
+        worldHeight: gameConfig.WORLD_HEIGHT.get(),
+        worldWidth: gameConfig.WORLD_WIDTH.get(),
+      });
+    }
+
+    if (e.key.toLowerCase() === "r") {
+      handleBreakBlockWithWaterPhysics({
+        growthTimers: gameState.growthTimers,
+        plantStructures: gameState.plantStructures,
+        player: gameState.player,
+        tiles: gameConfig.TILES,
+        tileSize: gameConfig.TILE_SIZE.get(),
+        world: gameState.world,
+        worldHeight: gameConfig.WORLD_HEIGHT.get(),
+        worldWidth: gameConfig.WORLD_WIDTH.get(),
+        mode: gameConfig.breakMode.get(),
+        queue: gameState.waterPhysicsQueue,
+      });
     }
 
     // Handle block placement keys
     const blockKeys = ["u", "i", "o", "j", "k", "l", "m", ",", "."];
     if (blockKeys.includes(e.key.toLowerCase())) {
-      handlePlaceBlock(
-        getCurrentGameState(gameState, gameConfig),
-        gThis.spriteGarden,
-        doc,
-        e.key.toLowerCase(),
-      );
+      handlePlaceBlock({
+        key: e.key.toLowerCase(),
+        materialsInventory: gameState.materialsInventory.get(),
+        player: gameState.player.get(),
+        selectedMaterialType: gameState.selectedMaterialType.get(),
+        tiles: gameConfig.TILES,
+        tileSize: gameConfig.TILE_SIZE.get(),
+        world: gameState.world.get(),
+        worldHeight: gameConfig.WORLD_HEIGHT.get(),
+        worldWidth: gameConfig.WORLD_WIDTH.get(),
+      });
     }
 
     e.preventDefault();
-  });
-
-  // Handle block placement mobile controls
-  document.querySelectorAll(".touch-btn.place-block").forEach((pb) => {
-    pb.addEventListener("touchstart", () =>
-      handlePlaceBlock(
-        getCurrentGameState(gameState, gameConfig),
-        gThis.spriteGarden,
-        doc,
-        pb.dataset.key,
-      ),
-    );
-
-    pb.addEventListener("click", () =>
-      handlePlaceBlock(
-        getCurrentGameState(gameState, gameConfig),
-        gThis.spriteGarden,
-        doc,
-        pb.dataset.key,
-      ),
-    );
-  });
-
-  doc.addEventListener("keyup", (e) => {
-    gThis.spriteGarden.keys[e.key.toLowerCase()] = false;
-
-    e.preventDefault();
-  });
-
-  // Prevent default touch behaviors
-  doc.addEventListener(
-    "touchstart",
-    (e) => {
-      if (e.target.closest("#touchControls") || e.target === canvas) {
-        e.preventDefault();
-      }
-    },
-    { passive: false },
-  );
-
-  doc.addEventListener(
-    "touchmove",
-    (e) => {
-      if (e.target.closest("#touchControls") || e.target === canvas) {
-        e.preventDefault();
-      }
-    },
-    { passive: false },
-  );
-
-  doc.addEventListener(
-    "touchend",
-    (e) => {
-      if (e.target.closest("#touchControls") || e.target === canvas) {
-        e.preventDefault();
-      }
-    },
-    { passive: false },
-  );
-
-  // Prevent context menu on long press
-  doc.addEventListener("contextmenu", (e) => {
-    if (e.target.closest("#touchControls") || e.target === canvas) {
-      e.preventDefault();
-    }
-  });
-
-  // Prevent zoom on double tap
-  doc.addEventListener("dblclick", (e) => {
-    if (e.target.closest("#touchControls") || e.target === canvas) {
-      e.preventDefault();
-    }
   });
 
   const fogButton = doc.getElementById("toggleFog");
@@ -222,8 +168,23 @@ export function setupDocumentEventListeners(gThis) {
     const seedInput = doc.getElementById("worldSeedInput");
     const currentSeedDisplay = doc.getElementById("currentSeed");
 
-    generateNewWorld(doc, seedInput.value);
+    const currentWorld = generateNewWorld({
+      biomes: gameConfig.BIOMES,
+      gameTime: gameState.gameTime,
+      growthTimers: gameState.growthTimers,
+      plantStructures: gameState.plantStructures,
+      player: gameState.player,
+      seedInventory: gameState.seedInventory,
+      surfaceLevel: gameConfig.SURFACE_LEVEL.get(),
+      tiles: gameConfig.TILES,
+      tileSize: gameConfig.TILE_SIZE.get(),
+      worldHeight: gameConfig.WORLD_HEIGHT.get(),
+      worldWidth: gameConfig.WORLD_WIDTH.get(),
+      worldSeed: gameConfig.worldSeed,
+      newSeed: seedInput.value,
+    });
 
+    gameState.world.set(currentWorld);
     console.log(`Generated new world with seed: ${seedInput.value}`);
 
     currentSeedDisplay.textContent = seedInput.value;
@@ -234,7 +195,23 @@ export function setupDocumentEventListeners(gThis) {
     const seedInput = doc.getElementById("worldSeedInput");
     const randomSeed = getRandomSeed();
 
-    generateNewWorld(doc, randomSeed);
+    const currentWorld = generateNewWorld({
+      biomes: gameConfig.BIOMES,
+      gameTime: gameState.gameTime,
+      growthTimers: gameState.growthTimers,
+      plantStructures: gameState.plantStructures,
+      player: gameState.player,
+      seedInventory: gameState.seedInventory,
+      surfaceLevel: gameConfig.SURFACE_LEVEL.get(),
+      tiles: gameConfig.TILES,
+      tileSize: gameConfig.TILE_SIZE.get(),
+      worldHeight: gameConfig.WORLD_HEIGHT.get(),
+      worldWidth: gameConfig.WORLD_WIDTH.get(),
+      worldSeed: gameConfig.worldSeed,
+      newSeed: randomSeed,
+    });
+
+    gameState.world.set(currentWorld);
 
     console.log(`Generated new world with random seed: ${randomSeed}`);
 
@@ -381,7 +358,23 @@ export function setupElementEventListeners(doc) {
       const currentSeedDisplay = doc.getElementById("currentSeed");
       currentSeedDisplay.textContent = seedInput.value;
 
-      generateNewWorld(doc, seedInput.value);
+      const currentWorld = generateNewWorld({
+        biomes: gameConfig.BIOMES,
+        gameTime: gameState.gameTime,
+        growthTimers: gameState.growthTimers,
+        plantStructures: gameState.plantStructures,
+        player: gameState.player,
+        seedInventory: gameState.seedInventory,
+        surfaceLevel: gameConfig.SURFACE_LEVEL.get(),
+        tiles: gameConfig.TILES,
+        tileSize: gameConfig.TILE_SIZE.get(),
+        worldHeight: gameConfig.WORLD_HEIGHT.get(),
+        worldWidth: gameConfig.WORLD_WIDTH.get(),
+        worldSeed: gameConfig.worldSeed,
+        newSeed: seedInput.value,
+      });
+
+      gameState.world.set(currentWorld);
     });
 
   // Seed button event listeners
@@ -397,7 +390,12 @@ export function setupElementEventListeners(doc) {
   });
 
   const toggleBtn = doc.getElementById("toggleView");
-  if (toggleBtn) toggleBtn.addEventListener("click", () => toggleView(doc));
+  if (toggleBtn)
+    toggleBtn.addEventListener("click", () =>
+      gameState.viewMode.set(
+        gameState.viewMode.get() === "normal" ? "xray" : "normal",
+      ),
+    );
 
   const toggleBreakBtn = doc.getElementById("toggleBreakMode");
   if (toggleBreakBtn)
