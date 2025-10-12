@@ -1,7 +1,7 @@
 import { Signal } from "../deps/signal.mjs";
 
 import { initializeFog } from "./fogMap.mjs";
-import { generateNewWorld } from "./generateWorld.mjs";
+import { initNewWorld } from "./initNewWorld.mjs";
 import { WorldMap } from "./worldMap.mjs";
 
 export function loadSaveState(gThis, saveState) {
@@ -103,7 +103,7 @@ export function loadSaveState(gThis, saveState) {
         console.error("Invalid world data in save state:", worldData);
 
         // Generate new world as fallback
-        const currentWorld = generateNewWorld({
+        const currentWorld = initNewWorld({
           biomes: gameConfig.BIOMES,
           gameTime: gameState.gameTime,
           growthTimers: gameState.growthTimers,

@@ -74,6 +74,23 @@ function initializeWaterLevels(
   tiles,
   tileSize,
 ) {
+  // Log entry point
+  if (!world || typeof world.getTile !== "function") {
+    console.error("initializeWaterLevels: Invalid world object", {
+      hasWorld: !!world,
+      worldWidth,
+      worldHeight,
+    });
+
+    // Return safe fallback
+    const emptyLevels = [];
+    for (let x = 0; x < worldWidth; x++) {
+      emptyLevels[x] = new Array(worldHeight).fill(0);
+    }
+
+    return emptyLevels;
+  }
+
   const waterLevels = [];
 
   for (let x = 0; x < worldWidth; x++) {
@@ -200,7 +217,19 @@ export function generateWaterSources({
   surfaceLevel,
   tiles,
   seed,
+  tileSize,
 }) {
+  if (!world || typeof world.getTile !== "function") {
+    console.error("generateWaterSources: Invalid world object at entry", {
+      hasWorld: !!world,
+      worldType: typeof world,
+      worldWidth,
+      worldHeight,
+    });
+
+    return;
+  }
+
   initializeNoise(seed);
 
   for (let x = 0; x < worldWidth; x++) {
@@ -225,7 +254,15 @@ export function generateWaterSources({
       }
       // Create springs in higher elevations
       else if (waterNoiseValue > 0.7 && surfaceHeight > surfaceLevel + 5) {
-        createSpring(world, x, surfaceHeight, worldWidth, worldHeight, tiles);
+        createSpring(
+          world,
+          x,
+          surfaceHeight,
+          worldWidth,
+          worldHeight,
+          tiles,
+          tileSize,
+        );
       }
     }
 
@@ -272,11 +309,20 @@ function createLake(
   }
 }
 
-function createSpring(world, x, surfaceY, worldWidth, worldHeight, tiles) {
+function createSpring(
+  world,
+  x,
+  surfaceY,
+  worldWidth,
+  worldHeight,
+  tiles,
+  tileSize,
+) {
   // Create a small water source
   const y = surfaceY;
   if (x >= 0 && x < worldWidth && y >= 0 && y < worldHeight) {
-    if (world.getTile(x, y) === tiles.AIR || !isSolid(x, y)) {
+    const tile = world.getTile(x, y);
+    if (tile === tiles.AIR || (tile && !tile.solid)) {
       world.setTile(x, y, tiles.WATER);
     }
   }

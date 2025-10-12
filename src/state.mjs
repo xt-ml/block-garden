@@ -1,6 +1,5 @@
 import { Signal } from "../deps/signal.mjs";
 
-import { getBiome } from "./getBiome.mjs";
 import { getRandomSeed } from "./getRandomSeed.mjs";
 
 const getT = (v) => ({

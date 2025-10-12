@@ -1,6 +1,5 @@
 import { createSaveState } from "./createSaveState.mjs";
-// import { gameConfig, gameState } from "./state.mjs";
-import { generateNewWorld } from "./generateWorld.mjs";
+import { initNewWorld } from "./initNewWorld.mjs";
 
 export const mapEditorState = {
   isEnabled: false,
@@ -90,7 +89,7 @@ function setupMapEditorControls({ doc, fogMode, viewMode }) {
       if (
         confirm("Reset to generated world? This will lose all editor changes.")
       ) {
-        generateNewWorld({
+        initNewWorld({
           doc,
         });
       }

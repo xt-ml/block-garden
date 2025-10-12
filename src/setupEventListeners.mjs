@@ -3,7 +3,7 @@ import editHandler from "../deps/konami-code-js.mjs";
 import { copyToClipboard } from "./copyToClipboard.mjs";
 import { createSaveState } from "./createSaveState.mjs";
 import { gameConfig, gameState } from "./state.mjs";
-import { generateNewWorld } from "./generateWorld.mjs";
+import { initNewWorld } from "./initNewWorld.mjs";
 import { getRandomSeed } from "./getRandomSeed.mjs";
 import { handleBreakBlockWithWaterPhysics } from "./handleBreakBlock.mjs";
 import { handleFarmAction } from "./handleFarmAction.mjs";
@@ -202,7 +202,7 @@ export function setupDocumentEventListeners(gThis) {
     const seedInput = doc.getElementById("worldSeedInput");
     const currentSeedDisplay = doc.getElementById("currentSeed");
 
-    const currentWorld = generateNewWorld({
+    const currentWorld = initNewWorld({
       biomes: gameConfig.BIOMES,
       gameTime: gameState.gameTime,
       growthTimers: gameState.growthTimers,
@@ -229,7 +229,7 @@ export function setupDocumentEventListeners(gThis) {
     const seedInput = doc.getElementById("worldSeedInput");
     const randomSeed = getRandomSeed();
 
-    const currentWorld = generateNewWorld({
+    const currentWorld = initNewWorld({
       biomes: gameConfig.BIOMES,
       gameTime: gameState.gameTime,
       growthTimers: gameState.growthTimers,
@@ -385,14 +385,14 @@ export function setupElementEventListeners(doc) {
     });
   }
 
-  const genBtn = doc.getElementById("generateNewWorld");
+  const genBtn = doc.getElementById("initNewWorld");
   if (genBtn)
     genBtn.addEventListener("click", () => {
       const seedInput = doc.getElementById("worldSeedInput");
       const currentSeedDisplay = doc.getElementById("currentSeed");
       currentSeedDisplay.textContent = seedInput.value;
 
-      const currentWorld = generateNewWorld({
+      const currentWorld = initNewWorld({
         biomes: gameConfig.BIOMES,
         gameTime: gameState.gameTime,
         growthTimers: gameState.growthTimers,

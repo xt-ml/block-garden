@@ -1,6 +1,6 @@
 import storage from "../deps/localforage.mjs";
 
-import { generateNewWorld } from "./generateWorld.mjs";
+import { initNewWorld } from "./initNewWorld.mjs";
 import { initMapEditor } from "./mapEditor.mjs";
 import { resizeCanvas } from "./resizeCanvas.mjs";
 import { setupEffects } from "./setupEffects.mjs";
@@ -50,7 +50,7 @@ export async function initGame(gThis, doc, cnvs) {
     worldSeed: gameConfig.worldSeed,
   });
 
-  const currentWorld = generateNewWorld({
+  const currentWorld = initNewWorld({
     biomes: gameConfig.BIOMES,
     gameTime: gameState.gameTime,
     growthTimers: gameState.growthTimers,
