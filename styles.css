@@ -36,6 +36,37 @@ body {
   position: absolute;
 }
 
+#loading {
+  animation: pulseSpin 1.8s infinite;
+  height: 11rem;
+  image-rendering: pixelated;
+  position: relative;
+  width: 11rem;
+  z-index: 1;
+}
+
+#loading .pixel {
+  background: #87ceeb;
+  height: 4rem;
+  position: absolute;
+  width: 4rem;
+}
+
+@keyframes pulseSpin {
+  0% {
+    transform: scale(0.05) rotate(0deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1) rotate(-180deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.05) rotate(-360deg);
+    opacity: 0;
+  }
+}
+
 .ui-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;

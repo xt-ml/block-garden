@@ -1,4 +1,4 @@
-import { initGame } from "./src/initGame.mjs";
+import { initGame } from "./src/init/game.mjs";
 
 const gThis = globalThis;
 const doc = gThis.document;

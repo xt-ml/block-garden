@@ -13,6 +13,8 @@ module.exports = {
   globIgnores: [
     "**/bin/**",
     "**/node_modules/**",
+    "**/src/**",
+    "index.mjs",
     "service-worker.js",
     "workbox-*.cjs",
     "workbox-*.js",
