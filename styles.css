@@ -225,9 +225,18 @@ body {
   padding: 0.25rem 0;
 }
 
+.control-instruction_icon-container {
+  align-items: center;
+  display: flex;
+}
+
+.control-instruction_icon-container > svg {
+  padding-right: 0.25rem;
+}
+
 /* Mobile Touch Controls */
 #touchControls {
-  bottom: 5rem;
+  bottom: 6rem;
   position: absolute;
   width: 100%;
 }
@@ -269,6 +278,7 @@ body {
   grid-template-rows: 3.125rem 3.125rem 3.125rem;
   justify-content: left;
   position: relative;
+  z-index: 3;
 }
 
 .dpad .up-left {
@@ -277,7 +287,7 @@ body {
   margin-left: 0.5rem;
   margin-top: 0.5rem;
   padding: 0;
-  z-index: 1;
+  z-index: 4;
 }
 
 .dpad .up {
@@ -292,7 +302,7 @@ body {
   margin-right: 0.5rem;
   margin-top: 0.5rem;
   padding: 0;
-  z-index: 1;
+  z-index: 4;
 }
 
 .dpad .left {
@@ -313,7 +323,7 @@ body {
   margin-bottom: 0.5rem;
   margin-left: 0.5rem;
   padding: 0;
-  z-index: 1;
+  z-index: 4;
 }
 
 .dpad .down {
@@ -328,7 +338,7 @@ body {
   margin-bottom: 0.5rem;
   margin-right: 0.5rem;
   padding: 0;
-  z-index: 1;
+  z-index: 4;
 }
 
 .action-buttons {
@@ -414,7 +424,7 @@ select:focus {
 .seed-controls {
   background: rgba(0, 0, 0, 0.7);
   border-radius: 0.3125rem;
-  bottom: 0;
+  bottom: 1rem;
   color: white;
   margin: 0.625rem 0;
   padding: 0.625rem;
@@ -539,6 +549,7 @@ select:focus {
 
   .touch-btn {
     font-size: 0.75rem;
+    z-index: 3;
   }
 
   .seed-controls {
