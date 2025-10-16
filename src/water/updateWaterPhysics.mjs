@@ -57,8 +57,8 @@ export function updateWaterPhysics({
       }
 
       if (touchesLava) {
-        // Water + Lava = Bedrock
-        currentWorld.setTile(x, y, tiles.BEDROCK);
+        // Water + Lava = Pumice
+        currentWorld.setTile(x, y, tiles.PUMICE);
 
         // Check neighbors for more water that might interact
         for (const neighbor of neighbors) {
@@ -92,9 +92,9 @@ export function updateWaterPhysics({
           anyWaterMoved = true;
           continue; // Skip sideways movement since we're falling
         } else if (below === tiles.LAVA) {
-          // Water falling onto lava becomes bedrock
+          // Water falling onto lava becomes pumice
           currentWorld.setTile(x, y, tiles.AIR);
-          currentWorld.setTile(x, y + 1, tiles.BEDROCK);
+          currentWorld.setTile(x, y + 1, tiles.PUMICE);
           anyWaterMoved = true;
           continue;
         } else if (below && below.solid) {

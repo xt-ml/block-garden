@@ -14,6 +14,7 @@ function getTileFromMaterial(materialType, tiles) {
     COAL: tiles.COAL,
     IRON: tiles.IRON,
     GOLD: tiles.GOLD,
+    PUMICE: tiles.PUMICE,
   };
 
   return materialToTile[materialType] || null;

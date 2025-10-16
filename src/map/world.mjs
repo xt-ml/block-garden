@@ -6,7 +6,6 @@ export class WorldMap {
     this.height = height;
     this.data = new Uint8Array(width * height);
 
-    // Initialize tile mapping - this is the key fix
     this.initializeTileMapping();
   }
 

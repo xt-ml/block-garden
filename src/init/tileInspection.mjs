@@ -176,7 +176,7 @@ function handleMouseMove({
     scale,
     tiles,
     tileSize,
-    world,
+    world: world.get(),
     worldHeight,
     worldWidth,
   });
@@ -227,7 +227,7 @@ function handleTouchStart({
     scale,
     tiles,
     tileSize,
-    world,
+    world: world.get(),
     worldHeight,
     worldWidth,
   });
@@ -277,7 +277,7 @@ function handleTouchMove({
     scale,
     tiles,
     tileSize,
-    world,
+    world: world.get(),
     worldHeight,
     worldWidth,
   });

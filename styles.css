@@ -540,6 +540,13 @@ select:focus {
   margin-top: 0.5rem;
 }
 
+.swatch-pumice {
+  background: #b8a99a;
+  display: inline-block;
+  height: 0.75rem;
+  width: 0.75rem;
+}
+
 /* Mobile Responsive */
 @media (min-width: 30rem) {
   .ui-grid__corner--heading {

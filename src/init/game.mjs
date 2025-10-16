@@ -77,7 +77,7 @@ export async function initGame(gThis, doc, cnvs) {
     tileSize: gameConfig.TILE_SIZE.get(),
     worldHeight: gameConfig.WORLD_HEIGHT.get(),
     worldWidth: gameConfig.WORLD_WIDTH.get(),
-    world: gameState.world.get(),
+    world: gameState.world,
   });
 
   resizeCanvas(doc, gameConfig);

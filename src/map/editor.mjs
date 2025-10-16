@@ -1,4 +1,5 @@
 import { createSaveState } from "../state/createSave.mjs";
+import { gameState } from "../state/state.mjs";
 import { initNewWorld } from "../init/newWorld.mjs";
 
 export const mapEditorState = {
@@ -253,7 +254,7 @@ function paintTiles({
     return;
   }
 
-  // const currentWorld = gameState.world.get();
+  const currentWorld = world.get();
   const brushRadius = Math.floor(mapEditorState.brushSize / 2);
 
   let hasChanges = false;
@@ -278,18 +279,18 @@ function paintTiles({
       }
 
       // Paint the tile
-      if (world.getTile(x, y) !== selectedTileType) {
-        world.setTile(x, y, selectedTileType);
+      if (currentWorld.getTile(x, y) !== selectedTileType) {
+        currentWorld.setTile(x, y, selectedTileType);
 
         hasChanges = true;
       }
     }
   }
 
-  // if (hasChanges) {
-  //   // Update the world state
-  //   gameState.world.set(currentWorld);
-  // }
+  if (hasChanges) {
+    // Update the world state
+    gameState.world.set(currentWorld);
+  }
 }
 
 // Clear the entire map

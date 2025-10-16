@@ -29,7 +29,8 @@ function getMaterialFromTile(tile, tiles) {
     [tiles.COAL.id]: "COAL",
     [tiles.IRON.id]: "IRON",
     [tiles.GOLD.id]: "GOLD",
-    [tiles.SNOW.id]: "SAND", // Snow melts to... sand for simplicity
+    [tiles.SNOW.id]: "SAND", // Snow melts to... sand for simplicity,
+    [tiles.PUMICE.id]: "PUMICE",
   };
 
   return tileToMaterial[tile.id] || null;
