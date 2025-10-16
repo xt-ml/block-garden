@@ -39,8 +39,9 @@ function inspectTile({
   worldWidth,
 }) {
   const pos = getPointerPosition({ e, el, scale });
-  const worldX = Math.floor((pos.x + camera.x) / tileSize);
-  const worldY = Math.floor((pos.y + camera.y) / tileSize);
+  const currentCamera = camera.get();
+  const worldX = Math.floor((pos.x + currentCamera.x) / tileSize);
+  const worldY = Math.floor((pos.y + currentCamera.y) / tileSize);
 
   if (
     worldX >= 0 &&
@@ -64,7 +65,6 @@ function inspectTile({
 
 function handleMouseDown({
   e,
-  cnvs,
   camera,
   scale,
   tiles,
@@ -84,7 +84,6 @@ function handleMouseDown({
       x,
       y,
       camera,
-      scale,
       tiles,
       tileSize,
       worldHeight,
@@ -266,6 +265,7 @@ function handleTouchMove({
       })
     ) {
       e.preventDefault();
+
       return;
     }
   }

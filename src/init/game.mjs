@@ -71,7 +71,7 @@ export async function initGame(gThis, doc, cnvs) {
 
   initTileInspection({
     cnvs,
-    camera: gameState.camera.get(),
+    camera: gameState.camera,
     scale: gameConfig.canvasScale.get(),
     tiles: gameConfig.TILES,
     tileSize: gameConfig.TILE_SIZE.get(),

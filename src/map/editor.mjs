@@ -148,9 +148,7 @@ function selectTile(doc, tileType) {
 export function handleMapEditorClick({
   x,
   y,
-  cnvs,
   camera,
-  scale,
   tiles,
   tileSize,
   worldHeight,
@@ -163,16 +161,14 @@ export function handleMapEditorClick({
   }
 
   // Convert screen coordinates to world tile coordinates
-  const worldX = Math.floor((x + camera.x) / tileSize);
-  const worldY = Math.floor((y + camera.y) / tileSize);
+  const currentCamera = camera.get();
+  const worldX = Math.floor((x + currentCamera.x) / tileSize);
+  const worldY = Math.floor((y + currentCamera.y) / tileSize);
 
   paintTiles({
     centerX: worldX,
     centerY: worldY,
-    camera,
-    scale,
     tiles,
-    tileSize,
     worldHeight,
     worldWidth,
     world,
@@ -188,7 +184,6 @@ export function handleMapEditorDrag({
   y,
   isStart = false,
   camera,
-  scale,
   tiles,
   tileSize,
   worldHeight,
@@ -204,11 +199,9 @@ export function handleMapEditorDrag({
     mapEditorState.lastPaintedTile = null;
   }
 
-  // const tileSize = gameConfig.TILE_SIZE.get();
-  // const camera = gameState.camera.get();
-
-  const worldX = Math.floor((x + camera.x) / tileSize);
-  const worldY = Math.floor((y + camera.y) / tileSize);
+  const currentCamera = camera.get();
+  const worldX = Math.floor((x + currentCamera.x) / tileSize);
+  const worldY = Math.floor((y + currentCamera.y) / tileSize);
 
   // Only paint if we've moved to a different tile
   const currentTileKey = `${worldX},${worldY}`;
@@ -216,10 +209,7 @@ export function handleMapEditorDrag({
     paintTiles({
       centerX: worldX,
       centerY: worldY,
-      camera,
-      scale,
       tiles,
-      tileSize,
       worldHeight,
       worldWidth,
       world,
@@ -240,10 +230,7 @@ export function handleMapEditorDragEnd() {
 function paintTiles({
   centerX,
   centerY,
-  camera,
-  scale,
   tiles,
-  tileSize,
   worldHeight,
   worldWidth,
   world,

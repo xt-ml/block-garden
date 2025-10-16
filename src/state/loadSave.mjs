@@ -2,6 +2,7 @@ import { Signal } from "../../deps/signal.mjs";
 
 import { initFog } from "../init/fog.mjs";
 import { initNewWorld } from "../init/newWorld.mjs";
+import { resizeCanvas } from "../util/resizeCanvas.mjs";
 import { WorldMap } from "../map/world.mjs";
 
 export function loadSaveState(gThis, saveState) {
@@ -14,6 +15,9 @@ export function loadSaveState(gThis, saveState) {
       gThis.spriteGarden.setConfig(key, saveState.config[key]);
     }
   }
+
+  const worldHeight = saveState.config.WORLD_HEIGHT;
+  const worldWidth = saveState.config.WORLD_WIDTH;
 
   // Restore state with special handling for seedInventory, worldMap and fogMap
   for (const key in saveState.state) {
@@ -53,12 +57,9 @@ export function loadSaveState(gThis, saveState) {
       }
     }
 
-    const worldHeight = saveState.config.WORLD_HEIGHT;
-    const worldWidth = saveState.config.WORLD_WIDTH;
-
     // convert explored map data
     if (key === "exploredMap") {
-      initFog({
+      const fogMap = initFog({
         fog: null,
         isFogScaled: new Signal.State(saveState.config.isFogScaled),
         tiles: saveState.config.tiles,
@@ -66,6 +67,8 @@ export function loadSaveState(gThis, saveState) {
         worldWidth,
         exploredMap: saveState.state.exploredMap,
       });
+
+      gameState.exploredMap = fogMap;
     }
 
     // convert world map data
@@ -126,4 +129,7 @@ export function loadSaveState(gThis, saveState) {
   }
 
   console.log("Save state loaded successfully");
+
+  // Force canvas resize to ensure proper coordinate mapping
+  resizeCanvas(gThis.document, gameConfig);
 }
