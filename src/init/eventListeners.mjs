@@ -1,5 +1,4 @@
-import editHandler from "../../deps/konami-code-js.mjs";
-import localForage from "../../deps/localForage.mjs";
+import extrasHandler from "../../deps/konami-code-js.mjs";
 
 import { copyToClipboard } from "../util/copyToClipboard.mjs";
 import { createSaveState } from "../state/createSave.mjs";
@@ -23,6 +22,7 @@ import {
 import { updateRangeUI } from "../update/ui/range.mjs";
 
 import { showAboutDialog } from "../dialog/about.mjs";
+import { showExamplesDialog } from "../dialog/examples.mjs";
 import { showPrivacyDialog } from "../dialog/privacy.mjs";
 import { showStorageDialog } from "../dialog/storage.mjs";
 
@@ -75,6 +75,19 @@ function setupDialogButtons(gThis) {
     });
   }
 
+  // Examples button
+  const examplesBtn = doc.getElementById("examplesBtn");
+  if (examplesBtn) {
+    examplesBtn.addEventListener("click", async function () {
+      try {
+        await showExamplesDialog(gThis);
+      } catch (error) {
+        console.error("Failed to open examples dialog:", error);
+        alert("Failed to open examples dialog. Check console for details.");
+      }
+    });
+  }
+
   // Privacy button
   const privacyBtn = doc.getElementById("privacyBtn");
   if (privacyBtn) {
@@ -108,10 +121,14 @@ function handleCornerClick(e) {
 export function initDocumentEventListeners(gThis) {
   const doc = gThis.document;
 
-  // Edit
-  new editHandler((handler) => {
+  // Extras
+  new extrasHandler((handler) => {
     doc.getElementById("mapEditor").removeAttribute("hidden");
+    doc.getElementById("examplesBtnContainer").removeAttribute("hidden");
     doc.querySelector('option[value="fullscreen"]').removeAttribute("hidden");
+
+    const settingsContainer = doc.querySelector('#settings > [class="ui-grid__corner--container"]');
+    settingsContainer.removeAttribute('hidden');
 
     handler.disable();
   });

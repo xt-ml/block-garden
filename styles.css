@@ -485,7 +485,12 @@ select:focus {
   font-weight: bold;
 }
 
-#mapEditor {
+#examplesBtnContainer {
+  width: 100%;
+}
+
+#mapEditor,
+#examplesBtnContainer {
   border-top: 0.0625rem solid #ccc;
   margin-top: 0.625rem;
   padding-top: 0.625rem;

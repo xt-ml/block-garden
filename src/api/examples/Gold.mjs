@@ -81,11 +81,12 @@ export class Gold extends SpriteGarden {
 
     console.log("🌳 Cleared starting position");
 
-    // Dig down 20 tiles initially
+    // Dig down 20 tiles initially with "break mode" set to "extra"
     console.log("⬇️ Initial dig: 20 tiles");
+    this.setBreakMode('extra');
     await this.moveAndDig(83, 20);
-
     await sleep(500);
+    this.setBreakMode('regular');
 
     const player = this.state.player.get();
     const tileSize = this.config.TILE_SIZE.get();

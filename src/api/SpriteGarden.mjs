@@ -30,7 +30,7 @@ export class SpriteGarden {
   }
 
   setBreakMode(mode) {
-    // 'normal' or 'extra'
+    // 'regular' or 'extra'
     this.config.breakMode.set(mode);
   }
 
