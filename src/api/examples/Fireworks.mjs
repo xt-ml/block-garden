@@ -79,7 +79,7 @@ export class Fireworks extends SpriteGarden {
       xMin = 165,
       xMax = 300,
       yMin = 10,
-      yMax = 50,
+      yMax = this.config.SURFACE_LEVEL.get() - 20,
       delay = 0,
     } = config;
 

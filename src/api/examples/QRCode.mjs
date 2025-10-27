@@ -15,7 +15,13 @@ export async function demo() {
   console.log("🎮 SpriteGarden Demo: QR Code");
 
   // Draw QR code for karlherrick.com
-  await api.drawQRCode(api.url, 220, 80, api.tiles.ICE, api.tiles.COAL);
+  await api.drawQRCode(
+    api.url,
+    api.config.WORLD_WIDTH.get() / 2,
+    api.config.SURFACE_LEVEL.get() + 20,
+    api.tiles.SNOW,
+    api.tiles.COAL,
+  );
 
   const apiText = "spriteGarden.demo.qrCodeAPI";
 
@@ -29,7 +35,7 @@ export async function demo() {
       "Hello World!",
       180,
       80,
-      ${apiText}.tiles.ICE,
+      ${apiText}.tiles.SNOW,
       ${apiText}.tiles.COAL
     )`,
   );

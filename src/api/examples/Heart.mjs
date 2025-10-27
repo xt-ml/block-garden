@@ -64,7 +64,11 @@ export async function demo() {
   console.log("🎮 SpriteGarden Demo: Big Bitmap Heart");
 
   // Draw a big lava heart
-  api.drawBigBitmapHeart(225, 50, api.tiles.LAVA);
+  api.drawBigBitmapHeart(
+    225,
+    api.config.SURFACE_LEVEL.get() - 20,
+    api.tiles.LAVA,
+  );
 
   const apiText = "spriteGarden.demo.heartAPI";
 

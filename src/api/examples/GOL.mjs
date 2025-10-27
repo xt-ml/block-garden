@@ -2,11 +2,13 @@ import { SpriteGarden } from "../SpriteGarden.mjs";
 
 export class GOL extends SpriteGarden {
   createGameOfLife(config = {}) {
+    const gameHeight = 60;
+
     const {
-      x = 50,
-      y = 20,
+      x = 180,
+      y = this.config.SURFACE_LEVEL.get() - gameHeight - 20,
       width = 100,
-      height = 60,
+      height = gameHeight,
       aliveTile = this.tiles.LEAVES,
       deadTile = this.tiles.DIRT,
       borderTile = this.tiles.STONE,
@@ -153,12 +155,14 @@ export async function demo() {
 
   console.log("🎮 SpriteGarden Demo: Conway's Game of Life");
 
+  const gameHeight = 50;
+
   // Start Game of Life
   api.game = api.createGameOfLife({
-    x: 150,
-    y: 10,
+    x: 180,
+    y: api.config.SURFACE_LEVEL.get() - gameHeight - 10,
     width: 80,
-    height: 50,
+    height: gameHeight,
     updateInterval: 150,
     initialPattern: "random",
     randomDensity: 0.35,

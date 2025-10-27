@@ -10,12 +10,14 @@ export class Messaging extends SpriteGarden {
     textStaggerDelay: 100, // Delay between each text message appearing (ms)
   };
 
+  surfaceLevel = this.config.SURFACE_LEVEL.get();
+
   // Draw all text messages - these run asynchronously
   phrases = [
-    { text: "Sprite Garden is the best!", y: 10 },
-    { text: "¡Sprite Garden es el mejor!", y: 20 },
-    { text: "Sprite Garden ist das Beste!", y: 30 },
-    { text: "Sprite Garden est le meilleur !", y: 40 },
+    { text: "Sprite Garden is the best!", y: this.surfaceLevel - 60 },
+    { text: "¡Sprite Garden es el mejor!", y: this.surfaceLevel - 50 },
+    { text: "Sprite Garden ist das Beste!", y: this.surfaceLevel - 40 },
+    { text: "Sprite Garden est le meilleur !", y: this.surfaceLevel - 30 },
   ];
 
   // Calculate when water starts (after initial delay + text appears + water drop delay)
