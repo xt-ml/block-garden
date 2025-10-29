@@ -35,8 +35,8 @@ export class AboutDialog {
       `;
 
       const tmpDoc = new Document();
-      const privacyContent = await (await fetch("about")).text();
-      tmpDoc.innerHTML = privacyContent;
+      const aboutContent = await (await fetch("about")).text();
+      tmpDoc.innerHTML = aboutContent;
 
       dialog.innerHTML = tmpDoc.innerHTML;
 

@@ -33,8 +33,8 @@ export class ExamplesDialog {
       `;
 
       const tmpDoc = new Document();
-      const privacyContent = await (await fetch("src/api/examples")).text();
-      tmpDoc.innerHTML = privacyContent;
+      const examplesContent = await (await fetch("src/api/examples")).text();
+      tmpDoc.innerHTML = examplesContent;
 
       dialog.innerHTML = tmpDoc.innerHTML;
 
