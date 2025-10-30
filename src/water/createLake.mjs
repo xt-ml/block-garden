@@ -15,10 +15,12 @@ export function createLake(
       const y = surfaceY + dy + 1;
 
       if (x >= 0 && x < worldWidth && y >= 0 && y < worldHeight) {
-        const distance = Math.sqrt(dx * dx + dy * dy * 2); // Flatten vertically
+        // Flatten vertically
+        const distance = Math.sqrt(dx * dx + dy * dy * 2);
+
         if (distance <= radius) {
           // Clear out space for lake
-          if (world.getTile(x, y) !== tiles.BEDROCK) {
+          if (world.getTile(x, y).id !== tiles.SAND.id) {
             world.setTile(x, y, tiles.WATER);
           }
         }

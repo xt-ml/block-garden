@@ -5,13 +5,14 @@ export function createSpring(
   worldWidth,
   worldHeight,
   tiles,
-  tileSize,
 ) {
   // Create a small water source
   const y = surfaceY;
+
   if (x >= 0 && x < worldWidth && y >= 0 && y < worldHeight) {
     const tile = world.getTile(x, y);
-    if (tile === tiles.AIR || (tile && !tile.solid)) {
+
+    if (tile === tiles.AIR && tile.id !== tiles.SAND.id) {
       world.setTile(x, y, tiles.WATER);
     }
   }

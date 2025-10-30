@@ -31,46 +31,31 @@ export function generateWaterSources({
     const surfaceHeight = heights[x];
     const waterNoiseValue = waterNoise(x, parseInt(seed) + 2000);
 
-    // Generate water sources based on terrain
-    if (waterNoiseValue > 0.4) {
-      // High water noise indicates good spot for water
-      // Create lakes in low-lying areas
-      if (surfaceHeight < surfaceLevel - 3) {
-        const lakeSize = Math.floor((waterNoiseValue - 0.4) * 15) + 3;
-        createLake(
-          world,
-          x,
-          surfaceHeight,
-          lakeSize,
-          worldWidth,
-          worldHeight,
-          tiles,
-        );
-      }
-      // Create springs in higher elevations
-      else if (waterNoiseValue > 0.7 && surfaceHeight > surfaceLevel + 5) {
-        createSpring(
-          world,
-          x,
-          surfaceHeight,
-          worldWidth,
-          worldHeight,
-          tiles,
-          tileSize,
-        );
-      }
+    // Create springs
+    if (surfaceHeight > surfaceLevel) {
+      createSpring(world, x, surfaceHeight, worldWidth, worldHeight, tiles);
     }
 
-    // Generate rivers in valleys
-    const riverNoise = waterNoise(x, parseInt(seed) + 2500);
-    if (riverNoise > 0.6) {
-      const leftHeight = x > 0 ? heights[x - 1] : surfaceHeight;
-      const rightHeight = x < worldWidth - 1 ? heights[x + 1] : surfaceHeight;
+    // Create lakes
+    if (waterNoiseValue > 0.5 && surfaceHeight < surfaceLevel + 5) {
+      const lakeSize = Math.floor((waterNoiseValue - 0.4) * 15) + 5;
 
-      // If this is a valley (lower than neighbors), create a river
-      if (surfaceHeight < leftHeight - 2 && surfaceHeight < rightHeight - 2) {
-        createRiver(world, x, surfaceHeight, worldWidth, worldHeight, tiles);
-      }
+      createLake(
+        world,
+        x,
+        surfaceHeight,
+        lakeSize,
+        worldWidth,
+        worldHeight,
+        tiles,
+      );
+    }
+
+    // Generate rivers
+    const riverNoise = waterNoise(x, parseInt(seed) + 2500);
+
+    if (riverNoise > 0.5) {
+      createRiver(world, x, surfaceHeight, worldWidth, worldHeight, tiles);
     }
   }
 }
