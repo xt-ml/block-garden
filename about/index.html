@@ -13,59 +13,54 @@
       content="About - Sprite Garden - A 2D sandbox exploration and farming game. Explore procedurally generated worlds, discover different biomes, mine resources, and cultivate a variety of crops."
     />
     <meta name="theme-color" content="#000000" />
+    <link rel="stylesheet" href="styles.css" type="text/css" />
     <link rel="manifest" href="manifest.json" />
     <link rel="icon" href="assets/icons/favicon.ico" type="image/x-icon" />
     <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png" />
   </head>
-  <body style="background-color: #fff; padding: 0 2rem">
-    <div id="about-content">
-      <div
-        style="
-          align-items: center;
-          display: flex;
-          justify-content: space-between;
-          margin-bottom: 1rem;
-          padding-top: 1rem;
-        "
-      >
+  <body class="about sprite-garden">
+    <div class="about-content">
+      <header class="about-content_header">
         <h1>
-          <a href="https://kherrick.github.io/sprite-garden/">Sprite Garden</a>
+          <a
+            href="https://kherrick.github.io/sprite-garden/"
+            rel="noopener noreferrer"
+            target="_blank"
+            >Sprite Garden</a
+          >
         </h1>
-        <button
-          hidden="hidden"
-          id="closeAboutDialog"
-          style="
-            background: #f44;
-            border: none;
-            border-radius: 0.25rem;
-            color: #fff;
-            cursor: pointer;
-            font-size: 1.2rem;
-            padding: 0.5rem 1rem;
-          "
+        <button hidden="hidden" class="about-content_close-btn">&times;</button>
+      </header>
+
+      <h2>
+        <a
+          href="https://kherrick.github.io/sprite-garden/about/"
+          rel="noopener noreferrer"
+          target="_blank"
+          >About</a
         >
-          &times;
-        </button>
-      </div>
+      </h2>
 
-      <h2 style="margin: 0">About Sprite Garden</h2>
-
-      <div style="line-height: 1.6">
+      <div>
         <p>
           Sprite Garden is a 2D sandbox exploration and farming game that runs
           entirely in your web browser. Explore procedurally generated worlds,
           discover different biomes, mine resources, and cultivate a variety of
           crops.
         </p>
-        <a href="https://kherrick.github.io/sprite-garden/">
+        <a
+          href="https://kherrick.github.io/sprite-garden/"
+          rel="noopener noreferrer"
+          target="_blank"
+        >
           <img
-            src="assets/sprite-garden-time-lapse.gif"
+            src="https://kherrick.github.io/sprite-garden/assets/sprite-garden-time-lapse.gif"
             desc="A time lapse of a garden in Sprite Garden"
             title="Sprite Garden - Time Lapse"
           />
         </a>
-        <h3 style="margin-top: 1.5rem">Features</h3>
-        <ul style="margin-left: 1.5rem">
+        <h3>Features</h3>
+        <ul>
           <li>
             <strong>Procedural World Generation</strong> - Each world is unique,
             generated from a shareable seed
@@ -75,8 +70,8 @@
             tundras, and swamps, each with unique characteristics
           </li>
           <li>
-            <strong>Farming System</strong> - Plant and harvest 12 different
-            crop types with realistic growth cycles
+            <strong>Farming System</strong> - Plant and harvest different crop
+            types with realistic growth cycles
           </li>
           <li>
             <strong>Resource Mining</strong> - Dig for valuable resources like
@@ -95,7 +90,7 @@
             device or as a file to share
           </li>
         </ul>
-        <h3 style="margin-top: 1.5rem">Privacy by Design</h3>
+        <h3>Privacy by Design</h3>
         <p>
           Sprite Garden is <strong>private by design</strong>. All game data is
           processed and stored locally on your device. No personal information
@@ -106,57 +101,41 @@
         <p>
           Read more about the
           <a
-            href="privacy"
-            id="privacyLinkInAbout"
-            style="color: #2196f3; cursor: pointer"
+            href="https://kherrick.github.io/sprite-garden/privacy/"
+            rel="noopener noreferrer"
+            target="_blank"
             >Sprite Garden Privacy Policy</a
           >.
         </p>
-        <h3 style="margin-top: 1.5rem">Controls</h3>
-        <div
-          style="
-            background: #e0e0e0;
-            border-radius: 0.25rem;
-            margin-bottom: 1.5rem;
-            margin-top: 0.5rem;
-            padding: 1rem;
-          "
-        >
-          <p style="margin: 0.25rem 0">
-            <strong>Movement:</strong> W/A/S/D or Arrow Keys
-          </p>
-          <p style="margin: 0.25rem 0"><strong>Jump:</strong> W, ↑, or Space</p>
-          <p style="margin: 0.25rem 0"><strong>Plant/Harvest:</strong> F</p>
-          <p style="margin: 0.25rem 0"><strong>Break Block:</strong> R</p>
-          <p style="margin: 0.25rem 0"><strong>Change Break Mode:</strong> E</p>
-          <p style="margin: 0.25rem 0">
-            <strong>Change Movement Scale:</strong> X
-          </p>
-          <p style="margin: 0.25rem 0">
-            <strong>Change Block Range:</strong> K
-          </p>
-          <p style="margin: 0.25rem 0">
-            <strong>Place Block:</strong> U/I/O/J/K/L/M/,/.
-          </p>
-          <p style="margin: 0.25rem 0">
-            <strong>World State Menu:</strong> Ctrl+S
-          </p>
-          <p style="margin: 0.25rem 0">
-            <strong>Inspect Tiles:</strong> Mouse hover
-          </p>
-          <p style="margin: 0.25rem 0">
+        <h3>Controls</h3>
+        <ul class="about-controls">
+          <li><strong>Movement:</strong> W/A/S/D or Arrow Keys</li>
+          <li><strong>Jump:</strong> W, ↑, or Space</li>
+          <li><strong>Plant/Harvest:</strong> F</li>
+          <li><strong>Break Block:</strong> R</li>
+          <li><strong>Change Break Mode:</strong> E</li>
+          <li><strong>Change Movement Scale:</strong> X</li>
+          <li><strong>Change Block Range:</strong> K</li>
+          <li><strong>Place Block:</strong> U/I/O/J/L/M/,/.</li>
+          <li><strong>World State Menu:</strong> Ctrl+S</li>
+          <li><strong>Inspect Tiles:</strong> Mouse hover</li>
+          <li>
             <strong>Tap the bottom corner panel for mobile controls.</strong>
-          </p>
-        </div>
-        <a href="https://kherrick.github.io/sprite-garden/">
+          </li>
+        </ul>
+        <a
+          href="https://kherrick.github.io/sprite-garden/"
+          rel="noopener noreferrer"
+          target="_blank"
+        >
           <img
-            src="assets/sprite-garden-animation.gif"
+            src="https://kherrick.github.io/sprite-garden/assets/sprite-garden-animation.gif"
             desc="An animation of Sprite Garden gameplay"
             title="Sprite Garden - Gameplay Animation"
           />
         </a>
-        <h3 style="margin-top: 1.5rem">Tips for New Players</h3>
-        <ul style="margin-left: 1.5rem">
+        <h3>Tips for New Players</h3>
+        <ul>
           <li>
             Start by exploring your immediate surroundings to understand the
             biome
@@ -177,10 +156,15 @@
           <li>Save your game frequently using the World State menu (Ctrl+S)</li>
           <li>Share interesting world seeds with friends!</li>
         </ul>
-        <h3 style="margin-top: 1.5rem">Open Source</h3>
+        <h3>Open Source</h3>
         <p>
           Sprite Garden is open source software. Visit
-          <a href="https://github.com/kherrick/sprite-garden">the project repository</a>
+          <a
+            href="https://github.com/kherrick/sprite-garden"
+            rel="noopener noreferrer"
+            target="_blank"
+            >the project repository</a
+          >
           to view the code, report issues, or to contribute.
         </p>
       </div>

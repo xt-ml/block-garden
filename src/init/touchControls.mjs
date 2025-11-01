@@ -23,6 +23,7 @@ export function initTouchControls(doc) {
           player: gameState.player.get(),
           seedInventory: gameState.seedInventory.get(),
           selectedSeedType: gameState.selectedSeedType.get(),
+          tileName: gameConfig.TileName,
           tiles: gameConfig.TILES,
           tileSize: gameConfig.TILE_SIZE.get(),
           world: gameState.world.get(),

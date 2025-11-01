@@ -20,17 +20,17 @@
     <script src="service-worker/init.mjs" type="module"></script>
   </head>
   <body>
-    <div id="gameContainer">
+    <div class="sprite-garden" id="gameContainer">
       <div id="loading">
-        <div class="pixel" style="top: 0; left: 4rem"></div>
-        <div class="pixel" style="top: 1rem; left: 1rem"></div>
-        <div class="pixel" style="top: 1rem; left: 7rem"></div>
-        <div class="pixel" style="top: 4rem; left: 0"></div>
-        <div class="pixel" style="top: 4rem; left: 8rem"></div>
-        <div class="pixel" style="top: 7rem; left: 1rem"></div>
-        <div class="pixel" style="top: 7rem; left: 7rem"></div>
-        <div class="pixel" style="top: 8rem; left: 4rem"></div>
-        <div class="pixel" style="top: 4rem; left: 4rem"></div>
+        <div class="pixel pixel-one"></div>
+        <div class="pixel pixel-two"></div>
+        <div class="pixel pixel-three"></div>
+        <div class="pixel pixel-four"></div>
+        <div class="pixel pixel-five"></div>
+        <div class="pixel pixel-six"></div>
+        <div class="pixel pixel-seven"></div>
+        <div class="pixel pixel-eight"></div>
+        <div class="pixel pixel-nine"></div>
       </div>
       <canvas id="canvas"></canvas>
       <div id="ui-grid" class="ui-grid">
@@ -43,43 +43,9 @@
               <div>Total Seeds: <span id="seedCount">0</span></div>
               <div>Time: <span id="gameTime">0</span>s</div>
 
-              <div
-                style="
-                  margin-top: 15px;
-                  border-top: 1px solid #ccc;
-                  padding-top: 10px;
-                "
-              >
-                <button
-                  id="aboutBtn"
-                  style="
-                    background: #4caf50;
-                    border: none;
-                    border-radius: 0.25rem;
-                    color: white;
-                    cursor: pointer;
-                    padding: 0.5rem 1rem;
-                    margin: 0.25rem;
-                    width: calc(100% - 0.5rem);
-                  "
-                >
-                  ℹ️ About
-                </button>
-                <button
-                  id="privacyBtn"
-                  style="
-                    background: #2196f3;
-                    border: none;
-                    border-radius: 0.25rem;
-                    color: white;
-                    cursor: pointer;
-                    padding: 0.5rem 1rem;
-                    margin: 0.25rem;
-                    width: calc(100% - 0.5rem);
-                  "
-                >
-                  🔒 Privacy
-                </button>
+              <div class="info-buttons-container">
+                <button id="aboutBtn">ℹ️ About</button>
+                <button id="privacyBtn">🔒 Privacy</button>
               </div>
             </div>
           </div>
@@ -89,238 +55,255 @@
           <div id="settings">
             <div class="ui-grid__corner--heading">⚙️ Settings</div>
             <div class="ui-grid__corner--container" hidden="hidden">
-              <div id="resolution">
-                <select id="resolutionSelect">
-                  <option value="400">400x400</option>
-                  <option value="800">800x800</option>
-                  <option hidden="hidden" value="fullscreen">Fullscreen</option>
-                </select>
-              </div>
-              <button id="worldState">🌍 World State</button>
-              <button id="toggleView">
-                🔍 <span id="viewModeText">View Normal</span>
-              </button>
-              <button id="toggleFog">
-                ☁ <span id="fogModeText">Fog</span>
-              </button>
-              <button id="toggleBreakMode">
-                ⛏️ <span id="breakModeText">Dig Regular</span>
-              </button>
-              <div id="examplesBtnContainer" hidden="hidden">
-                <div class="ui-grid__corner--sub-heading">🗺️ Examples</div>
-                <button id="examplesBtn">
-                  📝 <span id="examplesBtnText">Open</span>
+              <div class="settings-actions">
+                <div id="resolution">
+                  <select id="resolutionSelect">
+                    <option value="400">400x400</option>
+                    <option value="800">800x800</option>
+                    <option hidden="hidden" value="fullscreen">
+                      Fullscreen
+                    </option>
+                  </select>
+                </div>
+                <button id="worldState">🌍 World State</button>
+                <button id="toggleView">
+                  🔍 <span id="viewModeText">View Normal</span>
+                </button>
+                <button id="toggleFog">
+                  ☁ <span id="fogModeText">Fog</span>
+                </button>
+                <button id="toggleBreakMode">
+                  ⛏️ <span id="breakModeText">Dig Regular</span>
                 </button>
               </div>
-              <div id="mapEditor" hidden="hidden">
-                <div class="ui-grid__corner--sub-heading">🗺️ Map Editor</div>
-                <button id="toggleMapEditor">
-                  📝 <span id="mapEditorText">Enable Editor</span>
-                </button>
-                <div id="mapEditorControls" hidden="hidden">
-                  <div>
-                    Brush Size:
-                    <select id="brushSizeSelect">
-                      <option value="1">1x1</option>
-                      <option value="3">3x3</option>
-                      <option value="5">5x5</option>
-                    </select>
-                  </div>
-                  <div style="margin-top: 5px">
-                    <div style="margin-bottom: 5px">🌍 Terrain:</div>
-                    <div
-                      style="
-                        display: grid;
-                        grid-template-columns: repeat(4, 1fr);
-                        gap: 2px;
-                        margin-bottom: 10px;
-                      "
-                    >
-                      <button
-                        class="tile-btn"
-                        data-tile="AIR"
-                        style="background: #87ceeb"
+
+              <div class="settings-actions">
+                <div id="examplesBtnContainer" hidden="hidden">
+                  <div class="ui-grid__corner--sub-heading">🗺️ Examples</div>
+                  <button id="examplesBtn">
+                    📝 <span id="examplesBtnText">Open</span>
+                  </button>
+                </div>
+                <div id="mapEditor" hidden="hidden">
+                  <div class="ui-grid__corner--sub-heading">🗺️ Map Editor</div>
+                  <button id="toggleMapEditor">
+                    📝 <span id="mapEditorText">Enable Editor</span>
+                  </button>
+                  <div
+                    class="ui-grid__corner--sub-section"
+                    id="mapEditorControls"
+                    hidden="hidden"
+                  >
+                    <div>
+                      Brush Size:
+                      <select id="brushSizeSelect">
+                        <option value="1">1x1</option>
+                        <option value="3">3x3</option>
+                        <option value="5">5x5</option>
+                      </select>
+                    </div>
+                    <div class="map-editor-controls-section">
+                      <div class="map-editor-controls-section_header">
+                        🌍 Terrain:
+                      </div>
+                      <div
+                        class="map-editor-controls-section_buttons-container"
                       >
-                        Air
-                      </button>
-                      <button
-                        class="tile-btn"
-                        data-tile="DIRT"
-                        style="background: #8b4513; color: white"
+                        <button class="tile-btn tile-btn--air" data-tile="AIR">
+                          Air
+                        </button>
+                        <button
+                          class="tile-btn tile-btn--dirt"
+                          data-tile="DIRT"
+                        >
+                          Dirt
+                        </button>
+                        <button
+                          class="tile-btn tile-btn--grass"
+                          data-tile="GRASS"
+                        >
+                          Grass
+                        </button>
+                        <button
+                          class="tile-btn tile-btn--stone"
+                          data-tile="STONE"
+                        >
+                          Stone
+                        </button>
+                        <button
+                          class="tile-btn tile-btn--sand"
+                          data-tile="SAND"
+                        >
+                          Sand
+                        </button>
+                        <button
+                          class="tile-btn tile-btn--clay"
+                          data-tile="CLAY"
+                        >
+                          Clay
+                        </button>
+                        <button
+                          class="tile-btn tile-btn--snow"
+                          data-tile="SNOW"
+                        >
+                          Snow
+                        </button>
+                        <button class="tile-btn tile-btn--ice" data-tile="ICE">
+                          Ice
+                        </button>
+                        <button
+                          class="tile-btn tile-btn--cloud"
+                          data-tile="CLOUD"
+                        >
+                          Cloud
+                        </button>
+                      </div>
+                      <div class="map-editor-controls_header">
+                        🏔️ Resources:
+                      </div>
+                      <div
+                        class="map-editor-controls-section_buttons-container"
                       >
-                        Dirt
-                      </button>
-                      <button
-                        class="tile-btn"
-                        data-tile="GRASS"
-                        style="background: #90ee90; color: #333"
+                        <button
+                          class="tile-btn tile-btn--coal"
+                          data-tile="COAL"
+                        >
+                          Coal
+                        </button>
+                        <button
+                          class="tile-btn tile-btn--iron"
+                          data-tile="IRON"
+                        >
+                          Iron
+                        </button>
+                        <button
+                          class="tile-btn tile-btn--gold"
+                          data-tile="GOLD"
+                        >
+                          Gold
+                        </button>
+                        <button
+                          class="tile-btn tile-btn--pumice"
+                          data-tile="PUMICE"
+                        >
+                          Pumice
+                        </button>
+                      </div>
+                      <div class="map-editor-controls_header">🌳 Nature:</div>
+                      <div
+                        class="map-editor-controls-section_buttons-container"
                       >
-                        Grass
-                      </button>
-                      <button
-                        class="tile-btn"
-                        data-tile="STONE"
-                        style="background: #696969; color: white"
+                        <button
+                          class="tile-btn tile-btn--tree_trunk"
+                          data-tile="TREE_TRUNK"
+                        >
+                          Trunk
+                        </button>
+                        <button
+                          class="tile-btn tile-btn--tree_leaves"
+                          data-tile="TREE_LEAVES"
+                        >
+                          Leaves
+                        </button>
+                        <button
+                          class="tile-btn tile-btn--water"
+                          data-tile="WATER"
+                        >
+                          Water
+                        </button>
+                        <button
+                          class="tile-btn tile-btn--lava"
+                          data-tile="LAVA"
+                        >
+                          Lava
+                        </button>
+                      </div>
+                      <div class="map-editor-controls_header">🌱 Crops:</div>
+                      <div
+                        class="map-editor-controls-section_buttons-container"
                       >
-                        Stone
-                      </button>
-                      <button
-                        class="tile-btn"
-                        data-tile="SAND"
-                        style="background: #f4a460"
-                      >
-                        Sand
-                      </button>
-                      <button
-                        class="tile-btn"
-                        data-tile="CLAY"
-                        style="background: #cd853f"
-                      >
-                        Clay
-                      </button>
-                      <button
-                        class="tile-btn"
-                        data-tile="SNOW"
-                        style="background: #fffafa; color: #333"
-                      >
-                        Snow
-                      </button>
-                      <button
-                        class="tile-btn"
-                        data-tile="ICE"
-                        style="background: #b0e0e6; color: #333"
-                      >
-                        Ice
-                      </button>
-                      <button
-                        class="tile-btn"
-                        data-tile="CLOUD"
-                        style="background: #c5d1d3ff; color: #333"
-                      >
-                        Cloud
+                        <button
+                          class="tile-btn tile-btn--wheat"
+                          data-tile="WHEAT"
+                        >
+                          Wheat
+                        </button>
+                        <button
+                          class="tile-btn tile-btn--carrot"
+                          data-tile="CARROT"
+                        >
+                          Carrot
+                        </button>
+                        <button
+                          class="tile-btn tile-btn--mushroom"
+                          data-tile="MUSHROOM"
+                        >
+                          Mushroom
+                        </button>
+                        <button
+                          class="tile-btn tile-btn--cactus"
+                          data-tile="CACTUS"
+                        >
+                          Cactus
+                        </button>
+                        <button
+                          class="tile-btn tile-btn--tulip"
+                          data-tile="TULIP"
+                        >
+                          Tulip
+                        </button>
+                        <button
+                          class="tile-btn tile-btn--agave"
+                          data-tile="AGAVE"
+                        >
+                          Agave
+                        </button>
+                        <button
+                          class="tile-btn tile-btn--lavender"
+                          data-tile="LAVENDER"
+                        >
+                          Lavender
+                        </button>
+                        <button
+                          class="tile-btn tile-btn--kelp"
+                          data-tile="KELP"
+                        >
+                          Kelp
+                        </button>
+                        <button
+                          class="tile-btn tile-btn--rose"
+                          data-tile="ROSE"
+                        >
+                          Rose
+                        </button>
+                        <button
+                          class="tile-btn tile-btn--pumpkin"
+                          data-tile="PUMPKIN"
+                        >
+                          Pumpkin
+                        </button>
+                        <button
+                          class="tile-btn tile-btn--lotus"
+                          data-tile="LOTUS"
+                        >
+                          Lotus
+                        </button>
+                        <button
+                          class="tile-btn tile-btn--birch"
+                          data-tile="BIRCH"
+                        >
+                          Birch
+                        </button>
+                      </div>
+                    </div>
+                    <div>
+                      <button id="clearMapEditor">🧹 Clear All</button>
+                      <button id="fillMapEditor">🪣 Fill Layer</button>
+                      <button id="saveMapAsState">💾 Save as State</button>
+                      <button id="resetToGenerated">
+                        🌍 Reset to Generated
                       </button>
                     </div>
-                    <div style="margin-bottom: 5px">🏔️ Resources:</div>
-                    <div
-                      style="
-                        display: grid;
-                        grid-template-columns: repeat(4, 1fr);
-                        gap: 2px;
-                        margin-bottom: 10px;
-                      "
-                    >
-                      <button
-                        class="tile-btn"
-                        data-tile="COAL"
-                        style="background: #2f4f4f; color: white"
-                      >
-                        Coal
-                      </button>
-                      <button
-                        class="tile-btn"
-                        data-tile="IRON"
-                        style="background: #b87333"
-                      >
-                        Iron
-                      </button>
-                      <button
-                        class="tile-btn"
-                        data-tile="GOLD"
-                        style="background: #ffd700; color: #333"
-                      >
-                        Gold
-                      </button>
-                      <button
-                        class="tile-btn"
-                        data-tile="PUMICE"
-                        style="background: #b8a99a; color: #333"
-                      >
-                        Pumice
-                      </button>
-                    </div>
-                    <div style="margin-bottom: 5px">🌳 Nature:</div>
-                    <div
-                      style="
-                        display: grid;
-                        grid-template-columns: repeat(4, 1fr);
-                        gap: 2px;
-                        margin-bottom: 10px;
-                      "
-                    >
-                      <button
-                        class="tile-btn"
-                        data-tile="TREE_TRUNK"
-                        style="background: #8b4513; color: white"
-                      >
-                        Trunk
-                      </button>
-                      <button
-                        class="tile-btn"
-                        data-tile="TREE_LEAVES"
-                        style="background: #228b22; color: white"
-                      >
-                        Leaves
-                      </button>
-                      <button
-                        class="tile-btn"
-                        data-tile="WATER"
-                        style="background: #4169e1; color: white"
-                      >
-                        Water
-                      </button>
-                      <button
-                        class="tile-btn"
-                        data-tile="LAVA"
-                        style="background: #ff4500; color: white"
-                      >
-                        Lava
-                      </button>
-                    </div>
-                    <div style="margin-bottom: 5px">🌱 Crops:</div>
-                    <div
-                      style="
-                        display: grid;
-                        grid-template-columns: repeat(4, 1fr);
-                        gap: 2px;
-                      "
-                    >
-                      <button
-                        class="tile-btn"
-                        data-tile="WHEAT"
-                        style="background: #daa520"
-                      >
-                        Wheat
-                      </button>
-                      <button
-                        class="tile-btn"
-                        data-tile="CARROT"
-                        style="background: #ff8c00"
-                      >
-                        Carrot
-                      </button>
-                      <button
-                        class="tile-btn"
-                        data-tile="MUSHROOM"
-                        style="background: #8b0000; color: white"
-                      >
-                        Mushroom
-                      </button>
-                      <button
-                        class="tile-btn"
-                        data-tile="CACTUS"
-                        style="background: #32cd32"
-                      >
-                        Cactus
-                      </button>
-                    </div>
-                  </div>
-                  <div style="margin-top: 10px">
-                    <button id="clearMapEditor">🧹 Clear All</button>
-                    <button id="fillMapEditor">🪣 Fill Layer</button>
-                  </div>
-                  <div style="margin-top: 10px">
-                    <button id="saveMapAsState">💾 Save as State</button>
-                    <button id="resetToGenerated">🌍 Reset to Generated</button>
                   </div>
                 </div>
               </div>
@@ -348,7 +331,7 @@
                   height="24px"
                   viewBox="0 -960 960 960"
                   width="24px"
-                  fill="#e3e3e3"
+                  fill="var(--sg-color-gray-200)"
                 >
                   <path
                     d="M419-80q-28 0-52.5-12T325-126L107-403l19-20q20-21 48-25t52 11l74 45v-328q0-17 11.5-28.5T340-760q17 0 29 11.5t12 28.5v472l-97-60 104 133q6 7 14 11t17 4h221q33 0 56.5-23.5T720-240v-160q0-17-11.5-28.5T680-440H461v-80h219q50 0 85 35t35 85v160q0 66-47 113T640-80H419ZM167-620q-13-22-20-47.5t-7-52.5q0-83 58.5-141.5T340-920q83 0 141.5 58.5T540-720q0 27-7 52.5T513-620l-69-40q8-14 12-28.5t4-31.5q0-50-35-85t-85-35q-50 0-85 35t-35 85q0 17 4 31.5t12 28.5l-69 40Zm335 280Z"
@@ -381,176 +364,186 @@
                     🌵 <span id="cactusCount">0</span>
                   </button>
                   <button class="seed-btn" data-walnut="data-walnut">
-                    🥜 <span id="walnutCount">0</span>
+                    🌰 <span id="walnutCount">0</span>
                   </button>
                   <button
-                    class="seed-btn"
+                    class="seed-btn seed-btn--berry-bush"
                     data-berry_bush="data-berry_bush"
-                    style="
-                      background: #dc143c;
-                      border: 1px solid #000;
-                      color: #fff;
-                      cursor: pointer;
-                      padding: 4px 8px;
-                      margin: 2px;
-                    "
                   >
                     🍓 <span id="berry_bushCount">0</span>
                   </button>
 
                   <button
-                    class="seed-btn"
+                    class="seed-btn seed-btn--bamboo"
                     data-bamboo="data-bamboo"
-                    style="
-                      background: #90ee90;
-                      border: 1px solid #000;
-                      color: #000;
-                      cursor: pointer;
-                      padding: 4px 8px;
-                      margin: 2px;
-                    "
                   >
                     🎋 <span id="bambooCount">0</span>
                   </button>
 
                   <button
-                    class="seed-btn"
+                    class="seed-btn seed-btn--sunflower"
                     data-sunflower="data-sunflower"
-                    style="
-                      background: #ffd700;
-                      border: 1px solid #000;
-                      color: #000;
-                      cursor: pointer;
-                      padding: 4px 8px;
-                      margin: 2px;
-                    "
                   >
                     🌻 <span id="sunflowerCount">0</span>
                   </button>
 
-                  <button
-                    class="seed-btn"
-                    data-corn="data-corn"
-                    style="
-                      background: #f0e68c;
-                      border: 1px solid #000;
-                      color: #000;
-                      cursor: pointer;
-                      padding: 4px 8px;
-                      margin: 2px;
-                    "
-                  >
+                  <button class="seed-btn seed-btn--corn" data-corn="data-corn">
                     🌽 <span id="cornCount">0</span>
                   </button>
 
                   <button
-                    class="seed-btn"
+                    class="seed-btn seed-btn--pine-tree"
                     data-pine_tree="data-pine_tree"
-                    style="
-                      background: #2e5930;
-                      border: 1px solid #000;
-                      color: #fff;
-                      cursor: pointer;
-                      padding: 4px 8px;
-                      margin: 2px;
-                    "
                   >
                     🌲 <span id="pine_treeCount">0</span>
                   </button>
 
                   <button
-                    class="seed-btn"
+                    class="seed-btn seed-btn--willow-tree"
                     data-willow_tree="data-willow_tree"
-                    style="
-                      background: #8fbc8f;
-                      border: 1px solid #000;
-                      color: #000;
-                      cursor: pointer;
-                      padding: 4px 8px;
-                      margin: 2px;
-                    "
                   >
-                    🌿 <span id="willow_treeCount">0</span>
+                    🌳 <span id="willow_treeCount">0</span>
                   </button>
 
+                  <button class="seed-btn seed-btn--fern" data-fern="data-fern">
+                    🌿 <span id="fernCount">0</span>
+                  </button>
                   <button
-                    class="seed-btn"
-                    data-fern="data-fern"
-                    style="
-                      background: #3cb371;
-                      border: 1px solid #000;
-                      color: #fff;
-                      cursor: pointer;
-                      padding: 4px 8px;
-                      margin: 2px;
-                    "
+                    class="seed-btn seed-btn--tulip"
+                    data-tulip="data-tulip"
                   >
-                    ☘️ <span id="fernCount">0</span>
+                    🌷 <span id="tulipCount">0</span>
+                  </button>
+                  <button
+                    class="seed-btn seed-btn--agave"
+                    data-agave="data-agave"
+                  >
+                    🌱 <span id="agaveCount">0</span>
+                  </button>
+                  <button
+                    class="seed-btn seed-btn--lavender"
+                    data-lavender="data-lavender"
+                  >
+                    🌺 <span id="lavenderCount">0</span>
+                  </button>
+                  <button class="seed-btn seed-btn--kelp" data-kelp="data-kelp">
+                    <div class="swatch-kelp"></div>
+                    <span id="kelpCount">0</span>
+                  </button>
+                  <button class="seed-btn seed-btn--rose" data-rose="data-rose">
+                    🌸 <span id="roseCount">0</span>
+                  </button>
+                  <button
+                    class="seed-btn seed-btn--pumpkin"
+                    data-pumpkin="data-pumpkin"
+                  >
+                    🎃 <span id="pumpkinCount">0</span>
+                  </button>
+                  <button
+                    class="seed-btn seed-btn--lotus"
+                    data-lotus="data-lotus"
+                  >
+                    🪷 <span id="lotusCount">0</span>
+                  </button>
+                  <button
+                    class="seed-btn seed-btn--birch"
+                    data-birch="data-birch"
+                  >
+                    🪵 <span id="birchCount">0</span>
                   </button>
                 </div>
               </div>
 
-              <div
-                id="materials"
-                style="
-                  margin-top: 10px;
-                  border-top: 1px solid #ccc;
-                  padding-top: 10px;
-                "
-              >
+              <div id="materials">
                 <div class="ui-grid__corner--sub-heading">🧱 Materials</div>
                 <div class="ui-grid__corner--sub-section">
                   <div>Selected: <span id="selectedMaterial">None</span></div>
                   <div>
-                    <button class="material-btn" data-dirt="data-dirt">
+                    <button
+                      class="material-btn material-btn--dirt"
+                      data-dirt="data-dirt"
+                    >
                       🟤 <span id="dirtCount">0</span>
                     </button>
-                    <button class="material-btn" data-stone="data-stone">
+                    <button
+                      class="material-btn material-btn--stone"
+                      data-stone="data-stone"
+                    >
                       🪨 <span id="stoneCount">0</span>
                     </button>
 
-                    <button class="material-btn" data-grass="data-grass">
+                    <button
+                      class="material-btn material-btn--grass"
+                      data-grass="data-grass"
+                    >
                       <div class="swatch-grass"></div>
                       <span id="grassCount">0</span>
                     </button>
 
-                    <button class="material-btn" data-snow="data-snow">
-                      <div class="swatch-snow"></div>
-                      <span id="snowCount">0</span>
+                    <button
+                      class="material-btn material-btn--snow"
+                      data-snow="data-snow"
+                    >
+                      ❄️ <span id="snowCount">0</span>
                     </button>
 
-                    <button class="material-btn" data-ice="data-ice">
-                      <div class="swatch-ice"></div>
-                      <span id="iceCount">0</span>
+                    <button
+                      class="material-btn material-btn--ice"
+                      data-ice="data-ice"
+                    >
+                      🧊 <span id="iceCount">0</span>
                     </button>
 
-                    <button class="material-btn" data-wood="data-wood">
+                    <button
+                      class="material-btn material-btn--wood"
+                      data-wood="data-wood"
+                    >
                       🪵 <span id="woodCount">0</span>
                     </button>
-                    <button class="material-btn" data-sand="data-sand">
+                    <button
+                      class="material-btn material-btn--sand"
+                      data-sand="data-sand"
+                    >
                       🏖️ <span id="sandCount">0</span>
                     </button>
 
-                    <button class="material-btn" data-clay="data-clay">
+                    <button
+                      class="material-btn material-btn--clay"
+                      data-clay="data-clay"
+                    >
                       🧱 <span id="clayCount">0</span>
                     </button>
-                    <button class="material-btn" data-coal="data-coal">
+                    <button
+                      class="material-btn material-btn--coal"
+                      data-coal="data-coal"
+                    >
                       ⚫ <span id="coalCount">0</span>
                     </button>
 
-                    <button class="material-btn" data-iron="data-iron">
+                    <button
+                      class="material-btn material-btn--iron"
+                      data-iron="data-iron"
+                    >
                       🔩 <span id="ironCount">0</span>
                     </button>
-                    <button class="material-btn" data-gold="data-gold">
+                    <button
+                      class="material-btn material-btn--gold"
+                      data-gold="data-gold"
+                    >
                       🟡 <span id="goldCount">0</span>
                     </button>
-                    <button class="material-btn" data-pumice="data-pumice">
+                    <button
+                      class="material-btn material-btn--pumice"
+                      data-pumice="data-pumice"
+                    >
                       <div class="swatch-pumice"></div>
                       <span id="pumiceCount">0</span>
                     </button>
-                    <button class="material-btn" data-cloud="data-cloud">
-                      <div class="swatch-cloud"></div>
-                      <span id="cloudCount">0</span>
+                    <button
+                      class="material-btn material-btn--cloud"
+                      data-cloud="data-cloud"
+                    >
+                      ☁️ <span id="cloudCount">0</span>
                     </button>
                   </div>
                 </div>
@@ -626,7 +619,7 @@
           <div class="action-buttons">
             <div class="touch-btn" data-key=" ">🦘</div>
             <div class="touch-btn" data-key="r">⛏️</div>
-            <div class="touch-btn" data-key="f">🌱</div>
+            <div class="touch-btn" data-key="f">🧑‍🌾</div>
           </div>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { gameConfig } from "../state/state.mjs";
+import { gameConfig } from "../../state/state.mjs";
 
 // Add moss to cave surfaces
 export function addMossToCaves({ world, worldWidth, worldHeight, tiles }) {

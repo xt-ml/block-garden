@@ -8,6 +8,7 @@ function harvestMaturePlant({
   plantStructures,
   structure,
   structureKey,
+  tileName,
   tiles,
   world,
   worldHeight,
@@ -26,7 +27,7 @@ function harvestMaturePlant({
     });
   }
 
-  // Give seeds when harvesting mature plant
+  // Give seeds (and / or wood) when harvesting mature plant
   if (structure.seedType) {
     // 1-3 seeds
     const seedsGained = 1 + Math.floor(Math.random() * 3);
@@ -39,6 +40,25 @@ function harvestMaturePlant({
     console.log(
       `Harvested mature ${structure.seedType}, gained ${seedsGained} seeds`,
     );
+
+    // Check for a wood like structure
+    const item = "WOOD";
+    const drops = tiles[structure.seedType].drops;
+    const shouldDrop = Array.isArray(drops)
+      ? drops.some((item) => item.toLowerCase().includes(item.toLowerCase()))
+      : drops.toLowerCase().includes(item.toLowerCase());
+
+    // 0-3 wood
+    const woodGained = shouldDrop ? 1 + Math.floor(Math.random() * 3) : 0;
+
+    if (woodGained) {
+      updateState("materialsInventory", (inv) => ({
+        ...inv,
+        [item]: inv[item] + woodGained,
+      }));
+
+      console.log(`Gained ${woodGained} ${item.toLowerCase()}`);
+    }
   }
 
   // Remove the plant structure and any associated timers
@@ -59,6 +79,7 @@ export function handleFarmAction({
   player,
   seedInventory,
   selectedSeedType,
+  tileName,
   tiles,
   tileSize,
   world,
@@ -142,6 +163,7 @@ export function handleFarmAction({
         plantStructures,
         structure: harvestableStructure,
         structureKey,
+        tileName,
         tiles,
         world,
         worldHeight,

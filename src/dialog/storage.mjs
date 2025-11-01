@@ -29,12 +29,13 @@ export class StorageDialog {
     }
 
     const dialog = this.doc.createElement("dialog");
-    dialog.id = "storageDialog";
+    dialog.setAttribute("class", "sprite-garden");
+    dialog.setAttribute("id", "storageDialog");
     dialog.style.cssText = `
-      background: #f0f0f0;
+      background: var(--sg-color-gray-50);
       border-radius: 0.5rem;
-      border: 0.125rem solid #333;
-      color: #333;
+      border: 0.125rem solid var(--sg-color-gray-900);
+      color: var(--sg-color-gray-900);
       font-family: monospace;
       max-height: 80vh;
       max-width: 31.25rem;
@@ -56,7 +57,7 @@ export class StorageDialog {
         <button
           id="closeStorageDialog"
           style="
-            background: #ff4444;
+            background: var(--sg-color-red-500);
             border-radius: 0.25rem;
             border: none;
             color: white;
@@ -84,7 +85,7 @@ export class StorageDialog {
             placeholder="Enter world name..."
             style="
               border-radius: 0.25rem;
-              border: 0.0625rem solid #ccc;
+              border: 0.0625rem solid var(--sg-color-gray-500);
               flex: 1;
               padding: 0.3125rem;
             "
@@ -92,7 +93,7 @@ export class StorageDialog {
           <button
             id="saveToStorageBtn"
             style="
-              background: #4caf50;
+              background: var(--sg-color-green-500);
               border-radius: 0.25rem;
               border: none;
               color: white;
@@ -110,7 +111,7 @@ export class StorageDialog {
         <div
           id="savedGamesList"
           style="
-            border: 0.0625rem solid #ddd;
+            border: 0.0625rem solid var(--sg-color-gray-400);
             border-radius: 0.25rem;
             max-height: 18.75rem;
             overflow-y: auto;
@@ -123,7 +124,7 @@ export class StorageDialog {
             id="loadSelectedBtn"
             disabled
             style="
-              background: #2196f3;
+              background: var(--sg-color-blue-500);
               border-radius: 0.25rem;
               border: none;
               color: white;
@@ -137,7 +138,7 @@ export class StorageDialog {
             id="deleteSelectedBtn"
             disabled
             style="
-              background: #ff4444;
+              background: var(--sg-color-red-500);
               border-radius: 0.25rem;
               border: none;
               color: white;
@@ -189,7 +190,7 @@ export class StorageDialog {
 
     if (this.savedGames.length === 0) {
       listContainer.innerHTML = `
-        <div style="padding: 1.25rem; text-align: center; color: #556">
+        <div style="padding: 1.25rem; text-align: center; color: var(--sg-color-neutral-950);">
           No saved games found
         </div>
       `;
@@ -205,7 +206,7 @@ export class StorageDialog {
             data-index="${index}"
             style="
               padding: 0.625rem;
-              border-bottom: 0.0625rem solid #eee;
+              border-bottom: 0.0625rem solid var(--sg-color-gray-100);
               cursor: pointer;
               display: flex;
               justify-content: space-between;
@@ -214,7 +215,7 @@ export class StorageDialog {
           >
             <div>
               <div style="font-weight: bold">${game.name}</div>
-              <div style="font-size: 0.75rem; color: #556">
+              <div style="font-size: 0.75rem; color: var(--sg-color-neutral-950);">
                 ${new Date(game.timestamp).toLocaleString()}
               </div>
             </div>

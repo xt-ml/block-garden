@@ -148,19 +148,12 @@ export function initDocumentEventListeners(gThis) {
         handleGenerateButton();
       }
     }
-    if (
-      (lowercaseKey >= "0" && lowercaseKey <= "9") ||
-      lowercaseKey === "backspace" ||
-      lowercaseKey === "delete"
-    ) {
-      return;
-    }
 
-    // Add 'R' key to regenerate world with random seed
-    if (lowercaseKey === "r" && e.ctrlKey) {
-      e.preventDefault();
-
-      handleRandomSeedButton();
+    // Always hide the world generation panel with escape
+    if (lowercaseKey === "escape") {
+      document
+        .querySelector('[class="seed-controls"]')
+        .setAttribute("hidden", "hidden");
     }
 
     // Add 'S' key to show / hide the world generation panel
@@ -170,6 +163,22 @@ export function initDocumentEventListeners(gThis) {
       document
         .querySelector('[class="seed-controls"]')
         .toggleAttribute("hidden");
+    }
+
+    if (
+      (lowercaseKey >= "0" && lowercaseKey <= "9") ||
+      lowercaseKey === "backspace" ||
+      lowercaseKey === "delete" ||
+      lowercaseKey === "escape"
+    ) {
+      return;
+    }
+
+    // Add 'R' key to regenerate world with random seed
+    if (lowercaseKey === "r" && e.ctrlKey) {
+      e.preventDefault();
+
+      handleRandomSeedButton();
     }
 
     // Add 'G' key to regenerate world with current seed (to see changes)
@@ -201,6 +210,7 @@ export function initDocumentEventListeners(gThis) {
         player: gameState.player.get(),
         seedInventory: gameState.seedInventory.get(),
         selectedSeedType: gameState.selectedSeedType.get(),
+        tileName: gameConfig.TileName,
         tiles: gameConfig.TILES,
         tileSize: gameConfig.TILE_SIZE.get(),
         world: gameState.world.get(),
@@ -466,7 +476,7 @@ export function initElementEventListeners(doc) {
   }
 
   const genBtn = doc.getElementById("initNewWorld");
-  if (genBtn)
+  if (genBtn) {
     genBtn.addEventListener("click", () => {
       const seedInput = doc.getElementById("worldSeedInput");
       const currentSeedDisplay = doc.getElementById("currentSeed");
@@ -503,45 +513,38 @@ export function initElementEventListeners(doc) {
       gameState.exploredMap.set(currentFog);
     });
 
-  // Seed button event listeners
-  doc.querySelectorAll(".seed-btn").forEach((seedBtn) => {
-    seedBtn.addEventListener("click", (e) => {
-      selectSeed(doc, gameState, e);
-
-      const subSection = seedBtn?.parentElement?.parentElement;
-
-      if (subSection) {
-        subSection.scrollTo(0, 0);
-      }
+    // Seed button event listeners
+    doc.querySelectorAll(".seed-btn").forEach((seedBtn) => {
+      seedBtn.addEventListener("click", (e) => {
+        selectSeed(gameState, e);
+      });
     });
-  });
 
-  // Material button event listeners
-  doc.querySelectorAll(".material-btn").forEach((materialBtn) => {
-    materialBtn.addEventListener("click", (e) => {
-      selectMaterial(doc, gameState, e);
-
-      const subSection = materialBtn?.parentElement?.parentElement;
-
-      if (subSection) {
-        subSection.scrollTo(0, 0);
-      }
+    // Material button event listeners
+    doc.querySelectorAll(".material-btn").forEach((materialBtn) => {
+      materialBtn.addEventListener("click", (e) => {
+        selectMaterial(doc, gameState, e);
+      });
     });
-  });
+  }
 
   const toggleBtn = doc.getElementById("toggleView");
-  if (toggleBtn)
+  if (toggleBtn) {
     toggleBtn.addEventListener("click", () =>
       gameState.viewMode.set(
         gameState.viewMode.get() === "normal" ? "xray" : "normal",
       ),
     );
+  }
 
   const toggleBreakBtn = doc.getElementById("toggleBreakMode");
-  if (toggleBreakBtn)
+  if (toggleBreakBtn) {
     toggleBreakBtn.addEventListener("click", () => toggleBreakMode());
+  }
 
   // Set default to 400x400 and update the select element
   const sel = doc.getElementById("resolutionSelect");
-  if (sel) sel.value = "400";
+  if (sel) {
+    sel.value = "400";
+  }
 }

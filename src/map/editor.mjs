@@ -157,8 +157,12 @@ export function handleMapEditorClick({
   worldWidth,
   world,
 }) {
-  if (!mapEditorState.isEnabled || !mapEditorState.selectedTile) {
-    // Not in editor mode or no tile selected
+  if (
+    !mapEditorState.isEnabled ||
+    !mapEditorState.selectedTile ||
+    typeof camera?.get !== "function"
+  ) {
+    // Not in editor mode or no tile selected, or camera unavailable
     return false;
   }
 

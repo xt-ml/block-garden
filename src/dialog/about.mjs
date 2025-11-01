@@ -10,39 +10,29 @@ export class AboutDialog {
     this.handleDialogClick = this.handleDialogClick.bind(this);
   }
 
-  async createDialog() {
+  async createDialog(part) {
     if (this.dialog) {
       this.dialog.remove();
     }
 
-    const dialogId = "aboutDialog";
-    let dialog = this.doc.getElementById(dialogId);
+    const dialogClass = `${part}-content`;
+    let dialog = this.doc.querySelector(`.${dialogClass}`);
 
     if (!dialog) {
       dialog = this.doc.createElement("dialog");
-      dialog.id = dialogId;
-      dialog.style.cssText = `
-        background: #f0f0f0;
-        border-radius: 0.5rem;
-        border: 0.125rem solid #333;
-        color: #333;
-        font-family: monospace;
-        max-height: 80vh;
-        max-width: 50rem;
-        overflow-y: auto;
-        padding: 1.25rem;
-        width: 90%;
-      `;
+      dialog.setAttribute("class", `${dialogClass} sprite-garden`);
 
-      const tmpDoc = new Document();
-      const aboutContent = await (await fetch("about")).text();
-      tmpDoc.innerHTML = aboutContent;
+      const parser = new DOMParser();
+      const documentText = await (await fetch(part)).text();
+      const parsed = parser.parseFromString(documentText, "text/html");
+      const content = parsed.querySelector(`.${dialogClass}`);
 
-      dialog.innerHTML = tmpDoc.innerHTML;
+      dialog.innerHTML = content.innerHTML;
 
       this.doc.body.appendChild(dialog);
-
-      this.doc.getElementById("closeAboutDialog").removeAttribute("hidden");
+      this.doc
+        .querySelector(`.${part}-content_close-btn`)
+        .removeAttribute("hidden");
     }
 
     this.dialog = dialog;
@@ -58,27 +48,16 @@ export class AboutDialog {
   }
 
   initEventListeners() {
-    const closeBtn = this.dialog.querySelector("#closeAboutDialog");
+    const closeBtn = this.dialog.querySelector(".about-content_close-btn");
     closeBtn.addEventListener("click", this.close);
-
-    // Handle privacy policy link
-    const privacyLink = this.dialog.querySelector("#privacyLinkInAbout");
-    if (privacyLink) {
-      privacyLink.addEventListener("click", (e) => {
-        e.preventDefault();
-
-        this.close();
-
-        showPrivacyDialog(this.gThis);
-      });
-    }
 
     this.dialog.addEventListener("click", this.handleDialogClick);
   }
 
   removeEventListeners() {
-    const closeBtn = this.dialog.querySelector("#closeAboutDialog");
+    const closeBtn = this.dialog.querySelector(".about-content_close-btn");
     closeBtn.removeEventListener("click", this.close);
+
     this.dialog.removeEventListener("click", this.handleDialogClick);
   }
 
@@ -95,7 +74,7 @@ export class AboutDialog {
 async function showAboutDialog(gThis) {
   const aboutDialog = new AboutDialog(gThis);
 
-  await aboutDialog.createDialog();
+  await aboutDialog.createDialog("about");
   aboutDialog.show();
 
   return aboutDialog;

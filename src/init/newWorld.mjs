@@ -44,7 +44,11 @@ export function initNewWorld({
   );
 
   // Set initial seed inventory
-  const initialSeedInventory = mapValuesToProvided(extractSeeds(tiles));
+  const defaultNumberOfInitialSeeds = 1;
+  const initialSeedInventory = mapValuesToProvided(
+    extractSeeds(tiles),
+    defaultNumberOfInitialSeeds,
+  );
   seedInventory.set(initialSeedInventory);
 
   // Find a good spawn location

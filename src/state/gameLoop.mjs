@@ -6,6 +6,7 @@ import { updateCrops } from "../update/crops.mjs";
 import { updateDepthUI } from "../update/ui/depth.mjs";
 import { updatePlayer } from "../update/player.mjs";
 import { updateWaterPhysics } from "../water/updateWaterPhysics.mjs";
+import { buildTileColorMap } from "./config/tiles.mjs";
 
 const canvas = globalThis.document.getElementById("canvas");
 
@@ -131,6 +132,12 @@ export async function gameLoop(
   // Calculate interpolation factor for smooth rendering
   const interpolation = accumulatedTime / FIXED_TIMESTEP;
 
+  // Build color map for tiles
+  const tileColorMap = buildTileColorMap(
+    gThis.document.getElementById("gameContainer"),
+    gThis.getComputedStyle,
+  );
+
   // Render with interpolation for smooth visuals
   render(
     canvas,
@@ -148,6 +155,7 @@ export async function gameLoop(
     exploredMap,
     previousState,
     interpolation,
+    tileColorMap,
   );
 
   // Continue game loop

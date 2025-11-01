@@ -19,19 +19,25 @@ export async function updateMovementScaleUI(doc) {
 }
 
 export async function updateMovementScaleValue(doc) {
-  let movementScaleValue = Number(
-    (await localForage.getItem("sprite-garden-movement-scale")) || 1,
+  const movementScaleValue = Number(
+    Number(await localForage.getItem("sprite-garden-movement-scale")) || 1,
   );
 
-  let newMovementScaleValue = Number(movementScaleValue + 0.05);
+  let newMovementScaleValue = Number(
+    Number(movementScaleValue.toFixed(2)) + 0.125,
+  );
 
-  if (movementScaleValue >= 1) {
-    newMovementScaleValue = 0.5;
+  if (newMovementScaleValue > 1) {
+    newMovementScaleValue = Number(newMovementScaleValue.toFixed(1));
+  }
+
+  if (newMovementScaleValue > 1) {
+    newMovementScaleValue = Number(0.5);
   }
 
   await localForage.setItem(
     `sprite-garden-movement-scale`,
-    newMovementScaleValue.toFixed(2),
+    newMovementScaleValue,
   );
 
   await updateMovementScaleUI(doc);

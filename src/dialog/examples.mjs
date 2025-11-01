@@ -8,39 +8,29 @@ export class ExamplesDialog {
     this.handleDialogClick = this.handleDialogClick.bind(this);
   }
 
-  async createDialog() {
+  async createDialog(part, path) {
     if (this.dialog) {
       this.dialog.remove();
     }
 
-    const dialogId = "examplesDialog";
-    let dialog = this.doc.getElementById(dialogId);
+    const dialogClass = `${part}-content`;
+    let dialog = this.doc.querySelector(`.${dialogClass}`);
 
     if (!dialog) {
       dialog = this.doc.createElement("dialog");
-      dialog.id = dialogId;
-      dialog.style.cssText = `
-        background: #f0f0f0;
-        border-radius: 0.5rem;
-        border: 0.125rem solid #333;
-        color: #333;
-        font-family: monospace;
-        max-height: 80vh;
-        max-width: 50rem;
-        overflow-y: auto;
-        padding: 1.25rem;
-        width: 90%;
-      `;
+      dialog.setAttribute("class", `${dialogClass} sprite-garden`);
 
-      const tmpDoc = new Document();
-      const examplesContent = await (await fetch("src/api/examples")).text();
-      tmpDoc.innerHTML = examplesContent;
+      const parser = new DOMParser();
+      const documentText = await (await fetch(`${path}/${part}`)).text();
+      const parsed = parser.parseFromString(documentText, "text/html");
+      const content = parsed.querySelector(`.${dialogClass}`);
 
-      dialog.innerHTML = tmpDoc.innerHTML;
+      dialog.innerHTML = content.innerHTML;
 
       this.doc.body.appendChild(dialog);
-
-      this.doc.getElementById("closeExamplesDialog").removeAttribute("hidden");
+      this.doc
+        .querySelector(`.${part}-content_close-btn`)
+        .removeAttribute("hidden");
     }
 
     this.dialog = dialog;
@@ -56,15 +46,16 @@ export class ExamplesDialog {
   }
 
   initEventListeners() {
-    const closeBtn = this.dialog.querySelector("#closeExamplesDialog");
+    const closeBtn = this.dialog.querySelector(".examples-content_close-btn");
     closeBtn.addEventListener("click", this.close);
 
     this.dialog.addEventListener("click", this.handleDialogClick);
   }
 
   removeEventListeners() {
-    const closeBtn = this.dialog.querySelector("#closeExamplesDialog");
+    const closeBtn = this.dialog.querySelector(".examples-content_close-btn");
     closeBtn.removeEventListener("click", this.close);
+
     this.dialog.removeEventListener("click", this.handleDialogClick);
   }
 
@@ -81,7 +72,7 @@ export class ExamplesDialog {
 async function showExamplesDialog(gThis) {
   const examplesDialog = new ExamplesDialog(gThis);
 
-  await examplesDialog.createDialog();
+  await examplesDialog.createDialog("examples", "src/api");
   examplesDialog.show();
 
   return examplesDialog;

@@ -1,6 +1,6 @@
 import { Signal } from "../../deps/signal.mjs";
 
-import { addMossToCaves } from "./moss.mjs";
+import { addMossToCaves } from "../generate/plants/moss.mjs";
 import { generateCaves } from "./caves.mjs";
 import { generateHeightMap } from "./heightMap.mjs";
 import { generateWaterSources } from "../water/generateWaterSources.mjs";

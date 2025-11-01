@@ -11,8 +11,13 @@ export function mapValuesToProvided(obj, provided = 1) {
   return Object.fromEntries(Object.values(obj).map((v) => [v, provided]));
 }
 
-export function selectSeed(doc, state, event) {
+export function selectSeed(state, event) {
   const [seedType] = Object.keys(event.currentTarget.dataset);
+  for (const element of event.currentTarget.parentElement.children) {
+    element.classList.remove("selected");
+  }
+
+  event.currentTarget.classList.toggle("selected");
 
   console.log(`Selecting seed: ${seedType}`);
 

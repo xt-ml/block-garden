@@ -1,4 +1,4 @@
-import { getRandomSeed } from "../misc/getRandomSeed.mjs";
+import { getRandomSeed } from "../../misc/getRandomSeed.mjs";
 
 export function generateTreeStructure(x, y, progress, tiles) {
   const blocks = [];

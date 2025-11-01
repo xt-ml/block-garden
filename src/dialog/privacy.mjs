@@ -8,38 +8,29 @@ export class PrivacyDialog {
     this.handleDialogClick = this.handleDialogClick.bind(this);
   }
 
-  async createDialog() {
+  async createDialog(part) {
     if (this.dialog) {
       this.dialog.remove();
     }
 
-    const dialogId = "privacyDialog";
-    let dialog = this.doc.getElementById(dialogId);
+    const dialogClass = `${part}-content`;
+    let dialog = this.doc.querySelector(`.${dialogClass}`);
 
     if (!dialog) {
       dialog = this.doc.createElement("dialog");
-      dialog.id = dialogId;
-      dialog.style.cssText = `
-        background: #f0f0f0;
-        border-radius: 0.5rem;
-        border: 0.125rem solid #333;
-        color: #333;
-        font-family: monospace;
-        max-height: 80vh;
-        max-width: 50rem;
-        overflow-y: auto;
-        padding: 1.25rem;
-        width: 90%;
-      `;
+      dialog.setAttribute("class", `${dialogClass} sprite-garden`);
 
-      const tmpDoc = new Document();
-      const privacyContent = await (await fetch("privacy")).text();
-      tmpDoc.innerHTML = privacyContent;
+      const parser = new DOMParser();
+      const documentText = await (await fetch(part)).text();
+      const parsed = parser.parseFromString(documentText, "text/html");
+      const content = parsed.querySelector(`.${dialogClass}`);
 
-      dialog.innerHTML = tmpDoc.innerHTML;
+      dialog.innerHTML = content.innerHTML;
 
       this.doc.body.appendChild(dialog);
-      this.doc.getElementById("closePrivacyDialog").removeAttribute("hidden");
+      this.doc
+        .querySelector(`.${part}-content_close-btn`)
+        .removeAttribute("hidden");
     }
 
     this.dialog = dialog;
@@ -55,13 +46,14 @@ export class PrivacyDialog {
   }
 
   initEventListeners() {
-    const closeBtn = this.dialog.querySelector("#closePrivacyDialog");
+    const closeBtn = this.dialog.querySelector(".privacy-content_close-btn");
     closeBtn.addEventListener("click", this.close);
+
     this.dialog.addEventListener("click", this.handleDialogClick);
   }
 
   removeEventListeners() {
-    const closeBtn = this.dialog.querySelector("#closePrivacyDialog");
+    const closeBtn = this.dialog.querySelector(".privacy-content_close-btn");
     closeBtn.removeEventListener("click", this.close);
     this.dialog.removeEventListener("click", this.handleDialogClick);
   }
@@ -79,7 +71,7 @@ export class PrivacyDialog {
 async function showPrivacyDialog(gThis) {
   const privacyDialog = new PrivacyDialog(gThis);
 
-  await privacyDialog.createDialog();
+  await privacyDialog.createDialog("privacy");
   privacyDialog.show();
 
   return privacyDialog;

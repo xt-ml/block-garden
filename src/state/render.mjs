@@ -1,3 +1,16 @@
+import { getTileNameById } from "./config/tiles.mjs";
+
+function shouldXray(tile, tiles, viewMode) {
+  return (
+    viewMode.get() === "xray" &&
+    tile.solid &&
+    tile !== tiles.COAL &&
+    tile !== tiles.IRON &&
+    tile !== tiles.GOLD &&
+    tile !== tiles.LAVA
+  );
+}
+
 // Render world
 export function render(
   canvas,
@@ -15,6 +28,7 @@ export function render(
   exploredMap,
   previousState,
   interpolation,
+  tileColorMap,
 ) {
   const currentPlayer = player.get();
   const currentCamera = camera.get();
@@ -60,19 +74,17 @@ export function render(
         worldY < worldHeight
       ) {
         const tile = currentWorld.getTile(worldX, worldY);
-        if (!tile || tile === tiles.AIR) continue;
 
-        let color = tile.color;
-        if (viewMode.get() === "xray") {
-          if (tile === tiles.COAL) color = "#FFFF00";
-          else if (tile === tiles.IRON) color = "#FF6600";
-          else if (tile === tiles.GOLD) color = "#FFD700";
-          else if (tile === tiles.LAVA) color = "#FF0000";
-          else if (!tile.solid) color = tile.color;
-          else color = "rgba(100,100,100,0.3)";
+        if (!tile || tile === tiles.AIR) {
+          continue;
         }
 
-        ctx.fillStyle = color;
+        const tileName = shouldXray(tile, tiles, viewMode)
+          ? "xray"
+          : getTileNameById(tiles, tile.id);
+
+        ctx.fillStyle = tileColorMap[tileName.toLowerCase().replace(/_/g, "-")];
+
         ctx.fillRect(
           Math.round(x * tileSize - (interpolatedCameraX % tileSize)),
           Math.round(y * tileSize - (interpolatedCameraY % tileSize)),
