@@ -1,21 +1,10 @@
 import { applyColors } from "./applyColors.mjs";
 import { getCustomProperties } from "./getCustomProperties.mjs";
-import { getSavedColors } from "./getSavedColors.mjs";
 import { resetColors } from "./resetColors.mjs";
 import { saveColors } from "./saveColors.mjs";
 
 // Color customization system for Sprite Garden
 export const COLOR_STORAGE_KEY = "sprite-garden-custom-colors";
-
-export async function initColors(gThis, shadow) {
-  const colors =
-    (await getSavedColors(shadow, COLOR_STORAGE_KEY)) ??
-    getCustomProperties(gThis, shadow);
-
-  applyColors(shadow, colors);
-
-  return colors;
-}
 
 export class ColorCustomizationDialog {
   constructor(gThis, doc, shadow) {
@@ -144,8 +133,15 @@ export class ColorCustomizationDialog {
     await saveColors(this.colors, COLOR_STORAGE_KEY);
     await applyColors(this.shadow, this.colors);
 
-    this.dirty = false;
+    this.shadow.dispatchEvent(
+      new CustomEvent("sprite-garden-reset", {
+        detail: {
+          colors: this.colors,
+        },
+      }),
+    );
 
+    this.dirty = false;
     this.close();
   }
 
@@ -155,9 +151,15 @@ export class ColorCustomizationDialog {
     ) {
       await resetColors(this.gThis, this.shadow, COLOR_STORAGE_KEY);
 
-      // Reload the dialog to show default colors
-      this.dirty = false;
+      this.shadow.dispatchEvent(
+        new CustomEvent("sprite-garden-reset", {
+          detail: {
+            colors: null,
+          },
+        }),
+      );
 
+      this.dirty = false;
       this.close();
     }
   }
@@ -169,9 +171,12 @@ export class ColorCustomizationDialog {
     const grouped = {};
 
     for (const [property, value] of Object.entries(this.colors)) {
-      // Extract category from property name (e.g., --sg-color-gray-50 -> gray)
+      // Extract category from property name (e.g., --sg-color-air, --sg-color-gray-50)
       const match = property.match(/--sg-(?:color-)?([a-z]+)-/);
       const category = match ? match[1] : "other";
+      if (["host", "touch", "ui"].includes(category)) {
+        continue;
+      }
 
       if (!grouped[category]) {
         grouped[category] = [];

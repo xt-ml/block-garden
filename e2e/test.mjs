@@ -25,10 +25,10 @@ async function waitForSpriteGarden(page) {
       }
 
       const timeoutId = setTimeout(() => {
-        sprite.removeEventListener("loading", onLoading);
+        sprite.removeEventListener("sprite-garden-load", onLoading);
         reject(
           new Error(
-            'Timed out waiting for "loading" event with expected details from <sprite-garden>',
+            'Timed out waiting for "sprite-garden-load" event with expected details from <sprite-garden>',
           ),
         );
       }, 5000);
@@ -42,12 +42,12 @@ async function waitForSpriteGarden(page) {
           detail.error === null
         ) {
           clearTimeout(timeoutId);
-          sprite.removeEventListener("loading", onLoading);
+          sprite.removeEventListener("sprite-garden-load", onLoading);
           resolve();
         }
       }
 
-      sprite.addEventListener("loading", onLoading);
+      sprite.addEventListener("sprite-garden-load", onLoading);
     });
   });
 }

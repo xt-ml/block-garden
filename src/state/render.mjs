@@ -1,15 +1,4 @@
-import { getTileNameById } from "./config/tiles.mjs";
-
-function shouldXray(tile, tiles, viewMode) {
-  return (
-    viewMode.get() === "xray" &&
-    tile.solid &&
-    tile !== tiles.COAL &&
-    tile !== tiles.IRON &&
-    tile !== tiles.GOLD &&
-    tile !== tiles.LAVA
-  );
-}
+import { Signal } from "../../deps/signal.mjs";
 
 // Render world
 export function render(
@@ -30,6 +19,7 @@ export function render(
   interpolation,
   tileColorMap,
   gameColorMap,
+  tileNameByIdMap,
 ) {
   const currentPlayer = player.get();
   const currentCamera = camera.get();
@@ -50,11 +40,9 @@ export function render(
     previousState.camera.y +
     (currentCamera.y - previousState.camera.y) * interpolation;
 
-  const ctx = canvas?.getContext("2d");
-  if (!ctx) return;
-
   // Clear canvas
-  ctx.fillStyle = tileColorMap["air"];
+  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = tileColorMap.air;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   // Render world tiles
@@ -80,11 +68,19 @@ export function render(
           continue;
         }
 
-        const tileName = shouldXray(tile, tiles, viewMode)
-          ? "xray"
-          : getTileNameById(tiles, tile.id);
+        const shouldXray = new Signal.Computed(
+          () =>
+            viewMode.get() === "xray" &&
+            tile.solid &&
+            tile !== tiles.COAL &&
+            tile !== tiles.IRON &&
+            tile !== tiles.GOLD &&
+            tile !== tiles.LAVA,
+        );
 
-        ctx.fillStyle = tileColorMap[tileName.toLowerCase().replace(/_/g, "-")];
+        const tileName = shouldXray.get() ? "xray" : tileNameByIdMap[tile.id];
+
+        ctx.fillStyle = tileColorMap[tileName];
 
         ctx.fillRect(
           Math.round(x * tileSize - (interpolatedCameraX % tileSize)),
@@ -102,24 +98,21 @@ export function render(
 
   ctx.fillStyle = currentPlayer.color;
   ctx.fillRect(screenX, screenY, currentPlayer.width, currentPlayer.height);
-  ctx.strokeStyle = gameColorMap["black"];
+  ctx.strokeStyle = gameColorMap.black;
   ctx.lineWidth = 1;
   ctx.strokeRect(screenX, screenY, currentPlayer.width, currentPlayer.height);
 
   // Player eyes
-  ctx.fillStyle = gameColorMap["black"];
+  ctx.fillStyle = gameColorMap.black;
   ctx.fillRect(screenX + 1, screenY + 1, 1, 1);
   ctx.fillRect(screenX + 4, screenY + 1, 1, 1);
 
-  // Update fog map based on actual player position (not interpolated)
   const isFogEnabled = fogMode.get() === "fog";
   if (isFogEnabled) {
+    // Update fog map based on actual player position (not interpolated)
     currentExploredMap.updateFromPlayer(player, tileSize);
-  }
 
-  // Render fog overlay with interpolated camera
-  if (isFogEnabled && ctx && canvas) {
-    // Create temporary camera object for fog rendering
+    // Render fog overlay with interpolated camera
     const interpolatedCameraObj = {
       get: () => ({ x: interpolatedCameraX, y: interpolatedCameraY }),
     };
@@ -132,12 +125,16 @@ export function render(
         interpolatedCameraObj,
         fogScale.get(),
       );
-    } else {
-      const { velocityX, velocityY } = currentPlayer;
-      if (Math.abs(velocityX) > 0.1 || Math.abs(velocityY) > 0.1) {
-        isFogScaled.set(true);
-      }
-      currentExploredMap.render(ctx, canvas, tileSize, interpolatedCameraObj);
+
+      return;
     }
+
+    const { velocityX, velocityY } = currentPlayer;
+
+    if (Math.abs(velocityX) > 0.1 || Math.abs(velocityY) > 0.1) {
+      isFogScaled.set(true);
+    }
+
+    currentExploredMap.render(ctx, canvas, tileSize, interpolatedCameraObj);
   }
 }

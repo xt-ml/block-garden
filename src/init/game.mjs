@@ -1,6 +1,5 @@
 import localForage from "../../deps/localForage.mjs";
 
-import { initColors } from "../dialog/colors/index.mjs";
 import { initEffects } from "./effects.mjs";
 import { initFog } from "./fog.mjs";
 import { initMapEditor } from "../map/editor.mjs";
@@ -21,16 +20,25 @@ import {
   checkAutoSave,
   getSaveMode,
 } from "../dialog/storage.mjs";
+import { applyColors } from "../dialog/colors/applyColors.mjs";
+import { COLOR_STORAGE_KEY } from "../dialog/colors/index.mjs";
+import { getCustomProperties } from "../dialog/colors/getCustomProperties.mjs";
+import { getSavedColors } from "../dialog/colors/getSavedColors.mjs";
 import { resizeCanvas } from "../util/resizeCanvas.mjs";
 
+import {
+  buildColorMapByStyleDeclaration,
+  buildColorMapByStyleMap,
+  getTileNameByIdMap,
+} from "../state/config/tiles.mjs";
 import { computedSignals, initState } from "../state/state.mjs";
 import { gameLoop } from "../state/gameLoop.mjs";
 
 // Initialize game
 export async function initGame(gThis, shadow, cnvs) {
   shadow.dispatchEvent(
-    new CustomEvent("loading", {
-      detail: { isLoading: false, error: null },
+    new CustomEvent("sprite-garden-load", {
+      detail: { isLoading: true, error: null },
       bubbles: true,
       composed: true,
     }),
@@ -41,7 +49,7 @@ export async function initGame(gThis, shadow, cnvs) {
     console.error(missingCanvasError);
 
     shadow.dispatchEvent(
-      new CustomEvent("loading", {
+      new CustomEvent("sprite-garden-load", {
         detail: { isLoading: false, error: missingCanvasError },
         bubbles: true,
         composed: true,
@@ -74,10 +82,13 @@ export async function initGame(gThis, shadow, cnvs) {
   shadow.host.keys = {};
   shadow.host.touchKeys = {};
 
-  const colors = await initColors(gThis, shadow);
+  // init colors
+  const savedColors = await getSavedColors(shadow, COLOR_STORAGE_KEY);
+  const initialColors = getCustomProperties(gThis, shadow);
+  const colors = savedColors ?? initialColors;
+  applyColors(shadow, colors);
 
   initMapEditor(doc, shadow, gameConfig.fogMode, gameState.viewMode);
-
   initGlobalEventListeners(gThis, doc, shadow);
   initDocumentEventListeners(gThis, shadow);
   initElementEventListeners(gThis, shadow);
@@ -158,12 +169,75 @@ export async function initGame(gThis, shadow, cnvs) {
   const ver = await localForage.setItem(`sprite-garden-version`, version);
   console.log(`Sprite Garden version: ${ver}`);
 
+  shadow.addEventListener("sprite-garden-reset", async (e) => {
+    const colors = e?.detail?.colors ?? {};
+
+    // Build color map for tiles
+    let gameColorMap;
+    let tileColorMap;
+    if (Object.keys(colors).length && colors.constructor === Object) {
+      gameColorMap = buildColorMapByStyleMap(colors, "--sg-color-");
+      tileColorMap = buildColorMapByStyleMap(colors, "--sg-tile-color-");
+    } else {
+      gameColorMap = buildColorMapByStyleMap(initialColors, "--sg-color-");
+      tileColorMap = buildColorMapByStyleMap(initialColors, "--sg-tile-color-");
+    }
+
+    await gameLoop(
+      cnvs,
+      gThis,
+      shadow,
+      shadow.getElementById("currentBiome"),
+      shadow.getElementById("currentDepth"),
+      getTileNameByIdMap(gameConfig.TILES),
+      tileColorMap,
+      gameColorMap,
+      gameConfig.BIOMES,
+      gameConfig.fogMode,
+      gameConfig.fogScale,
+      gameConfig.FRICTION.get(),
+      gameConfig.GRAVITY.get(),
+      gameConfig.isFogScaled,
+      gameConfig.MAX_FALL_SPEED.get(),
+      gameConfig.SURFACE_LEVEL.get(),
+      gameConfig.TILE_SIZE.get(),
+      gameConfig.TILES,
+      gameConfig.waterPhysics,
+      gameConfig.WORLD_HEIGHT.get(),
+      gameConfig.WORLD_WIDTH.get(),
+      gameConfig.worldSeed,
+      gameState.camera,
+      gameState.exploredMap,
+      gameState.gameTime,
+      gameState.growthTimers,
+      gameState.plantStructures,
+      gameState.player,
+      gameState.shouldReset,
+      gameState.viewMode,
+      gameState.waterPhysicsQueue,
+      gameState.world,
+    );
+
+    gameState.shouldReset.set(true);
+  });
+
+  // Build color map for tiles
+  const styles = gThis.getComputedStyle(shadow.host);
+  const gameColorMap = buildColorMapByStyleDeclaration(styles, "--sg-color-");
+  const tileColorMap = buildColorMapByStyleDeclaration(
+    styles,
+    "--sg-tile-color-",
+  );
+
   await gameLoop(
+    cnvs,
     gThis,
     shadow,
     shadow.getElementById("currentBiome"),
     shadow.getElementById("currentDepth"),
-    cnvs,
+    getTileNameByIdMap(gameConfig.TILES),
+    tileColorMap,
+    gameColorMap,
     gameConfig.BIOMES,
     gameConfig.fogMode,
     gameConfig.fogScale,
@@ -184,6 +258,7 @@ export async function initGame(gThis, shadow, cnvs) {
     gameState.growthTimers,
     gameState.plantStructures,
     gameState.player,
+    gameState.shouldReset,
     gameState.viewMode,
     gameState.waterPhysicsQueue,
     gameState.world,
@@ -192,7 +267,7 @@ export async function initGame(gThis, shadow, cnvs) {
   // hide loading animation
   shadow.getElementById("loading").setAttribute("hidden", "hidden");
   shadow.dispatchEvent(
-    new CustomEvent("loading", {
+    new CustomEvent("sprite-garden-load", {
       detail: { isLoading: false, pkg, error: null },
       bubbles: true,
       composed: true,

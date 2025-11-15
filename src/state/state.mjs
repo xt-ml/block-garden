@@ -16,6 +16,7 @@ export const gameState = {
   seeds: new Signal.State(0),
   selectedMaterialType: new Signal.State(null),
   selectedSeedType: new Signal.State(null),
+  shouldReset: new Signal.State(false),
   viewMode: new Signal.State("normal"),
   waterPhysicsQueue: new Signal.State(new Set()),
   seedInventory: new Signal.State({

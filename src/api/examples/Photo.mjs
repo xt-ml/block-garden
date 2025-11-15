@@ -1,8 +1,12 @@
 import { applyColors } from "../../dialog/colors/applyColors.mjs";
-import { buildColorMap, normalizeTileName } from "../../state/config/tiles.mjs";
 import { cssColorToRGB } from "../../dialog/colors/cssColorToRGB.mjs";
 import { nearestColor } from "../../dialog/colors/nearestColor.mjs";
 import { rgbToHex } from "../../dialog/colors/rgbToHex.mjs";
+
+import {
+  buildColorMapByStyleDeclaration,
+  normalizeTileName,
+} from "../../state/config/tiles.mjs";
 
 import { SpriteGarden } from "../SpriteGarden.mjs";
 
@@ -56,7 +60,7 @@ export class DrawBitmap extends SpriteGarden {
   ) {
     console.log("🎨 Computing ideal color map for image:", imageUrl);
 
-    const tileColorMap = buildColorMap(
+    const tileColorMap = buildColorMapByStyleDeclaration(
       this.gThis.getComputedStyle(this.shadow.host),
       "--sg-tile-color-",
     );
@@ -146,7 +150,7 @@ export class DrawBitmap extends SpriteGarden {
     }
 
     // Get tile colors keyed by tile name
-    const tileColorMap = buildColorMap(
+    const tileColorMap = buildColorMapByStyleDeclaration(
       this.gThis.getComputedStyle(this.shadow.host),
       "--sg-tile-color-",
     );

@@ -1,7 +1,5 @@
 import localForage from "../../deps/localForage.mjs";
 
-import { buildColorMap } from "./config/tiles.mjs";
-
 import { updateBiomeUI } from "../update/ui/biome.mjs";
 import { updateCrops } from "../update/crops.mjs";
 import { updateDepthUI } from "../update/ui/depth.mjs";
@@ -43,11 +41,14 @@ async function getScaleThrottled() {
 
 // Game loop
 export async function gameLoop(
+  cnvs,
   gThis,
   shadow,
   biomeEl,
   depthEl,
-  cnvs,
+  tileNameByIdMap,
+  tileColorMap,
+  gameColorMap,
   biomes,
   fogMode,
   fogScale,
@@ -68,10 +69,17 @@ export async function gameLoop(
   growthTimers,
   plantStructures,
   player,
+  shouldReset,
   viewMode,
   waterPhysicsQueue,
   world,
 ) {
+  if (shouldReset.get()) {
+    shouldReset.set(false);
+
+    return;
+  }
+
   const currentTime = performance.now();
   const frameTime = Math.min(currentTime - lastFrameTime, 250);
 
@@ -137,11 +145,6 @@ export async function gameLoop(
   // Calculate interpolation factor for smooth rendering
   const interpolation = accumulatedTime / FIXED_TIMESTEP;
 
-  // Build color map for tiles
-  const styles = gThis.getComputedStyle(shadow.host);
-  const tileColorMap = buildColorMap(styles, "--sg-tile-color-");
-  const gameColorMap = buildColorMap(styles, "--sg-color-");
-
   render(
     cnvs,
     player,
@@ -160,17 +163,21 @@ export async function gameLoop(
     interpolation,
     tileColorMap,
     gameColorMap,
+    tileNameByIdMap,
   );
 
   // Continue game loop
   requestAnimationFrame(
     async () =>
       await gameLoop(
+        cnvs,
         gThis,
         shadow,
         biomeEl,
         depthEl,
-        cnvs,
+        tileNameByIdMap,
+        tileColorMap,
+        gameColorMap,
         biomes,
         fogMode,
         fogScale,
@@ -191,6 +198,7 @@ export async function gameLoop(
         growthTimers,
         plantStructures,
         player,
+        shouldReset,
         viewMode,
         waterPhysicsQueue,
         world,

@@ -401,28 +401,58 @@ export const TILES = {
   [TileName.WOOD]: getT({ id: 73, solid: false, crop: true, drops: "WOOD" }),
 };
 
-export function buildColorMap(styles, prefix = "--sg-") {
+export function normalizeTileName(name) {
+  return name.toUpperCase().replace(/-/g, "_");
+}
+
+export function denormalizeTileName(name) {
+  return name.toLowerCase().replace(/_/g, "-");
+}
+
+export function buildColorMapByStyleDeclaration(
+  cssStyleDeclaration,
+  prefix = "--sg-",
+  keyTransform = (key) => key,
+) {
   const colorMap = {};
 
-  for (const propName of styles) {
+  for (const propName of cssStyleDeclaration) {
     if (propName.startsWith(prefix)) {
       // Extract tile name from custom property name
-      const tileName = propName.slice(prefix.length);
-      // Get property value, trim quotes and whitespace
-      const rawValue = styles
+      const tileNameRaw = propName.slice(prefix.length);
+      const tileKey = keyTransform(tileNameRaw);
+      const rawValue = cssStyleDeclaration
         .getPropertyValue(propName)
         .trim()
         .replace(/^['"]|['"]$/g, "");
-      colorMap[tileName] = rawValue;
+
+      colorMap[tileKey] = rawValue;
     }
   }
 
   return colorMap;
 }
 
-export function getTileNameById(tiles, id) {
-  for (const key in tiles) {
-    if (tiles[key].id === id) {
+export function buildColorMapByStyleMap(
+  styleMap = {},
+  prefix = "--sg-",
+  keyTransform = (key) => key,
+) {
+  const colorMap = {};
+
+  for (const [key, value] of Object.entries(styleMap)) {
+    if (key.startsWith(prefix)) {
+      const tileKey = keyTransform(key.slice(prefix.length));
+      colorMap[tileKey] = value.trim().replace(/^['"]|['"]$/g, "");
+    }
+  }
+
+  return colorMap;
+}
+
+export function getTileNameById(currentTiles, id) {
+  for (const key in currentTiles) {
+    if (currentTiles[key].id === id) {
       return key;
     }
   }
@@ -430,6 +460,10 @@ export function getTileNameById(tiles, id) {
   return null;
 }
 
-export function normalizeTileName(name) {
-  return name.toUpperCase().replace(/-/g, "_");
+export function getTileNameByIdMap(currentTiles) {
+  return Object.fromEntries(
+    Object.entries(currentTiles).map(([k, v]) => [
+      ...[v.id, denormalizeTileName(k)],
+    ]),
+  );
 }
