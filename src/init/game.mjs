@@ -1,11 +1,10 @@
 import localForage from "../../deps/localForage.mjs";
 
+import { initColors } from "../dialog/colors/index.mjs";
 import { initEffects } from "./effects.mjs";
 import { initFog } from "./fog.mjs";
 import { initMapEditor } from "../map/editor.mjs";
 import { initNewWorld } from "./newWorld.mjs";
-
-import { initColors } from "../dialog/colors/index.mjs";
 
 import {
   initDocumentEventListeners,
@@ -16,6 +15,12 @@ import {
 import { initTouchControls } from "./touchControls.mjs";
 import { initTileInspection } from "./tileInspection.mjs";
 
+import {
+  AUTO_SAVE_INTERVAL,
+  autoSaveGame,
+  checkAutoSave,
+  getSaveMode,
+} from "../dialog/storage.mjs";
 import { resizeCanvas } from "../util/resizeCanvas.mjs";
 
 import { computedSignals, initState } from "../state/state.mjs";
@@ -95,33 +100,47 @@ export async function initGame(gThis, shadow, cnvs) {
   const worldHeight = gameConfig.WORLD_HEIGHT.get();
   const worldWidth = gameConfig.WORLD_WIDTH.get();
 
-  const currentWorld = initNewWorld(
-    gameConfig.BIOMES,
-    gameConfig.SURFACE_LEVEL.get(),
-    gameConfig.TILE_SIZE.get(),
-    gameConfig.TILES,
-    worldHeight,
-    worldWidth,
-    gameConfig.worldSeed,
-    gameState.gameTime,
-    gameState.growthTimers,
-    gameState.plantStructures,
-    gameState.player,
-    gameState.seedInventory,
-  );
+  // Check for auto-save before generating new world
+  const autoSaveLoaded = await checkAutoSave(gThis, shadow);
 
-  // Set the world in state
-  gameState.world.set(currentWorld);
+  if (!autoSaveLoaded) {
+    const currentWorld = initNewWorld(
+      gameConfig.BIOMES,
+      gameConfig.SURFACE_LEVEL.get(),
+      gameConfig.TILE_SIZE.get(),
+      gameConfig.TILES,
+      worldHeight,
+      worldWidth,
+      gameConfig.worldSeed,
+      gameState.gameTime,
+      gameState.growthTimers,
+      gameState.plantStructures,
+      gameState.player,
+      gameState.seedInventory,
+    );
 
-  const currentFog = initFog(
-    gameConfig.isFogScaled,
-    worldHeight,
-    worldWidth,
-    colors,
-  );
+    // Set the world in state
+    gameState.world.set(currentWorld);
 
-  // Set the fog in state
-  gameState.exploredMap.set(currentFog);
+    const currentFog = initFog(
+      gameConfig.isFogScaled,
+      worldHeight,
+      worldWidth,
+      colors,
+    );
+
+    // Set the fog in state
+    gameState.exploredMap.set(currentFog);
+  }
+
+  // Set up auto-save interval
+  setInterval(async () => {
+    const saveMode = await getSaveMode();
+
+    if (saveMode === "auto") {
+      await autoSaveGame(gThis);
+    }
+  }, AUTO_SAVE_INTERVAL);
 
   initTileInspection({
     cnvs,

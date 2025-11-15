@@ -51,3 +51,15 @@ Tap the bottom corner panel for mobile controls.
 ```sh
 npm i && npm start
 ```
+
+## To run Jest unit tests
+
+```sh
+npm i && npm test
+```
+
+## to run Playwright e2e tests
+
+``sh
+npm i && npm e2e
+```

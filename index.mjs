@@ -1,3 +1,4 @@
+import { autoSaveGame } from "./src/dialog/storage.mjs";
 import { initGame } from "./src/init/game.mjs";
 
 export const tagName = "sprite-garden";
@@ -812,6 +813,15 @@ export class SpriteGarden extends HTMLElement {
 
           .seed-controls input:focus {
             outline: 0.125rem solid var(--sg-color-blue-400);
+          }
+
+          .seed-controls__save-load {
+            display: flex;
+            flex-direction: column;
+          }
+
+          #saveModeToggle {
+            background: var(--sg-color-blue-500);
           }
 
           .tile-btn {
@@ -1770,9 +1780,10 @@ export class SpriteGarden extends HTMLElement {
 
           <div class="seed-controls__save-load">
             <button id="initNewWorld">🌍 New World</button>
+            <button id="useStorageBtn">💾 Use Storage</button>
             <button id="loadCompressedState">Load Game File</button>
             <button id="saveCompressedState">Save Game File</button>
-            <button id="useStorageBtn">💾 Use Storage</button>
+            <button id="saveModeToggle">Save Mode Auto</button>
           </div>
         </div>
 
@@ -1831,6 +1842,10 @@ export class SpriteGarden extends HTMLElement {
     const canvas = shadow.querySelector("canvas");
 
     await initGame(globalThis, shadow, canvas);
+  }
+
+  async disconnectedCallback() {
+    await autoSaveGame(globalThis);
   }
 }
 

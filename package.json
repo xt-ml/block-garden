@@ -1,6 +1,6 @@
 {
   "name": "sprite-garden",
-  "version": "1.17.0",
+  "version": "1.18.0",
   "description": "Sprite Garden - Grow Sprites",
   "homepage": "https://github.com/kherrick/sprite-garden/#sprite-garden",
   "license": "AGPL-3.0",
@@ -18,7 +18,7 @@
     "build:base:index:unbundled": "bin/build-html.mjs dist/index_unbundled.html base href /sprite-garden/",
     "build:base:index": "bin/build-html.mjs dist/index.html base href /sprite-garden/",
     "build:base:privacy": "bin/build-html.mjs dist/privacy/index.html base href /sprite-garden/",
-    "build:ci": "npx concurrently --kill-others --success first \"npm run start:dev\" \"npm run wait:start:dev:build:single\"",
+    "build:ci": "npx concurrently --kill-others --success first \"npm run build single\" \"npm run start:dev\"",
     "build:gh-pages:nojekyll": "node bin/touch-nojekyll.mjs",
     "build:pkg:meta": "node -e \"import fs from 'node:fs/promises'; import pkg from './package.json' with { type: 'json' }; (async () => { const meta = process.argv[1]; pkg['sprite-garden'] = { meta }; await fs.writeFile('dist/package.json', JSON.stringify(pkg, null, 2)); })()\"",
     "build:pkg:get:meta": "git rev-parse HEAD",
@@ -57,10 +57,11 @@
     "minify:privacy": "posthtml dist/privacy/*.html -u htmlnano",
     "start:dev": "npm start 8080",
     "start": "node bin/serve.mjs",
-    "wait:start:dev:build:single": "bash bin/wait-for-dev-then-build-single.sh",
-    "test": "echo \"No test specified\" && exit 0"
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest",
+    "e2e": "npx playwright install && npx concurrently --kill-others --success first \"npx playwright test\" \"npm run start:dev\""
   },
   "devDependencies": {
+    "@playwright/test": "^1.56.1",
     "@rollup/plugin-terser": "^0.4.4",
     "@xmldom/xmldom": "^0.8.11",
     "compression": "^1.8.1",
@@ -71,6 +72,8 @@
     "express-urlrewrite": "^2.0.3",
     "gh-pages": "^6.3.0",
     "htmlnano": "^2.1.5",
+    "jest": "^30.2.0",
+    "jest-environment-jsdom": "^30.2.0",
     "postcss": "^8.5.6",
     "postcss-cli": "^11.0.1",
     "posthtml-cli": "^0.10.0",

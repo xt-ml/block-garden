@@ -82,7 +82,7 @@ export class ColorCustomizationDialog {
             padding: 0.5rem 1rem;
           "
         >
-          ×
+          &times;
         </button>
       </div>
 

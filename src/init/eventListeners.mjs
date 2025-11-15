@@ -25,7 +25,12 @@ import { updateRangeUI } from "../update/ui/range.mjs";
 import { showAboutDialog } from "../dialog/about.mjs";
 import { showExamplesDialog } from "../dialog/examples.mjs";
 import { showPrivacyDialog } from "../dialog/privacy.mjs";
-import { showStorageDialog } from "../dialog/storage.mjs";
+import {
+  autoSaveGame,
+  getSaveMode,
+  setSaveMode,
+  showStorageDialog,
+} from "../dialog/storage.mjs";
 
 import { initFog } from "./fog.mjs";
 import { initNewWorld } from "./newWorld.mjs";
@@ -387,6 +392,48 @@ export function initDocumentEventListeners(gThis, shadow) {
     await copyToClipboard(gThis, seedInput.value);
   });
 
+  const saveMode = shadow.getElementById("saveModeToggle");
+  getSaveMode().then(async (mode) => {
+    console.log("Save Mode:", mode);
+
+    if (mode === "manual") {
+      saveMode.innerText = "Save Mode Manual";
+      saveMode.style.backgroundColor = "var(--sg-color-red-500)";
+
+      return;
+    }
+
+    saveMode.style.backgroundColor = "var(--sg-color-green-500)";
+    saveMode.innerText = "Save Mode Auto";
+
+    if (mode === null) {
+      await setSaveMode("auto");
+
+      setTimeout(async () => {
+        await autoSaveGame(gThis);
+      }, 5000);
+    }
+  });
+
+  saveMode.addEventListener("click", async function () {
+    const mode = await getSaveMode();
+
+    if (mode === "manual") {
+      saveMode.innerText = "Save Mode Auto";
+      saveMode.style.backgroundColor = "var(--sg-color-green-500)";
+
+      await setSaveMode("auto");
+      await autoSaveGame(gThis);
+
+      return;
+    }
+
+    saveMode.innerText = "Save Mode Manual";
+    saveMode.style.backgroundColor = "var(--sg-color-red-500)";
+
+    await setSaveMode("manual");
+  });
+
   const saveCompressedBtn = shadow.getElementById("saveCompressedState");
   saveCompressedBtn.addEventListener("click", async function () {
     try {
@@ -423,7 +470,7 @@ export function initDocumentEventListeners(gThis, shadow) {
         file = await fileHandle.getFile();
       } else {
         // Fallback for browsers without showOpenFilePicker
-        const input = shadow.createElement("input");
+        const input = gThis.document.createElement("input");
         input.type = "file";
         input.accept = ".sgs";
         input.style.display = "none";
