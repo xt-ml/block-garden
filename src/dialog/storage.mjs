@@ -179,6 +179,10 @@ export async function checkAutoSave(gThis, shadow) {
 
         resolve(false);
       });
+
+      dialog.addEventListener("cancel", () => {
+        resolve(false);
+      });
     });
   } catch (error) {
     console.error("Failed to check for auto-save:", error);
