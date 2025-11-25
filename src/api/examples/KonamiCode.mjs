@@ -19,7 +19,10 @@ export async function demo(
   api.setFogMode("clear");
   api.setBreakMode("extra");
 
-  api.shadow.querySelector(settingsSelector).click();
+  const settingsElement = api.shadow.querySelector(settingsSelector);
+  if (settingsElement instanceof HTMLDivElement) {
+    settingsElement.click();
+  }
 
   console.log("🎮 SpriteGarden Demo: KonamiCode");
 

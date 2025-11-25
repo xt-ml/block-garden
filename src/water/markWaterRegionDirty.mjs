@@ -1,11 +1,13 @@
+/** @typedef {import('signal-polyfill').Signal.State} Signal.State */
+
 /**
  * Track water changes during gameplay
  *
- * @param {any} x
- * @param {any} y
- * @param {any} queue
- * @param {any} worldWidth
- * @param {any} worldHeight
+ * @param {number} x
+ * @param {number} y
+ * @param {Signal.State} queue
+ * @param {number} worldWidth
+ * @param {number} worldHeight
  * @param {number} [radius=5]
  *
  * @returns {void}
