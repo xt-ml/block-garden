@@ -1,7 +1,7 @@
 export class FogMap {
   /**
-   * @param {any} width
-   * @param {any} height
+   * @param {number} width
+   * @param {number} height
    * @param {any} colors
    */
   constructor(width, height, colors) {
@@ -22,8 +22,8 @@ export class FogMap {
   /**
    * Check if a tile is explored
    *
-   * @param {any} x
-   * @param {any} y
+   * @param {number} x
+   * @param {number} y
    *
    * @returns {boolean}
    */
@@ -40,8 +40,8 @@ export class FogMap {
   /**
    * Mark a single tile as explored
    *
-   * @param {any} x
-   * @param {any} y
+   * @param {number} x
+   * @param {number} y
    *
    * @returns {boolean}
    */
@@ -93,8 +93,8 @@ export class FogMap {
    * @static
    *
    * @param {any} fogObj
-   * @param {any} width
-   * @param {any} height
+   * @param {number} width
+   * @param {number} height
    * @param {any} colors
    *
    * @returns {FogMap}
@@ -184,7 +184,7 @@ export class FogMap {
    *
    * @param {any} ctx
    * @param {any} canvas
-   * @param {any} tileSize
+   * @param {number} tileSize
    * @param {any} camera
    *
    * @returns {void}
@@ -203,7 +203,7 @@ export class FogMap {
     const cameraOffsetX = currentCamera.x % tileSize;
     const cameraOffsetY = currentCamera.y % tileSize;
 
-    ctx.fillStyle = this.colors["--sg-color-black"];
+    ctx.fillStyle = this.colors["--sg-tile-fog-color"];
 
     // Process tiles in the same order as the original
     for (let x = 0; x < tilesX; x++) {
@@ -237,7 +237,7 @@ export class FogMap {
    *
    * @param {any} ctx
    * @param {any} canvas
-   * @param {any} tileSize
+   * @param {number} tileSize
    * @param {any} camera
    * @param {number} [fogScale=2]
    *
@@ -264,7 +264,7 @@ export class FogMap {
     const cameraOffsetX = currentCamera.x % blockSize;
     const cameraOffsetY = currentCamera.y % blockSize;
 
-    ctx.fillStyle = this.colors["--sg-color-black"];
+    ctx.fillStyle = this.colors["--sg-tile-fog-color"];
 
     // Process each fog block
     for (let blockX = 0; blockX < blocksX; blockX++) {

@@ -1,4 +1,4 @@
-import { gameColors } from "../../state/config/colors.mjs";
+import { colors } from "../../state/config/colors.mjs";
 
 import { buildStyleMapByPropNames } from "./buildStyleMapByPropNames.mjs";
 
@@ -7,7 +7,7 @@ import { buildStyleMapByPropNames } from "./buildStyleMapByPropNames.mjs";
 /**
  * Extracts all CSS custom properties prefixed with --sg from the computed styles of a shadow DOM host.
  *
- * Used for both general UI colors and game tile colors, as defined in the gameColors object, and returns
+ * Used for both general UI colors and game tile colors, as defined in the colors object, and returns
  * them as a combined map.
  *
  * @param {object} gThis - The global context or window object that provides getComputedStyle.
@@ -18,7 +18,7 @@ import { buildStyleMapByPropNames } from "./buildStyleMapByPropNames.mjs";
  * @example
  * const cssProps = getCustomProperties(window, shadowRoot);
  * console.log(cssProps["color-amber-500"]); // e.g., "f39c12"
- * console.log(cssProps["tile-color-dirt"]); // e.g., "8b4513"
+ * console.log(cssProps["tile-dirt-color"]); // e.g., "8b4513"
  */
 export function getCustomProperties(gThis, shadow) {
   const styles = gThis.getComputedStyle(shadow.host);
@@ -26,11 +26,15 @@ export function getCustomProperties(gThis, shadow) {
   return {
     ...buildStyleMapByPropNames(
       styles,
-      Object.keys(gameColors["color"]).map((k) => `--sg-color-${k}`),
+      Object.keys(colors["color"]).map((k) => `--sg-color-${k}`),
     ),
     ...buildStyleMapByPropNames(
       styles,
-      Object.keys(gameColors["tile-color"]).map((k) => `--sg-tile-color-${k}`),
+      Object.keys(colors["tile"]).map((k) => `--sg-tile-${k}`),
+    ),
+    ...buildStyleMapByPropNames(
+      styles,
+      Object.keys(colors["ui"]).map((k) => `--sg-ui-${k}`),
     ),
   };
 }

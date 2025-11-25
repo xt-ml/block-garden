@@ -62,7 +62,7 @@ export class DrawBitmap extends SpriteGarden {
 
     const tileColorMap = transformStyleMapByStyleDeclaration(
       this.gThis.getComputedStyle(this.shadow.host),
-      "--sg-tile-color-",
+      "--sg-tile-",
     );
 
     // Build tile palette arrays and maps
@@ -154,7 +154,7 @@ export class DrawBitmap extends SpriteGarden {
     // Get tile colors keyed by tile name
     const tileColorMap = transformStyleMapByStyleDeclaration(
       this.gThis.getComputedStyle(this.shadow.host),
-      "--sg-tile-color-",
+      "--sg-tile-",
     );
 
     // List of banned tile names (normalized form to match keys)

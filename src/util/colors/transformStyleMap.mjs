@@ -14,6 +14,7 @@
 export function transformStyleMap(
   styleMap = {},
   prefix = "--sg-",
+  suffix = "-color",
   keyTransform = (key) => key,
 ) {
   let combinedMap;
@@ -23,10 +24,14 @@ export function transformStyleMap(
       combinedMap = {};
     }
 
-    if (key.startsWith(prefix)) {
-      const tileKey = keyTransform(key.slice(prefix.length));
-      combinedMap[tileKey] = value.trim().replace(/^['"]|['"]$/g, "");
-    }
+    let resolvedTileKey = key.slice(prefix.length);
+    resolvedTileKey = resolvedTileKey.slice(
+      0,
+      suffix.length > 0 ? -suffix.length : undefined,
+    );
+
+    const tileKey = keyTransform(resolvedTileKey);
+    combinedMap[tileKey] = value.trim().replace(/^['"]|['"]$/g, "");
   }
 
   return combinedMap;

@@ -10,7 +10,7 @@ export const gameState = {
     setTile: (...deps) => {},
   }),
   // Tracks which tiles have been explored for map fog
-  exploredMap: new Signal.State(new FogMap()),
+  exploredMap: new Signal.State(new FogMap(500, 300)),
   // Store plant growth data
   plantStructures: new Signal.State({}),
   gameTime: new Signal.State(0),

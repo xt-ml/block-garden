@@ -9,7 +9,7 @@
  *
  * @example
  * getColorPropList('--sg-tile-color-', { air: "87ceeb", "bamboo-growing": "98fb98", });
- * // returns ["--sg-tile-color-air", "--sg-tile-color-bamboo-growing"]
+ * // returns ["--sg-tile-air-color", "--sg-tile-bamboo-color-growing"]
  */
 export const getColorPropList = (prefix, colors) =>
   Object.keys(colors).map((key) => `${prefix}${key}`);

@@ -5,6 +5,11 @@
 
 /**
  * Tile-specific color names mapped to hex codes for in-game assets.
+ * @typedef {{ [key: string]: string }} UIColorMap
+ */
+
+/**
+ * Tile-specific color names mapped to hex codes for in-game assets.
  * @typedef {{ [key: string]: string }} TileColorMap
  */
 
@@ -25,8 +30,9 @@
 
 /**
  * Colors used for styling game elements and tiles.
- * @typedef {Object} GameColors
+ * @typedef {Object} Colors
  *
  * @property {ColorMapWithoutPrefixes} color - General UI colors as hex strings.
- * @property {TileColorMapWithoutPrefixes} tile-color - Tile colors as hex strings.
+ * @property {TileColorMapWithoutPrefixes} tile - Tile colors as hex strings.
+ * @property {UIColorMap} ui - UI colors applied.
  */

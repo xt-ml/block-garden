@@ -28,11 +28,11 @@ import { getSavedColors } from "../dialog/colors/getSavedColors.mjs";
 import { resizeCanvas } from "../util/resizeCanvas.mjs";
 
 import { computedSignals, initState } from "../state/state.mjs";
-import { gameColors } from "../state/config/colors.mjs";
+import { colors as spriteGardenColors } from "../state/config/colors.mjs";
 import { gameLoop } from "../state/gameLoop.mjs";
 import { getTileNameByIdMap } from "../state/config/tiles.mjs";
 
-import { buildStyleMapByPropNamesWithoutPrefixes } from "../util/colors/buildStyleMapByPropNamesWithoutPrefixes.mjs";
+import { buildStyleMapByPropNamesWithoutPrefixesOrSuffixes } from "../util/colors/buildStyleMapByPropNamesWithoutPrefixesOrSuffixes.mjs";
 import { getCustomProperties } from "../util/colors/getCustomProperties.mjs";
 import { transformStyleMap } from "../util/colors/transformStyleMap.mjs";
 
@@ -193,15 +193,11 @@ export async function initGame(gThis, shadow, cnvs) {
     }
 
     // Build color map for tiles
-    let gameColorMap;
     let tileColorMap;
-
     if (Object.keys(colors).length && colors.constructor === Object) {
-      gameColorMap = transformStyleMap(colors, "--sg-color-");
-      tileColorMap = transformStyleMap(colors, "--sg-tile-color-");
+      tileColorMap = transformStyleMap(colors, "--sg-tile-", "-color");
     } else {
-      gameColorMap = transformStyleMap(initialColors, "--sg-color-");
-      tileColorMap = transformStyleMap(initialColors, "--sg-tile-color-");
+      tileColorMap = transformStyleMap(initialColors, "--sg-tile-", "-color");
     }
 
     await gameLoop(
@@ -212,7 +208,6 @@ export async function initGame(gThis, shadow, cnvs) {
       shadow.getElementById("currentDepth"),
       getTileNameByIdMap(gameConfig.TILES),
       tileColorMap,
-      gameColorMap,
       gameConfig.BIOMES,
       gameConfig.fogMode,
       gameConfig.fogScale,
@@ -244,15 +239,11 @@ export async function initGame(gThis, shadow, cnvs) {
 
   // Build color maps
   const styles = gThis.getComputedStyle(shadow.host);
-  const gameColorMap = buildStyleMapByPropNamesWithoutPrefixes(
+  const tileColorMap = buildStyleMapByPropNamesWithoutPrefixesOrSuffixes(
     styles,
-    Object.keys(gameColors["color"]).map((v) => `--sg-color-${v}`),
-    "--sg-color-",
-  );
-  const tileColorMap = buildStyleMapByPropNamesWithoutPrefixes(
-    styles,
-    Object.keys(gameColors["tile-color"]).map((v) => `--sg-tile-color-${v}`),
-    "--sg-tile-color-",
+    Object.keys(spriteGardenColors["tile"]).map((v) => `--sg-tile-${v}-color`),
+    "--sg-tile-",
+    "-color",
   );
 
   await gameLoop(
@@ -263,7 +254,6 @@ export async function initGame(gThis, shadow, cnvs) {
     shadow.getElementById("currentDepth"),
     getTileNameByIdMap(gameConfig.TILES),
     tileColorMap,
-    gameColorMap,
     gameConfig.BIOMES,
     gameConfig.fogMode,
     gameConfig.fogScale,

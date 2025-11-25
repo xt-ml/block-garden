@@ -19,7 +19,6 @@ import { Signal } from "signal-polyfill";
  * @param {any} previousState
  * @param {any} interpolation
  * @param {any} tileColorMap
- * @param {any} gameColorMap
  * @param {any} tileNameByIdMap
  *
  * @returns {void}
@@ -41,7 +40,6 @@ export function render(
   previousState,
   interpolation,
   tileColorMap,
-  gameColorMap,
   tileNameByIdMap,
 ) {
   const currentPlayer = player.get();
@@ -65,7 +63,7 @@ export function render(
 
   // Clear canvas
   const ctx = canvas.getContext("2d");
-  ctx.fillStyle = tileColorMap.air;
+  ctx.fillStyle = tileColorMap["air"];
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   // Render world tiles
@@ -117,14 +115,14 @@ export function render(
   const screenX = interpolatedPlayerX - interpolatedCameraX;
   const screenY = interpolatedPlayerY - interpolatedCameraY;
 
-  ctx.fillStyle = currentPlayer.color;
+  ctx.fillStyle = tileColorMap["player-body"];
   ctx.fillRect(screenX, screenY, currentPlayer.width, currentPlayer.height);
-  ctx.strokeStyle = gameColorMap.black;
+  ctx.strokeStyle = tileColorMap["player-border"];
   ctx.lineWidth = 1;
   ctx.strokeRect(screenX, screenY, currentPlayer.width, currentPlayer.height);
 
   // Player eyes
-  ctx.fillStyle = gameColorMap.black;
+  ctx.fillStyle = tileColorMap["player-eyes"];
   ctx.fillRect(screenX + 1, screenY + 1, 1, 1);
   ctx.fillRect(screenX + 4, screenY + 1, 1, 1);
 

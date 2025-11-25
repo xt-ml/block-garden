@@ -14,6 +14,7 @@
 export function transformStyleMapByStyleDeclaration(
   cssStyleDeclaration,
   prefix = "--sg-",
+  suffix = "-color",
   keyTransform = (key) => key,
 ) {
   let combinedMap;
@@ -23,8 +24,14 @@ export function transformStyleMapByStyleDeclaration(
       combinedMap = {};
     }
 
+    let resolvedPropName = propName.slice(prefix.length);
+    resolvedPropName = resolvedPropName.slice(
+      0,
+      suffix.length > 0 ? -suffix.length : undefined,
+    );
+
     if (propName.startsWith(prefix)) {
-      const tileNameRaw = propName.slice(prefix.length);
+      const tileNameRaw = resolvedPropName;
       const tileKey = keyTransform(tileNameRaw);
       const rawValue = cssStyleDeclaration
         .getPropertyValue(propName)

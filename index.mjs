@@ -1,5 +1,5 @@
 import { autoSaveGame } from "./src/dialog/storage.mjs";
-import { gameColors } from "./src/state/config/colors.mjs";
+import { colors as gameColors } from "./src/state/config/colors.mjs";
 import { generateColorVars } from "./src/util/colors/generateColorVars.mjs";
 import { initGame } from "./src/init/game.mjs";
 
@@ -28,16 +28,17 @@ export class SpriteGarden extends HTMLElement {
           :host {
             align-items: center;
             display: flex;
-            height: var(--sg-host-height, 100vh);
-            height: var(--sg-host-height, 100dvh);
+            height: var(--sg-ui-host-height, 100vh);
+            height: var(--sg-ui-host-height, 100dvh);
             justify-content: center;
-            overflow: var(--sg-host-overflow, hidden);
+            overflow: var(--sg-ui-host-overflow, hidden);
             position: relative;
-            width: var(--sg-host-width, 100vw);
-            width: var(--sg-host-width, 100dvw);
+            width: var(--sg-ui-host-width, 100vw);
+            width: var(--sg-ui-host-width, 100dvw);
 
             ${generateColorVars("--sg-color-", gameColors["color"])}
-            ${generateColorVars("--sg-tile-color-", gameColors["tile-color"])}
+            ${generateColorVars("--sg-tile-", gameColors["tile"])}
+            ${generateColorVars("--sg-ui-", gameColors["ui"])}
           }
 
           #canvas {
@@ -60,7 +61,7 @@ export class SpriteGarden extends HTMLElement {
           }
 
           #loading .pixel {
-            background: var(--sg-tile-color-loading-pixel);
+            background: var(--sg-tile-loading-pixel-color);
             height: 4rem;
             position: absolute;
             width: 4rem;
@@ -141,25 +142,28 @@ export class SpriteGarden extends HTMLElement {
           }
 
           .ui-grid__corner {
-            max-height: var(--sg-ui-grid--corner-max-height, calc(100vh - 1rem));
-            max-height: var(--sg-ui-grid--corner-max-height, calc(100dvh - 1rem));
+            max-height: var(--sg-ui-grid-corner-max-height, calc(100vh - 1rem));
+            max-height: var(--sg-ui-grid-corner-max-height, calc(100dvh - 1rem));
             overflow-y: auto;
             pointer-events: auto;
             transition: height 0.35s cubic-bezier(0.68, -0.55, 0.27, 1.5);
           }
 
           .ui-grid__corner--heading {
+            color: var(--sg-ui-grid-corner-heading-color);
             backdrop-filter: blur(0.3125rem);
-            background: var(--sg-color-black-transparent);
+            background-color: var(--sg-ui-grid-corner-heading-background-color);
             border-radius: 0.5rem;
-            border: 0.0625rem solid var(--sg-color-gray-alpha-70);
-            color: var(--sg-color-white);
+            border-width: 0.0625rem;
+            border-style: solid;
+            border-color: var(--sg-ui-grid-corner-heading-border-color);
             cursor: pointer;
             font-size: 0.75rem;
             padding: 0.75rem;
           }
 
           .ui-grid__corner--container {
+            color: var(--sg-ui-grid-corner-container-color);
             padding: 0.5rem;
           }
 
@@ -168,6 +172,7 @@ export class SpriteGarden extends HTMLElement {
           }
 
           .ui-grid__corner--sub-heading {
+            color: var(--sg-ui-grid-corner-heading-color);
             margin: 1rem 0 0.3125rem 0;
           }
 
@@ -240,18 +245,18 @@ export class SpriteGarden extends HTMLElement {
           /* Stats Panel */
           #stats {
             backdrop-filter: blur(0.3125rem);
-            background: var(--sg-color-black-transparent);
+            background: var(--sg-color-black-alpha-80);
             border-radius: 0.5rem;
-            border: 0.0625rem solid var(--sg-color-gray-alpha-70);
+            border: 0.0625rem solid var(--sg-color-gray-alpha-10);
             color: var(--sg-color-white);
           }
 
           /* Settings Panel */
           #settings {
             backdrop-filter: blur(0.3125rem);
-            background: var(--sg-color-black-transparent);
+            background: var(--sg-color-black-alpha-80);
             border-radius: 0.5rem;
-            border: 0.0625rem solid var(--sg-color-gray-alpha-70);
+            border: 0.0625rem solid var(--sg-color-gray-alpha-10);
             color: var(--sg-color-white);
             display: flex;
             flex-direction: column;
@@ -288,10 +293,10 @@ export class SpriteGarden extends HTMLElement {
           /* Inventory Panel */
           #inventory {
             backdrop-filter: blur(0.3125rem);
-            background: var(--sg-color-black-transparent);
+            background: var(--sg-color-black-alpha-80);
             border-radius: 0.5rem;
             border-top: 0.0625rem solid var(--sg-color-gray-500);
-            border: 0.0625rem solid var(--sg-color-gray-alpha-70);
+            border: 0.0625rem solid var(--sg-color-gray-alpha-10);
             bottom: 1.625rem;
             color: var(--sg-color-white);
           }
@@ -299,9 +304,9 @@ export class SpriteGarden extends HTMLElement {
           /* Controls Panel */
           #controls {
             backdrop-filter: blur(0.3125rem);
-            background: var(--sg-color-black-transparent);
+            background: var(--sg-color-black-alpha-80);
             border-radius: 0.5rem;
-            border: 0.0625rem solid var(--sg-color-gray-alpha-70);
+            border: 0.0625rem solid var(--sg-color-gray-alpha-10);
             color: var(--sg-color-white);
           }
 
@@ -319,18 +324,18 @@ export class SpriteGarden extends HTMLElement {
           }
 
           .touch-controls {
-            bottom: var(--sg-touch-controls-bottom, 6rem);
-            position: var(--sg-touch-controls-position, absolute);
-            width: var(--sg-touch-controls-width, 100%);
+            bottom: var(--sg-ui-touch-controls-bottom, 6rem);
+            position: var(--sg-ui-touch-controls-position, absolute);
+            width: var(--sg-ui-touch-controls-width, 100%);
           }
 
           .touch-btn {
             align-items: center;
             backdrop-filter: blur(0.3125rem);
-            background: var(--sg-color-black-alpha-60);
+            background: var(--sg-ui-touch-btn-background-color);
             border-radius: 50%;
-            border: 0.125rem solid var(--sg-color-gray-alpha-30);
-            color: var(--sg-color-white);
+            border: 0.125rem solid var(--sg-ui-touch-btn-border-color);
+            color: var(--sg-ui-touch-btn-color);
             cursor: pointer;
             display: inline-flex;
             font-size: 0.7rem;
@@ -344,7 +349,7 @@ export class SpriteGarden extends HTMLElement {
           }
 
           .touch-btn:active {
-            background: var(--sg-color-gray-alpha-50);
+            background: var(--sg-color-gray-alpha-20);
             transform: scale(0.95);
           }
 
@@ -496,7 +501,7 @@ export class SpriteGarden extends HTMLElement {
           }
 
           .material-btn:hover {
-            background: var(--sg-color-gray-alpha-70);
+            background: var(--sg-color-gray-alpha-10);
             color: var(--sg-color-white);
           }
 
@@ -517,71 +522,71 @@ export class SpriteGarden extends HTMLElement {
           }
 
           .seed-btn--berry-bush {
-            background: var(--sg-tile-color-berry-bush);
+            background: var(--sg-tile-berry-bush-color);
           }
 
           .seed-btn--bamboo {
-            background: var(--sg-tile-color-bamboo);
+            background: var(--sg-tile-bamboo-color);
             color: var(--sg-color-black);
           }
 
           .seed-btn--sunflower {
-            background: var(--sg-tile-color-sunflower);
+            background: var(--sg-tile-sunflower-color);
             color: var(--sg-color-black);
           }
 
           .seed-btn--corn {
-            background: var(--sg-tile-color-corn);
+            background: var(--sg-tile-corn-color);
             color: var(--sg-color-black);
           }
 
           .seed-btn--pine-tree {
-            background: var(--sg-tile-color-pine-tree);
+            background: var(--sg-tile-pine-tree-color);
           }
 
           .seed-btn--willow-tree {
-            background: var(--sg-tile-color-willow-tree);
+            background: var(--sg-tile-willow-tree-color);
             color: var(--sg-color-black);
           }
 
           .seed-btn--fern {
-            background: var(--sg-tile-color-fern);
+            background: var(--sg-tile-fern-color);
             color: var(--sg-color-black);
           }
 
           .seed-btn--tulip {
-            background: var(--sg-tile-color-tulip);
+            background: var(--sg-tile-tulip-color);
           }
 
           .seed-btn--agave {
             color: var(--sg-color-black);
-            background: var(--sg-tile-color-agave);
+            background: var(--sg-tile-agave-color);
           }
 
           .seed-btn--lavender {
-            background: var(--sg-tile-color-lavender);
+            background: var(--sg-tile-lavender-color);
           }
 
           .seed-btn--kelp {
-            background: var(--sg-tile-color-kelp);
+            background: var(--sg-tile-kelp-color);
           }
 
           .seed-btn--rose {
-            background: var(--sg-tile-color-rose);
+            background: var(--sg-tile-rose-color);
           }
 
           .seed-btn--pumpkin {
-            background: var(--sg-tile-color-pumpkin);
+            background: var(--sg-tile-pumpkin-color);
           }
 
           .seed-btn--lotus {
             color: var(--sg-color-black);
-            background: var(--sg-tile-color-lotus);
+            background: var(--sg-tile-lotus-color);
           }
 
           .seed-btn--birch {
             color: var(--sg-color-black);
-            background: var(--sg-tile-color-birch);
+            background: var(--sg-tile-birch-color);
           }
 
           .info-buttons-container {
@@ -687,12 +692,12 @@ export class SpriteGarden extends HTMLElement {
           }
 
           .tile-btn--air {
-            background: var(--sg-tile-color-air);
+            background: var(--sg-tile-air-color);
             color: var(--sg-color-black);
           }
 
           .tile-btn--sand {
-            background: var(--sg-tile-color-sand);
+            background: var(--sg-tile-sand-color);
             color: var(--sg-color-black);
           }
 
@@ -701,7 +706,7 @@ export class SpriteGarden extends HTMLElement {
           }
 
           .tile-btn--clay {
-            background: var(--sg-tile-color-clay);
+            background: var(--sg-tile-clay-color);
           }
 
           .tile-btn--cloud,
@@ -714,27 +719,27 @@ export class SpriteGarden extends HTMLElement {
           }
 
           .tile-btn--cloud {
-            background: var(--sg-tile-color-cloud);
+            background: var(--sg-tile-cloud-color);
           }
 
           .tile-btn--gold {
-            background: var(--sg-tile-color-gold);
+            background: var(--sg-tile-gold-color);
           }
 
           .tile-btn--grass {
-            background: var(--sg-tile-color-grass);
+            background: var(--sg-tile-grass-color);
           }
 
           .tile-btn--ice {
-            background: var(--sg-tile-color-ice);
+            background: var(--sg-tile-ice-color);
           }
 
           .tile-btn--pumice {
-            background: var(--sg-tile-color-pumice);
+            background: var(--sg-tile-pumice-color);
           }
 
           .tile-btn--snow {
-            background: var(--sg-tile-color-snow);
+            background: var(--sg-tile-snow-color);
           }
 
           .tile-btn--coal,
@@ -749,87 +754,87 @@ export class SpriteGarden extends HTMLElement {
           }
 
           .tile-btn--iron {
-            background: var(--sg-tile-color-iron);
+            background: var(--sg-tile-iron-color);
           }
 
           .tile-btn--wheat {
-            background: var(--sg-tile-color-wheat);
+            background: var(--sg-tile-wheat-color);
             color: var(--sg-color-black);
           }
 
           .tile-btn--carrot {
-            background: var(--sg-tile-color-carrot);
+            background: var(--sg-tile-carrot-color);
           }
 
           .tile-btn--cactus {
-            background: var(--sg-tile-color-cactus);
+            background: var(--sg-tile-cactus-color);
             color: var(--sg-color-black);
           }
 
           .tile-btn--tulip {
-            background: var(--sg-tile-color-tulip);
+            background: var(--sg-tile-tulip-color);
           }
 
           .tile-btn--agave {
-            background: var(--sg-tile-color-agave);
+            background: var(--sg-tile-agave-color);
             color: var(--sg-color-black);
           }
 
           .tile-btn--lavender {
-            background: var(--sg-tile-color-lavender);
+            background: var(--sg-tile-lavender-color);
           }
 
           .tile-btn--kelp {
-            background: var(--sg-tile-color-kelp);
+            background: var(--sg-tile-kelp-color);
           }
 
           .tile-btn--rose {
-            background: var(--sg-tile-color-rose);
+            background: var(--sg-tile-rose-color);
           }
 
           .tile-btn--pumpkin {
-            background: var(--sg-tile-color-pumpkin);
+            background: var(--sg-tile-pumpkin-color);
           }
 
           .tile-btn--lotus {
-            background: var(--sg-tile-color-lotus);
+            background: var(--sg-tile-lotus-color);
             color: var(--sg-color-black);
           }
 
           .tile-btn--birch {
-            background: var(--sg-tile-color-birch);
+            background: var(--sg-tile-birch-color);
           }
 
           .tile-btn--coal {
-            background: var(--sg-tile-color-coal);
+            background: var(--sg-tile-coal-color);
           }
 
           .tile-btn--dirt {
-            background: var(--sg-tile-color-dirt);
+            background: var(--sg-tile-dirt-color);
           }
 
           .tile-btn--lava {
-            background: var(--sg-tile-color-lava);
+            background: var(--sg-tile-lava-color);
           }
 
           .tile-btn--mushroom {
-            background: var(--sg-tile-color-mushroom);
+            background: var(--sg-tile-mushroom-color);
           }
 
           .tile-btn--stone {
-            background: var(--sg-tile-color-stone);
+            background: var(--sg-tile-stone-color);
           }
 
           .tile-btn--tree_trunk {
-            background: var(--sg-tile-color-tree-trunk);
+            background: var(--sg-tile-tree-trunk-color);
           }
 
           .tile-btn--tree_leaves {
-            background: var(--sg-tile-color-tree-leaves);
+            background: var(--sg-tile-tree-leaves-color);
           }
 
           .tile-btn--water {
-            background: var(--sg-tile-color-water);
+            background: var(--sg-tile-water-color);
           }
 
           .tile-btn:hover {
@@ -914,27 +919,27 @@ export class SpriteGarden extends HTMLElement {
           }
 
           .swatch-cloud {
-            background: var(--sg-tile-color-cloud);
+            background: var(--sg-tile-cloud-color);
           }
 
           .swatch-grass {
-            background: var(--sg-tile-color-grass);
+            background: var(--sg-tile-grass-color);
           }
 
           .swatch-kelp {
-            background: var(--sg-tile-color-kelp);
+            background: var(--sg-tile-kelp-color);
           }
 
           .swatch-ice {
-            background: var(--sg-tile-color-ice);
+            background: var(--sg-tile-ice-color);
           }
 
           .swatch-pumice {
-            background: var(--sg-tile-color-pumice);
+            background: var(--sg-tile-pumice-color);
           }
 
           .swatch-snow {
-            background: var(--sg-tile-color-snow);
+            background: var(--sg-tile-snow-color);
           }
 
           .about,

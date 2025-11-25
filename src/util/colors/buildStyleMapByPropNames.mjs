@@ -18,7 +18,11 @@ export function buildStyleMapByPropNames(cssStyleDeclaration, propNames) {
     }
 
     // Extract tile name from custom property name
-    styleMap[propName] = cssStyleDeclaration.getPropertyValue(propName);
+    const resolvedPropName = propName.startsWith("--sg-color-")
+      ? propName
+      : `${propName}-color`;
+    styleMap[resolvedPropName] =
+      cssStyleDeclaration.getPropertyValue(resolvedPropName);
   }
 
   return styleMap;

@@ -185,7 +185,7 @@ export class ColorCustomizationDialog {
 
     for (const [property, value] of Object.entries(this.colors)) {
       // Extract category from property name (e.g., --sg-color-air, --sg-color-gray-50)
-      const match = property.match(/--sg-(?:color-)?([a-z]+)-/);
+      const match = property.match(/--sg-?([a-z]+)-/);
       const category = match ? match[1] : "other";
 
       if (["host", "touch", "ui"].includes(category)) {
@@ -196,7 +196,7 @@ export class ColorCustomizationDialog {
         grouped[category] = [];
       }
 
-      grouped[category].push({ property, value });
+      grouped[category].push({ property, value: value.slice(0, 7) });
     }
 
     // Sort categories
@@ -248,7 +248,9 @@ export class ColorCustomizationDialog {
         label.textContent = property
           .replace("--sg-", "")
           .replace(/-/g, " ")
-          .replace("tile color ", "");
+          .replace("tile ", "")
+          .replace("color ", "")
+          .replace(" color", "");
         label.style.cssText = `
           color: var(--sg-color-gray-700);
           font-size: 0.75rem;

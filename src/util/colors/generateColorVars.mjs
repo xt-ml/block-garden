@@ -6,11 +6,14 @@
  * @returns {string} A string containing CSS custom property declarations, one per color key.
  *
  * @example
- * generateColorVars('--sg-tile-color-', { air: "87ceeb", "bamboo-growing": "98fb98" });
- * // returns "--sg-tile-color-air: #87ceeb;\n--sg-tile-color-bamboo-growing: #98fb98;"
+ * generateColorVars('--sg-tile-', { air: "87ceeb", "bamboo-growing": "98fb98" });
+ * // returns "--sg-tile-air-color: #87ceeb;\n--sg-tile-bamboo-growing-color: #98fb98;"
  */
 export function generateColorVars(prefix, colors) {
   return Object.entries(colors)
-    .map(([key, value]) => `${prefix}${key}: ${value};`)
+    .map(
+      ([key, value]) =>
+        `${prefix}${key}${prefix === "--sg-color-" ? "" : "-color"}: ${value};`,
+    )
     .join("\n");
 }

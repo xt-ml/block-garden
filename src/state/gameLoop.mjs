@@ -49,7 +49,6 @@ async function getScaleThrottled() {
  * @param {any} depthEl
  * @param {any} tileNameByIdMap
  * @param {any} tileColorMap
- * @param {any} gameColorMap
  * @param {any} biomes
  * @param {any} fogMode
  * @param {any} fogScale
@@ -85,7 +84,6 @@ export async function gameLoop(
   depthEl,
   tileNameByIdMap,
   tileColorMap,
-  gameColorMap,
   biomes,
   fogMode,
   fogScale,
@@ -200,7 +198,6 @@ export async function gameLoop(
     previousState,
     interpolation,
     tileColorMap,
-    gameColorMap,
     tileNameByIdMap,
   );
 
@@ -215,7 +212,6 @@ export async function gameLoop(
         depthEl,
         tileNameByIdMap,
         tileColorMap,
-        gameColorMap,
         biomes,
         fogMode,
         fogScale,
