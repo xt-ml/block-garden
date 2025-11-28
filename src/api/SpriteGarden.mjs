@@ -643,7 +643,7 @@ export class SpriteGarden {
    * @param {*} [onTile=this.tiles.ICE] - Tile used for dark modules of the QR code.
    * @param {*} [offTile=this.tiles.COAL] - Tile used for light modules of the QR code.
    *
-   * @returns {Promise<{x:number, y:number, width:number, height:number}>} The position and size of the drawn QR code.
+   * @returns {Promise<{x:number, y:number, width:number, height:number, data:string }>} The position and size of the drawn QR code, with resulting dataURL.
    */
   async drawQRCode(
     text,
@@ -672,7 +672,7 @@ export class SpriteGarden {
 
     this.batchSetTiles(updates);
 
-    return { x, y, width: size, height: size };
+    return { x, y, width: size, height: size, data: qr.createDataURL() };
   }
 
   /**

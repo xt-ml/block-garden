@@ -1,5 +1,7 @@
 import { isSolid } from "./isSolid.mjs";
 
+/** @typedef {import('../map/world.mjs').WorldMap} WorldMap */
+
 /**
  * Detects collision between an axis-aligned bounding box and solid world tiles.
  *
@@ -8,7 +10,7 @@ import { isSolid } from "./isSolid.mjs";
  * @param {number} height - Height of the bounding box in pixels
  * @param {number} tileSize - Size of each tile in pixels
  * @param {number} width - Width of the bounding box in pixels
- * @param {Object} world - World object with getTile method
+ * @param {WorldMap} world - World object with getTile method
  * @param {number} worldHeight - Total world height in tiles
  * @param {number} worldWidth - Total world width in tiles
  * @param {number} x - X-coordinate of bounding box in pixels

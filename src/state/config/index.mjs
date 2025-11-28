@@ -3,7 +3,7 @@ import { Signal } from "signal-polyfill";
 import { getRandomSeed } from "../../misc/getRandomSeed.mjs";
 
 import { BIOMES } from "./biomes.mjs";
-import { TILES, TileName } from "./tiles.mjs";
+import { TILES, TileNames } from "./tiles.mjs";
 
 /** @typedef {import('./biomes.mjs').BiomeMap} BiomeMap */
 /** @typedef {import('./tiles.mjs').TileMap} TileMap */
@@ -44,7 +44,7 @@ import { TILES, TileName } from "./tiles.mjs";
  * @property {WaterPhysicsConfig} waterPhysics - Water simulation config
  * @property {BiomeMap} BIOMES - All biome definitions
  * @property {TileMap} TILES - All tile definitions
- * @property {TileNameMap} TileName - Tile name constants
+ * @property {TileNameMap} TileNames - Tile name constants
  */
 
 /** @type number */
@@ -100,5 +100,5 @@ export const gameConfig = {
   MAX_FALL_SPEED: new Signal.State(15),
   BIOMES,
   TILES,
-  TileName,
+  TileNames,
 };

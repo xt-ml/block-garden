@@ -4,14 +4,14 @@
 import { jest } from "@jest/globals";
 
 // Mock side effects before imports
-jest.unstable_mockModule("../src/init/game.mjs", () => ({
+jest.unstable_mockModule("./src/init/game.mjs", () => ({
   initGame: jest.fn(() => Promise.resolve()),
 }));
 
 jest.spyOn(console, "info").mockImplementation(() => {});
 
 // Import after mocks
-const { SpriteGarden, tagName } = await import("../index.mjs");
+const { SpriteGarden, tagName } = await import("./index.mjs");
 
 describe("sprite-garden web component", () => {
   beforeAll(() => {
@@ -22,6 +22,7 @@ describe("sprite-garden web component", () => {
 
   afterEach(() => {
     document.body.innerHTML = "";
+
     jest.clearAllMocks();
   });
 
@@ -29,7 +30,8 @@ describe("sprite-garden web component", () => {
     const el = document.createElement(tagName);
     document.body.appendChild(el);
 
-    await Promise.resolve(); // Let connectedCallback settle
+    // Let connectedCallback settle
+    await Promise.resolve();
 
     const shadow = el.shadowRoot;
     expect(shadow).not.toBeNull();

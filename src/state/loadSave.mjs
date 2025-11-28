@@ -1,5 +1,4 @@
 import { getCustomProperties } from "../util/colors/getCustomProperties.mjs";
-import { resizeCanvas } from "../util/resizeCanvas.mjs";
 
 import { FogMap } from "../map/fog.mjs";
 import { WorldMap } from "../map/world.mjs";
@@ -118,6 +117,6 @@ export function loadSaveState(gThis, shadow, saveState) {
 
   console.log("Save state loaded successfully");
 
-  // Force canvas resize to ensure proper coordinate mapping
-  resizeCanvas(shadow, gameConfig);
+  // "Reset" to enable updated state / config
+  shadow.dispatchEvent(new CustomEvent("sprite-garden-reset"));
 }

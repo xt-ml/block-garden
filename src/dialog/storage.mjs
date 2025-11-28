@@ -180,8 +180,8 @@ export async function checkAutoSave(gThis, shadow) {
             if ("DecompressionStream" in gThis) {
               const decompressedStream = compressedBlob
                 .stream()
-                .pipeThrough(new DecompressionStream("gzip"));
-              const decompressedBlob = await new Response(
+                .pipeThrough(new gThis.DecompressionStream("gzip"));
+              const decompressedBlob = await new gThis.Response(
                 decompressedStream,
               ).blob();
 
@@ -240,7 +240,7 @@ export async function checkAutoSave(gThis, shadow) {
  */
 export class StorageDialog {
   /**
-   * @param {object} gThis - The global context or window object.
+   * @param {typeof globalThis} gThis - The global context.
    * @param {Document} doc - The document associated with the app.
    * @param {ShadowRoot} shadow - The shadow root whose host's computed styles will be inspected.
    */
@@ -477,10 +477,10 @@ export class StorageDialog {
             </div>
           </div>
           <input
-            type="radio"
             name="selectedGame"
-            value="${index}"
             style="margin-left: 0.625rem"
+            type="radio"
+            value="${index}"
           />
         </div>
     `,
@@ -680,9 +680,11 @@ export class StorageDialog {
       if ("DecompressionStream" in this.gThis) {
         const decompressedStream = compressedBlob
           .stream()
-          .pipeThrough(new DecompressionStream("gzip"));
+          .pipeThrough(new this.gThis.DecompressionStream("gzip"));
 
-        const decompressedBlob = await new Response(decompressedStream).blob();
+        const decompressedBlob = await new this.gThis.Response(
+          decompressedStream,
+        ).blob();
 
         stateJSON = await decompressedBlob.text();
       } else {

@@ -1,5 +1,9 @@
+import { seedTileMap } from "../state/config/tiles.mjs";
 import { updateState } from "../state/state.mjs";
 
+/** @typedef {import('signal-polyfill').Signal.State} Signal.State */
+
+/** @typedef {import('../map/world.mjs').WorldMap} WorldMap */
 /** @typedef {import('../state/config/tiles.mjs').TileMap} TileMap */
 
 /**
@@ -8,12 +12,12 @@ import { updateState } from "../state/state.mjs";
  * Verifies farmable ground exists below and initializes crop growth.
  * Updates both the world tiles and growth timer state.
  *
- * @param {Object} growthTimers - State Signal tracking crop growth progress
- * @param {Object} plantStructures - State Signal for complex plant structures
- * @param {Object} seedInventory - State Signal for seed inventory counts
+ * @param {Signal.State} growthTimers - State Signal tracking crop growth progress
+ * @param {Signal.State} plantStructures - State Signal for complex plant structures
+ * @param {Signal.State} seedInventory - State Signal for seed inventory counts
  * @param {string} seedType - Seed name (e.g., 'WHEAT', 'CARROT') to plant
  * @param {TileMap} tiles - Map of all tile definitions
- * @param {Object} world - World with getTile and setTile methods
+ * @param {WorldMap} world - World with getTile and setTile methods
  * @param {number} x - X coordinate in tiles
  * @param {number} y - Y coordinate in tiles
  *
@@ -36,29 +40,6 @@ export function plantSeed(
 
     return; // Can't plant without farmable ground
   }
-
-  const seedTileMap = {
-    AGAVE: tiles.AGAVE_GROWING,
-    BAMBOO: tiles.BAMBOO_GROWING,
-    BERRY_BUSH: tiles.BERRY_BUSH_GROWING,
-    BIRCH: tiles.BIRCH_GROWING,
-    CACTUS: tiles.CACTUS_GROWING,
-    CARROT: tiles.CARROT_GROWING,
-    CORN: tiles.CORN_GROWING,
-    FERN: tiles.FERN_GROWING,
-    KELP: tiles.KELP_GROWING,
-    LAVENDER: tiles.LAVENDER_GROWING,
-    LOTUS: tiles.LOTUS_GROWING,
-    MUSHROOM: tiles.MUSHROOM_GROWING,
-    PINE_TREE: tiles.PINE_TREE_GROWING,
-    PUMPKIN: tiles.PUMPKIN_GROWING,
-    ROSE: tiles.ROSE_GROWING,
-    SUNFLOWER: tiles.SUNFLOWER_GROWING,
-    TULIP: tiles.TULIP_GROWING,
-    WALNUT: tiles.TREE_GROWING,
-    WHEAT: tiles.WHEAT_GROWING,
-    WILLOW_TREE: tiles.WILLOW_TREE_GROWING,
-  };
 
   if (seedTileMap[seedType] && seedInventory[seedType] > 0) {
     // Update world with initial growing tile

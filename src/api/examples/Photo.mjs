@@ -5,7 +5,7 @@ import { rgbToHex } from "../../util/colors/rgbToHex.mjs";
 
 import { transformStyleMapByStyleDeclaration } from "../../util/colors/transformStyleMapByStyleDeclaration.mjs";
 
-import { normalizeTileName, TileName } from "../../state/config/tiles.mjs";
+import { normalizeTileName, TileNames } from "../../state/config/tiles.mjs";
 
 import { SpriteGarden } from "../SpriteGarden.mjs";
 
@@ -186,9 +186,9 @@ export class DrawBitmap extends SpriteGarden {
 
     // List of banned tile names (normalized form to match keys)
     const bannedTiles = new Set([
-      TileName.BEDROCK,
-      TileName.LOADING_PIXEL,
-      TileName.XRAY,
+      TileNames.BEDROCK,
+      TileNames.LOADING_PIXEL,
+      TileNames.XRAY,
     ]);
 
     // Build palette array and reverse map RGB string -> tileName

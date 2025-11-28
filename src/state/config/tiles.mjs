@@ -12,12 +12,14 @@
  * @property {number} [growthTime] - Time in game ticks for crop to grow
  */
 
+/** @typedef {string} TileName */
+
 /**
  * Tiles.
  *
  * Used for consistent tile usage throughout the game.
  *
- * @typedef {{ [name: string]: TileDefinition }} TileMap
+ * @typedef {{ [tilename: TileName]: TileDefinition }} TileMap
  */
 
 /**
@@ -25,7 +27,7 @@
  *
  * Used for consistent tile identification throughout the game.
  *
- * @typedef {{ [name: string]: string }} TileNameMap
+ * @typedef {{ [tilename: TileName]: string }} TileNameMap
  */
 
 /**
@@ -61,7 +63,7 @@ const getT = (v) => ({
  *
  * @constant
  */
-export const TileName = {
+export const TileNames = {
   AIR: "AIR",
   AGAVE_BASE: "AGAVE_BASE",
   AGAVE_FLOWER_STALK: "AGAVE_FLOWER_STALK",
@@ -202,13 +204,13 @@ export const TileName = {
  * @constant
  */
 export const TILES = {
-  [TileName.AIR]: getT({ id: 0 }),
-  [TileName.AGAVE_BASE]: getT({ id: 82, solid: true }),
-  [TileName.AGAVE_FLOWER_STALK]: getT({ id: 84 }),
-  [TileName.AGAVE_FLOWER]: getT({ id: 85 }),
-  [TileName.AGAVE_GROWING]: getT({ id: 81, solid: true, crop: true }),
-  [TileName.AGAVE_SPIKE]: getT({ id: 83, solid: true }),
-  [TileName.AGAVE]: getT({
+  [TileNames.AIR]: getT({ id: 0 }),
+  [TileNames.AGAVE_BASE]: getT({ id: 82, solid: true }),
+  [TileNames.AGAVE_FLOWER_STALK]: getT({ id: 84 }),
+  [TileNames.AGAVE_FLOWER]: getT({ id: 85 }),
+  [TileNames.AGAVE_GROWING]: getT({ id: 81, solid: true, crop: true }),
+  [TileNames.AGAVE_SPIKE]: getT({ id: 83, solid: true }),
+  [TileNames.AGAVE]: getT({
     id: 80,
     solid: true,
     crop: true,
@@ -216,11 +218,11 @@ export const TILES = {
     drops: "AGAVE",
     isSeed: true,
   }),
-  [TileName.BAMBOO_GROWING]: getT({ id: 43, solid: true, crop: true }),
-  [TileName.BAMBOO_JOINT]: getT({ id: 53, solid: true }),
-  [TileName.BAMBOO_LEAVES]: getT({ id: 54 }),
-  [TileName.BAMBOO_STALK]: getT({ id: 52, solid: true }),
-  [TileName.BAMBOO]: getT({
+  [TileNames.BAMBOO_GROWING]: getT({ id: 43, solid: true, crop: true }),
+  [TileNames.BAMBOO_JOINT]: getT({ id: 53, solid: true }),
+  [TileNames.BAMBOO_LEAVES]: getT({ id: 54 }),
+  [TileNames.BAMBOO_STALK]: getT({ id: 52, solid: true }),
+  [TileNames.BAMBOO]: getT({
     id: 36,
     solid: true,
     crop: true,
@@ -228,25 +230,25 @@ export const TILES = {
     drops: "BAMBOO",
     isSeed: true,
   }),
-  [TileName.BEDROCK]: getT({ id: 19, solid: true }),
-  [TileName.BERRY_BUSH_BERRIES]: getT({ id: 51 }),
-  [TileName.BERRY_BUSH_BRANCH]: getT({ id: 49, solid: true }),
-  [TileName.BERRY_BUSH_GROWING]: getT({ id: 42, crop: true }),
-  [TileName.BERRY_BUSH_LEAVES]: getT({ id: 50, solid: true }),
-  [TileName.BERRY_BUSH]: getT({
+  [TileNames.BEDROCK]: getT({ id: 19, solid: true }),
+  [TileNames.BERRY_BUSH_BERRIES]: getT({ id: 51 }),
+  [TileNames.BERRY_BUSH_BRANCH]: getT({ id: 49, solid: true }),
+  [TileNames.BERRY_BUSH_GROWING]: getT({ id: 42, crop: true }),
+  [TileNames.BERRY_BUSH_LEAVES]: getT({ id: 50, solid: true }),
+  [TileNames.BERRY_BUSH]: getT({
     id: 35,
     crop: true,
     growthTime: 360,
     drops: "BERRY_BUSH",
     isSeed: true,
   }),
-  [TileName.BIRCH_BARK]: getT({ id: 117, solid: true }),
-  [TileName.BIRCH_BRANCHES]: getT({ id: 118, solid: true }),
-  [TileName.BIRCH_CATKINS]: getT({ id: 120 }),
-  [TileName.BIRCH_GROWING]: getT({ id: 115, solid: true, crop: true }),
-  [TileName.BIRCH_LEAVES]: getT({ id: 119 }),
-  [TileName.BIRCH_TRUNK]: getT({ id: 116, solid: true }),
-  [TileName.BIRCH]: getT({
+  [TileNames.BIRCH_BARK]: getT({ id: 117, solid: true }),
+  [TileNames.BIRCH_BRANCHES]: getT({ id: 118, solid: true }),
+  [TileNames.BIRCH_CATKINS]: getT({ id: 120 }),
+  [TileNames.BIRCH_GROWING]: getT({ id: 115, solid: true, crop: true }),
+  [TileNames.BIRCH_LEAVES]: getT({ id: 119 }),
+  [TileNames.BIRCH_TRUNK]: getT({ id: 116, solid: true }),
+  [TileNames.BIRCH]: getT({
     id: 114,
     solid: true,
     crop: true,
@@ -254,10 +256,10 @@ export const TILES = {
     drops: ["BIRCH", "WOOD"],
     isSeed: true,
   }),
-  [TileName.CACTUS_BODY]: getT({ id: 30, solid: true }),
-  [TileName.CACTUS_FLOWER]: getT({ id: 31 }),
-  [TileName.CACTUS_GROWING]: getT({ id: 23, solid: true, crop: true }),
-  [TileName.CACTUS]: getT({
+  [TileNames.CACTUS_BODY]: getT({ id: 30, solid: true }),
+  [TileNames.CACTUS_FLOWER]: getT({ id: 31 }),
+  [TileNames.CACTUS_GROWING]: getT({ id: 23, solid: true, crop: true }),
+  [TileNames.CACTUS]: getT({
     id: 15,
     solid: true,
     crop: true,
@@ -265,107 +267,107 @@ export const TILES = {
     drops: "CACTUS",
     isSeed: true,
   }),
-  [TileName.CARROT_GROWING]: getT({ id: 21, crop: true }),
-  [TileName.CARROT_LEAVES]: getT({ id: 26 }),
-  [TileName.CARROT_ROOT]: getT({ id: 27 }),
-  [TileName.CARROT]: getT({
+  [TileNames.CARROT_GROWING]: getT({ id: 21, crop: true }),
+  [TileNames.CARROT_LEAVES]: getT({ id: 26 }),
+  [TileNames.CARROT_ROOT]: getT({ id: 27 }),
+  [TileNames.CARROT]: getT({
     id: 13,
     crop: true,
     growthTime: 240,
     drops: "CARROT",
     isSeed: true,
   }),
-  [TileName.CLAY]: getT({ id: 6, solid: true, farmable: true, drops: "CLAY" }),
-  [TileName.CLOUD]: getT({
+  [TileNames.CLAY]: getT({ id: 6, solid: true, farmable: true, drops: "CLAY" }),
+  [TileNames.CLOUD]: getT({
     id: 72,
     drops: "CLOUD",
     farmable: true,
     solid: true,
   }),
-  [TileName.COAL]: getT({ id: 7, solid: true, drops: "COAL" }),
-  [TileName.CORN_EAR]: getT({ id: 61 }),
-  [TileName.CORN_GROWING]: getT({ id: 45, crop: true }),
-  [TileName.CORN_LEAVES]: getT({ id: 60 }),
-  [TileName.CORN_SILK]: getT({ id: 62 }),
-  [TileName.CORN_STALK]: getT({ id: 59 }),
-  [TileName.CORN]: getT({
+  [TileNames.COAL]: getT({ id: 7, solid: true, drops: "COAL" }),
+  [TileNames.CORN_EAR]: getT({ id: 61 }),
+  [TileNames.CORN_GROWING]: getT({ id: 45, crop: true }),
+  [TileNames.CORN_LEAVES]: getT({ id: 60 }),
+  [TileNames.CORN_SILK]: getT({ id: 62 }),
+  [TileNames.CORN_STALK]: getT({ id: 59 }),
+  [TileNames.CORN]: getT({
     id: 38,
     crop: true,
     growthTime: 420,
     drops: "CORN",
     isSeed: true,
   }),
-  [TileName.DIRT]: getT({ id: 2, solid: true, farmable: true, drops: "DIRT" }),
-  [TileName.FERN_FROND]: getT({ id: 70 }),
-  [TileName.FERN_GROWING]: getT({ id: 48, crop: true }),
-  [TileName.FERN_STEM]: getT({ id: 69 }),
-  [TileName.FERN]: getT({
+  [TileNames.DIRT]: getT({ id: 2, solid: true, farmable: true, drops: "DIRT" }),
+  [TileNames.FERN_FROND]: getT({ id: 70 }),
+  [TileNames.FERN_GROWING]: getT({ id: 48, crop: true }),
+  [TileNames.FERN_STEM]: getT({ id: 69 }),
+  [TileNames.FERN]: getT({
     id: 41,
     crop: true,
     growthTime: 90,
     drops: "FERN",
     isSeed: true,
   }),
-  [TileName.FOG]: getT({ id: 121 }),
-  [TileName.GOLD]: getT({ id: 9, solid: true, drops: "GOLD" }),
-  [TileName.GRASS]: getT({
+  [TileNames.FOG]: getT({ id: 121 }),
+  [TileNames.GOLD]: getT({ id: 9, solid: true, drops: "GOLD" }),
+  [TileNames.GRASS]: getT({
     id: 1,
     solid: true,
     farmable: true,
     drops: "GRASS",
   }),
-  [TileName.ICE]: getT({ id: 17, solid: true, drops: "ICE" }),
-  [TileName.IRON]: getT({ id: 8, solid: true, drops: "IRON" }),
-  [TileName.KELP_BLADE]: getT({ id: 93 }),
-  [TileName.KELP_BULB]: getT({ id: 94 }),
-  [TileName.KELP_GROWING]: getT({ id: 92, crop: true }),
-  [TileName.KELP]: getT({
+  [TileNames.ICE]: getT({ id: 17, solid: true, drops: "ICE" }),
+  [TileNames.IRON]: getT({ id: 8, solid: true, drops: "IRON" }),
+  [TileNames.KELP_BLADE]: getT({ id: 93 }),
+  [TileNames.KELP_BULB]: getT({ id: 94 }),
+  [TileNames.KELP_GROWING]: getT({ id: 92, crop: true }),
+  [TileNames.KELP]: getT({
     id: 91,
     crop: true,
     growthTime: 150,
     drops: "KELP",
     isSeed: true,
   }),
-  [TileName.LAVA]: getT({ id: 18 }),
-  [TileName.LAVENDER_BUSH]: getT({ id: 89 }),
-  [TileName.LAVENDER_FLOWERS]: getT({ id: 90 }),
-  [TileName.LAVENDER_GROWING]: getT({ id: 87, crop: true }),
-  [TileName.LAVENDER_STEM]: getT({ id: 88 }),
-  [TileName.LAVENDER]: getT({
+  [TileNames.LAVA]: getT({ id: 18 }),
+  [TileNames.LAVENDER_BUSH]: getT({ id: 89 }),
+  [TileNames.LAVENDER_FLOWERS]: getT({ id: 90 }),
+  [TileNames.LAVENDER_GROWING]: getT({ id: 87, crop: true }),
+  [TileNames.LAVENDER_STEM]: getT({ id: 88 }),
+  [TileNames.LAVENDER]: getT({
     id: 86,
     crop: true,
     growthTime: 200,
     drops: "LAVENDER",
     isSeed: true,
   }),
-  [TileName.LOADING_PIXEL]: getT({ id: 122 }),
-  [TileName.LOTUS_BUD]: getT({ id: 112 }),
-  [TileName.LOTUS_FLOWER]: getT({ id: 113 }),
-  [TileName.LOTUS_GROWING]: getT({ id: 109, crop: true }),
-  [TileName.LOTUS_PAD]: getT({ id: 110 }),
-  [TileName.LOTUS_STEM]: getT({ id: 111 }),
-  [TileName.LOTUS]: getT({
+  [TileNames.LOADING_PIXEL]: getT({ id: 122 }),
+  [TileNames.LOTUS_BUD]: getT({ id: 112 }),
+  [TileNames.LOTUS_FLOWER]: getT({ id: 113 }),
+  [TileNames.LOTUS_GROWING]: getT({ id: 109, crop: true }),
+  [TileNames.LOTUS_PAD]: getT({ id: 110 }),
+  [TileNames.LOTUS_STEM]: getT({ id: 111 }),
+  [TileNames.LOTUS]: getT({
     id: 108,
     crop: true,
     growthTime: 390,
     drops: "LOTUS",
     isSeed: true,
   }),
-  [TileName.MOSS]: getT({ id: 32 }),
-  [TileName.MUSHROOM_CAP]: getT({ id: 29 }),
-  [TileName.MUSHROOM_GROWING]: getT({ id: 22, crop: true }),
-  [TileName.MUSHROOM_STEM]: getT({ id: 28 }),
-  [TileName.MUSHROOM]: getT({
+  [TileNames.MOSS]: getT({ id: 32 }),
+  [TileNames.MUSHROOM_CAP]: getT({ id: 29 }),
+  [TileNames.MUSHROOM_GROWING]: getT({ id: 22, crop: true }),
+  [TileNames.MUSHROOM_STEM]: getT({ id: 28 }),
+  [TileNames.MUSHROOM]: getT({
     id: 14,
     crop: true,
     growthTime: 120,
     drops: "MUSHROOM",
     isSeed: true,
   }),
-  [TileName.PINE_CONE]: getT({ id: 65 }),
-  [TileName.PINE_NEEDLES]: getT({ id: 64, solid: true }),
-  [TileName.PINE_TREE_GROWING]: getT({ id: 46, solid: true, crop: true }),
-  [TileName.PINE_TREE]: getT({
+  [TileNames.PINE_CONE]: getT({ id: 65 }),
+  [TileNames.PINE_NEEDLES]: getT({ id: 64, solid: true }),
+  [TileNames.PINE_TREE_GROWING]: getT({ id: 46, solid: true, crop: true }),
+  [TileNames.PINE_TREE]: getT({
     id: 39,
     solid: true,
     crop: true,
@@ -373,98 +375,103 @@ export const TILES = {
     drops: "PINE_TREE",
     isSeed: true,
   }),
-  [TileName.PINE_TRUNK]: getT({ id: 63, solid: true }),
-  [TileName.PLAYER_BODY]: getT({ id: 124 }),
-  [TileName.PLAYER_BORDER]: getT({ id: 125 }),
-  [TileName.PLAYER_EYES]: getT({ id: 126 }),
-  [TileName.PUMICE]: getT({ id: 71, solid: true, drops: "PUMICE" }),
-  [TileName.PUMPKIN_FRUIT]: getT({ id: 106 }),
-  [TileName.PUMPKIN_GROWING]: getT({ id: 103, crop: true }),
-  [TileName.PUMPKIN_LEAVES]: getT({ id: 105 }),
-  [TileName.PUMPKIN_STEM]: getT({ id: 107 }),
-  [TileName.PUMPKIN_VINE]: getT({ id: 104 }),
-  [TileName.PUMPKIN]: getT({
+  [TileNames.PINE_TRUNK]: getT({ id: 63, solid: true }),
+  [TileNames.PLAYER_BODY]: getT({ id: 124 }),
+  [TileNames.PLAYER_BORDER]: getT({ id: 125 }),
+  [TileNames.PLAYER_EYES]: getT({ id: 126 }),
+  [TileNames.PUMICE]: getT({ id: 71, solid: true, drops: "PUMICE" }),
+  [TileNames.PUMPKIN_FRUIT]: getT({ id: 106 }),
+  [TileNames.PUMPKIN_GROWING]: getT({ id: 103, crop: true }),
+  [TileNames.PUMPKIN_LEAVES]: getT({ id: 105 }),
+  [TileNames.PUMPKIN_STEM]: getT({ id: 107 }),
+  [TileNames.PUMPKIN_VINE]: getT({ id: 104 }),
+  [TileNames.PUMPKIN]: getT({
     id: 102,
     crop: true,
     growthTime: 660,
     drops: "PUMPKIN",
     isSeed: true,
   }),
-  [TileName.ROSE_BLOOM]: getT({ id: 101 }),
-  [TileName.ROSE_BUD]: getT({ id: 100 }),
-  [TileName.ROSE_GROWING]: getT({ id: 96, crop: true }),
-  [TileName.ROSE_LEAVES]: getT({ id: 99 }),
-  [TileName.ROSE_STEM]: getT({ id: 97 }),
-  [TileName.ROSE_THORNS]: getT({ id: 98 }),
-  [TileName.ROSE]: getT({
+  [TileNames.ROSE_BLOOM]: getT({ id: 101 }),
+  [TileNames.ROSE_BUD]: getT({ id: 100 }),
+  [TileNames.ROSE_GROWING]: getT({ id: 96, crop: true }),
+  [TileNames.ROSE_LEAVES]: getT({ id: 99 }),
+  [TileNames.ROSE_STEM]: getT({ id: 97 }),
+  [TileNames.ROSE_THORNS]: getT({ id: 98 }),
+  [TileNames.ROSE]: getT({
     id: 95,
     crop: true,
     growthTime: 540,
     drops: "ROSE",
     isSeed: true,
   }),
-  [TileName.SAND]: getT({ id: 5, solid: true, farmable: true, drops: "SAND" }),
-  [TileName.SNOW]: getT({ id: 16, solid: true, farmable: true, drops: "SNOW" }),
-  [TileName.STONE]: getT({ id: 3, solid: true, drops: "STONE" }),
-  [TileName.SUNFLOWER_CENTER]: getT({ id: 57 }),
-  [TileName.SUNFLOWER_GROWING]: getT({ id: 44, crop: true }),
-  [TileName.SUNFLOWER_LEAVES]: getT({ id: 56 }),
-  [TileName.SUNFLOWER_PETALS]: getT({ id: 58 }),
-  [TileName.SUNFLOWER_STEM]: getT({ id: 55 }),
-  [TileName.SUNFLOWER]: getT({
+  [TileNames.SAND]: getT({ id: 5, solid: true, farmable: true, drops: "SAND" }),
+  [TileNames.SNOW]: getT({
+    id: 16,
+    solid: true,
+    farmable: true,
+    drops: "SNOW",
+  }),
+  [TileNames.STONE]: getT({ id: 3, solid: true, drops: "STONE" }),
+  [TileNames.SUNFLOWER_CENTER]: getT({ id: 57 }),
+  [TileNames.SUNFLOWER_GROWING]: getT({ id: 44, crop: true }),
+  [TileNames.SUNFLOWER_LEAVES]: getT({ id: 56 }),
+  [TileNames.SUNFLOWER_PETALS]: getT({ id: 58 }),
+  [TileNames.SUNFLOWER_STEM]: getT({ id: 55 }),
+  [TileNames.SUNFLOWER]: getT({
     id: 37,
     crop: true,
     growthTime: 600,
     drops: "SUNFLOWER",
     isSeed: true,
   }),
-  [TileName.TREE_GROWING]: getT({ id: 34, crop: true }),
-  [TileName.TREE_LEAVES]: getT({
+  [TileNames.TREE_GROWING]: getT({ id: 34, crop: true }),
+  [TileNames.TREE_LEAVES]: getT({
     id: 11,
     solid: true,
     crop: true,
     drops: "WOOD",
   }),
-  [TileName.TREE_TRUNK]: getT({
+  [TileNames.TREE_TRUNK]: getT({
     id: 10,
     solid: true,
     crop: true,
     drops: "WOOD",
   }),
-  [TileName.TULIP_BULB]: getT({ id: 79 }),
-  [TileName.TULIP_GROWING]: getT({ id: 75, crop: true }),
-  [TileName.TULIP_LEAVES]: getT({ id: 77 }),
-  [TileName.TULIP_PETALS]: getT({ id: 78 }),
-  [TileName.TULIP_STEM]: getT({ id: 76 }),
-  [TileName.TULIP]: getT({
+  [TileNames.TULIP_BULB]: getT({ id: 79 }),
+  [TileNames.TULIP_GROWING]: getT({ id: 75, crop: true }),
+  [TileNames.TULIP_LEAVES]: getT({ id: 77 }),
+  [TileNames.TULIP_PETALS]: getT({ id: 78 }),
+  [TileNames.TULIP_STEM]: getT({ id: 76 }),
+  [TileNames.TULIP]: getT({
     id: 74,
     crop: true,
     growthTime: 300,
     drops: "TULIP",
     isSeed: true,
   }),
-  [TileName.WALNUT]: getT({
+  [TileNames.WALNUT]: getT({
     id: 33,
     crop: true,
     growthTime: 960,
     drops: ["WALNUT", "WOOD"],
     isSeed: true,
   }),
-  [TileName.WATER]: getT({ id: 4 }),
-  [TileName.WHEAT_GRAIN]: getT({ id: 25 }),
-  [TileName.WHEAT_GROWING]: getT({ id: 20, crop: true }),
-  [TileName.WHEAT_STALK]: getT({ id: 24 }),
-  [TileName.WHEAT]: getT({
+  [TileNames.WATER]: getT({ id: 4 }),
+  [TileNames.WHEAT_GRAIN]: getT({ id: 25 }),
+  [TileNames.WHEAT_GROWING]: getT({ id: 20, crop: true }),
+  [TileNames.WHEAT_STALK]: getT({ id: 24 }),
+  [TileNames.WHEAT]: getT({
     id: 12,
     crop: true,
     growthTime: 480,
     drops: "WHEAT",
     isSeed: true,
   }),
-  [TileName.WILLOW_BRANCHES]: getT({ id: 67, solid: true }),
-  [TileName.WILLOW_LEAVES]: getT({ id: 68 }),
-  [TileName.WILLOW_TREE_GROWING]: getT({ id: 47, solid: true, crop: true }),
-  [TileName.WILLOW_TREE]: getT({
+  [TileNames.WILLOW_BRANCHES]: getT({ id: 67, solid: true }),
+  [TileNames.WILLOW_LEAVES]: getT({ id: 68 }),
+  [TileNames.WILLOW_TREE_GROWING]: getT({ id: 47, solid: true, crop: true }),
+  [TileNames.WILLOW_TREE]: getT({
     id: 40,
     solid: true,
     crop: true,
@@ -472,9 +479,37 @@ export const TILES = {
     drops: ["WILLOW_TREE", "WOOD"],
     isSeed: true,
   }),
-  [TileName.WILLOW_TRUNK]: getT({ id: 66, solid: true }),
-  [TileName.WOOD]: getT({ id: 73, solid: false, crop: true, drops: "WOOD" }),
-  [TileName.XRAY]: getT({ id: 123 }),
+  [TileNames.WILLOW_TRUNK]: getT({ id: 66, solid: true }),
+  [TileNames.WOOD]: getT({ id: 73, solid: false, crop: true, drops: "WOOD" }),
+  [TileNames.XRAY]: getT({ id: 123 }),
+};
+
+/**
+ * Tiles used for planting
+ *
+ * @type {{[ tilename: TileName ]: TileDefinition }}
+ */
+export const seedTileMap = {
+  [TileNames.AGAVE]: TILES.AGAVE_GROWING,
+  [TileNames.BAMBOO]: TILES.BAMBOO_GROWING,
+  [TileNames.BERRY_BUSH]: TILES.BERRY_BUSH_GROWING,
+  [TileNames.BIRCH]: TILES.BIRCH_GROWING,
+  [TileNames.CACTUS]: TILES.CACTUS_GROWING,
+  [TileNames.CARROT]: TILES.CARROT_GROWING,
+  [TileNames.CORN]: TILES.CORN_GROWING,
+  [TileNames.FERN]: TILES.FERN_GROWING,
+  [TileNames.KELP]: TILES.KELP_GROWING,
+  [TileNames.LAVENDER]: TILES.LAVENDER_GROWING,
+  [TileNames.LOTUS]: TILES.LOTUS_GROWING,
+  [TileNames.MUSHROOM]: TILES.MUSHROOM_GROWING,
+  [TileNames.PINE_TREE]: TILES.PINE_TREE_GROWING,
+  [TileNames.PUMPKIN]: TILES.PUMPKIN_GROWING,
+  [TileNames.ROSE]: TILES.ROSE_GROWING,
+  [TileNames.SUNFLOWER]: TILES.SUNFLOWER_GROWING,
+  [TileNames.TULIP]: TILES.TULIP_GROWING,
+  [TileNames.WALNUT]: TILES.TREE_GROWING,
+  [TileNames.WHEAT]: TILES.WHEAT_GROWING,
+  [TileNames.WILLOW_TREE]: TILES.WILLOW_TREE_GROWING,
 };
 
 /**
