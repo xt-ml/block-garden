@@ -25,7 +25,12 @@ import { updateState } from "../state/state.mjs";
 function isMaturePlantPart(x, y, plantStructures) {
   for (const [key, structure] of Object.entries(plantStructures.get())) {
     if (structure.mature && structure.blocks) {
-      if (structure.blocks.find((b) => b.x === x && b.y === y)) {
+      // Blocks can be an array or an object depending on save format
+      const blocksArray = Array.isArray(structure.blocks)
+        ? structure.blocks
+        : Object.values(structure.blocks);
+
+      if (blocksArray.find((b) => b.x === x && b.y === y)) {
         return true;
       }
     }
@@ -242,7 +247,12 @@ function handleBreakBlock(
       // Find if this block is part of any immature plant structure
       for (const [key, structure] of Object.entries(currentStructures)) {
         if (!structure.mature && structure.blocks) {
-          for (const plantBlock of structure.blocks) {
+          // Blocks can be an array or an object depending on save format
+          const blocksArray = Array.isArray(structure.blocks)
+            ? structure.blocks
+            : Object.values(structure.blocks);
+
+          for (const plantBlock of blocksArray) {
             if (plantBlock.x === block.x && plantBlock.y === block.y) {
               isImmaturePlantPart = true;
               plantKey = key;
@@ -260,7 +270,12 @@ function handleBreakBlock(
         const structure = currentStructures[plantKey];
 
         if (structure.blocks) {
-          structure.blocks.forEach((plantBlock) => {
+          // Blocks can be an array or an object depending on save format
+          const blocksArray = Array.isArray(structure.blocks)
+            ? structure.blocks
+            : Object.values(structure.blocks);
+
+          blocksArray.forEach((plantBlock) => {
             if (
               plantBlock.x >= 0 &&
               plantBlock.x < worldWidth &&
