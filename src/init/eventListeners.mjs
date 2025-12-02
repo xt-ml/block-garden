@@ -809,6 +809,18 @@ export function initElementEventListeners(gThis, shadow) {
     toggleBreakBtn.addEventListener("click", () => toggleBreakMode());
   }
 
+  // Set up seed button event listeners
+  const seedBtns = shadow.querySelectorAll(".seed-btn");
+  seedBtns.forEach((btn) => {
+    btn.addEventListener("click", (e) => selectSeed(gameState, e));
+  });
+
+  // Set up material button event listeners
+  const materialBtns = shadow.querySelectorAll(".material-btn");
+  materialBtns.forEach((btn) => {
+    btn.addEventListener("click", (e) => selectMaterial(gameState, e));
+  });
+
   // Set default to 400x400 and update the select element
   const sel = shadow.getElementById("resolutionSelect");
   if (sel instanceof HTMLSelectElement) {
