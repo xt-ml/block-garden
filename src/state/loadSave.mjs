@@ -50,6 +50,23 @@ export function loadSaveState(gThis, shadow, saveState) {
         }
       }
 
+      // Set the seed inventory state
+      gameState.seedInventory.set(savedSeedInventory);
+      continue;
+    }
+
+    // Make sure materialsInventory has latest materials defined
+    if (key === "materialsInventory") {
+      const savedMaterialsInventory = saveState.state[key];
+
+      for (const currentMaterialType in gameState.materialsInventory.get()) {
+        if (savedMaterialsInventory[currentMaterialType] === undefined) {
+          savedMaterialsInventory[currentMaterialType] = 0;
+        }
+      }
+
+      // Set the materials inventory state
+      gameState.materialsInventory.set(savedMaterialsInventory);
       continue;
     }
 

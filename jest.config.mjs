@@ -1,5 +1,5 @@
 export default {
   testEnvironment: "jsdom",
   transform: {},
-  testPathIgnorePatterns: ["/e2e/"],
+  testPathIgnorePatterns: ["/dist/", "/e2e/"],
 };
