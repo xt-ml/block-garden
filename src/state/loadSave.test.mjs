@@ -127,16 +127,16 @@ describe("loadSaveState function", () => {
     mockConsoleError.mockRestore();
   });
 
-  test("restores config values using setConfig", () => {
-    loadSaveState(gThis, shadow, saveState);
+  test("restores config values using setConfig", async () => {
+    await loadSaveState(gThis, shadow, saveState);
 
     // Config values should be set (WORLD_HEIGHT, WORLD_WIDTH, TILE_SIZE)
     expect(gThis.spriteGarden.setConfig).toHaveBeenCalled();
     expect(gThis.spriteGarden.setConfig.mock.calls.length).toBeGreaterThan(0);
   });
 
-  test("skips currentResolution config key", () => {
-    loadSaveState(gThis, shadow, saveState);
+  test("skips currentResolution config key", async () => {
+    await loadSaveState(gThis, shadow, saveState);
 
     expect(gThis.spriteGarden.setConfig).not.toHaveBeenCalledWith(
       "currentResolution",
@@ -144,8 +144,8 @@ describe("loadSaveState function", () => {
     );
   });
 
-  test("skips isFogScaled config key", () => {
-    loadSaveState(gThis, shadow, saveState);
+  test("skips isFogScaled config key", async () => {
+    await loadSaveState(gThis, shadow, saveState);
 
     expect(gThis.spriteGarden.setConfig).not.toHaveBeenCalledWith(
       "isFogScaled",
@@ -153,8 +153,8 @@ describe("loadSaveState function", () => {
     );
   });
 
-  test("restores basic state values using setState", () => {
-    loadSaveState(gThis, shadow, saveState);
+  test("restores basic state values using setState", async () => {
+    await loadSaveState(gThis, shadow, saveState);
 
     expect(gThis.spriteGarden.setState).toHaveBeenCalledWith("gameTime", 100);
     expect(gThis.spriteGarden.setState).toHaveBeenCalledWith("player", {
@@ -163,10 +163,10 @@ describe("loadSaveState function", () => {
     });
   });
 
-  test("updates seedInventory with new seeds while preserving current seeds", () => {
+  test("updates seedInventory with new seeds while preserving current seeds", async () => {
     saveState.state.seedInventory = { wheat: 20 }; // Missing carrot
 
-    loadSaveState(gThis, shadow, saveState);
+    await loadSaveState(gThis, shadow, saveState);
 
     // The seedInventory is updated in place but setState is NOT called for it
     // Missing seeds are added with value 0 (not preserved from current state)
@@ -175,7 +175,7 @@ describe("loadSaveState function", () => {
     expect(seedInventory.carrot).toBe(0); // Added as missing with value 0
   });
 
-  test("converts explored map using FogMap.fromObject", () => {
+  test("converts explored map using FogMap.fromObject", async () => {
     const mockFogData = {
       "50,50": true,
       "51,51": true,
@@ -183,7 +183,7 @@ describe("loadSaveState function", () => {
 
     saveState.state.exploredMap = mockFogData;
 
-    loadSaveState(gThis, shadow, saveState);
+    await loadSaveState(gThis, shadow, saveState);
 
     expect(FogMap.fromObject).toHaveBeenCalledWith(
       mockFogData,
@@ -194,31 +194,31 @@ describe("loadSaveState function", () => {
     expect(gThis.spriteGarden.state.exploredMap.get()).toBeDefined();
   });
 
-  test("skips empty explored map", () => {
+  test("skips empty explored map", async () => {
     saveState.state.exploredMap = {};
 
-    loadSaveState(gThis, shadow, saveState);
+    await loadSaveState(gThis, shadow, saveState);
 
     expect(FogMap.fromObject).not.toHaveBeenCalled();
   });
 
-  test("converts world map using WorldMap.fromArray", () => {
+  test("converts world map using WorldMap.fromArray", async () => {
     const mockWorldData = [0, 1, 1, 0, 1, 1, 0, 1, 1];
 
     saveState.state.world = mockWorldData;
 
-    loadSaveState(gThis, shadow, saveState);
+    await loadSaveState(gThis, shadow, saveState);
 
     expect(WorldMap.fromArray).toHaveBeenCalledWith(mockWorldData, 100, 100);
     expect(gThis.spriteGarden.state.world.get()).toBeDefined();
   });
 
-  test("validates converted world and logs tile count", () => {
+  test("validates converted world and logs tile count", async () => {
     const mockWorldData = [0, 1, 1, 0]; // Contains non-air tiles
 
     saveState.state.world = mockWorldData;
 
-    loadSaveState(gThis, shadow, saveState);
+    await loadSaveState(gThis, shadow, saveState);
 
     expect(mockConsoleLog).toHaveBeenCalledWith(
       expect.stringContaining("Converting world"),
@@ -228,10 +228,10 @@ describe("loadSaveState function", () => {
     );
   });
 
-  test("logs error when world data is invalid", () => {
+  test("logs error when world data is invalid", async () => {
     saveState.state.world = "invalid"; // Not an array
 
-    loadSaveState(gThis, shadow, saveState);
+    await loadSaveState(gThis, shadow, saveState);
 
     expect(mockConsoleError).toHaveBeenCalledWith(
       expect.stringContaining("Invalid world data"),
@@ -239,65 +239,65 @@ describe("loadSaveState function", () => {
     );
   });
 
-  test("handles empty world data array", () => {
+  test("handles empty world data array", async () => {
     saveState.state.world = [];
 
-    loadSaveState(gThis, shadow, saveState);
+    await loadSaveState(gThis, shadow, saveState);
 
     // Should not crash and should not set world state
     expect(gThis.spriteGarden.state.world.get()).toEqual({});
   });
 
-  test("handles null world data", () => {
+  test("handles null world data", async () => {
     saveState.state.world = null;
 
-    loadSaveState(gThis, shadow, saveState);
+    await loadSaveState(gThis, shadow, saveState);
 
     expect(gThis.spriteGarden.state.world.get()).toEqual({});
   });
 
-  test("dispatches sprite-garden-reset at the end", () => {
-    loadSaveState(gThis, shadow, saveState);
+  test("dispatches sprite-garden-reset at the end", async () => {
+    await loadSaveState(gThis, shadow, saveState);
 
     expect(resetDispatchSpy).toHaveBeenCalledWith(
       new CustomEvent("sprite-garden-reset"),
     );
   });
 
-  test("logs successful save state load", () => {
-    loadSaveState(gThis, shadow, saveState);
+  test("logs successful save state load", async () => {
+    await loadSaveState(gThis, shadow, saveState);
 
     expect(mockConsoleLog).toHaveBeenCalledWith(
       "Save state loaded successfully",
     );
   });
 
-  test("handles state with only config and no state keys", () => {
+  test("handles state with only config and no state keys", async () => {
     saveState.state = {};
 
-    loadSaveState(gThis, shadow, saveState);
+    await loadSaveState(gThis, shadow, saveState);
 
     expect(mockConsoleLog).toHaveBeenCalledWith(
       "Save state loaded successfully",
     );
   });
 
-  test("handles config with no matching config signals", () => {
+  test("handles config with no matching config signals", async () => {
     saveState.config.UNKNOWN_KEY = "value";
 
-    loadSaveState(gThis, shadow, saveState);
+    await loadSaveState(gThis, shadow, saveState);
 
     expect(resetDispatchSpy).toHaveBeenCalledWith(
       new CustomEvent("sprite-garden-reset"),
     );
   });
 
-  test("integrates world map height and width from config", () => {
+  test("integrates world map height and width from config", async () => {
     saveState.config.WORLD_HEIGHT = 150;
     saveState.config.WORLD_WIDTH = 200;
     saveState.state.world = [0, 1, 1, 0];
 
-    loadSaveState(gThis, shadow, saveState);
+    await loadSaveState(gThis, shadow, saveState);
 
     expect(WorldMap.fromArray).toHaveBeenCalledWith(
       expect.any(Array),
@@ -306,12 +306,12 @@ describe("loadSaveState function", () => {
     );
   });
 
-  test("integrates explored map height and width from config", () => {
+  test("integrates explored map height and width from config", async () => {
     saveState.config.WORLD_HEIGHT = 120;
     saveState.config.WORLD_WIDTH = 180;
     saveState.state.exploredMap = { "50,50": true };
 
-    loadSaveState(gThis, shadow, saveState);
+    await loadSaveState(gThis, shadow, saveState);
 
     expect(FogMap.fromObject).toHaveBeenCalledWith(
       expect.any(Object),
@@ -321,15 +321,15 @@ describe("loadSaveState function", () => {
     );
   });
 
-  test("calls getCustomProperties with global and shadow", () => {
+  test("calls getCustomProperties with global and shadow", async () => {
     saveState.state.exploredMap = { "50,50": true };
 
-    loadSaveState(gThis, shadow, saveState);
+    await loadSaveState(gThis, shadow, saveState);
 
     expect(getCustomProperties).toHaveBeenCalledWith(gThis, shadow);
   });
 
-  test("handles multiple state keys in save state", () => {
+  test("handles multiple state keys in save state", async () => {
     saveState.state = {
       gameTime: 500,
       player: { x: 100, y: 100 },
@@ -337,7 +337,7 @@ describe("loadSaveState function", () => {
       seedInventory: { wheat: 30 },
     };
 
-    loadSaveState(gThis, shadow, saveState);
+    await loadSaveState(gThis, shadow, saveState);
 
     expect(gThis.spriteGarden.setState).toHaveBeenCalledWith("gameTime", 500);
     expect(gThis.spriteGarden.setState).toHaveBeenCalledWith("player", {
@@ -350,7 +350,7 @@ describe("loadSaveState function", () => {
     });
   });
 
-  test("preserves all current seeds when updating seedInventory", () => {
+  test("preserves all current seeds when updating seedInventory", async () => {
     gThis.spriteGarden.state.seedInventory.set({
       wheat: 10,
       carrot: 5,
@@ -359,7 +359,7 @@ describe("loadSaveState function", () => {
 
     saveState.state.seedInventory = { wheat: 20 }; // Only wheat in save
 
-    loadSaveState(gThis, shadow, saveState);
+    await loadSaveState(gThis, shadow, saveState);
 
     // seedInventory is modified in-place in the save state
     // Missing seeds are added with value 0
@@ -369,7 +369,7 @@ describe("loadSaveState function", () => {
     expect(updatedInventory.tomato).toBe(0); // Added as missing with value 0
   });
 
-  test("handles world with many non-air tiles", () => {
+  test("handles world with many non-air tiles", async () => {
     const mockWorldData = new Array(10000).fill(1); // All solid tiles
     saveState.state.world = mockWorldData;
 
@@ -386,7 +386,7 @@ describe("loadSaveState function", () => {
 
     WorldMap.fromArray.mockReturnValue(mockWorldMap);
 
-    loadSaveState(gThis, shadow, saveState);
+    await loadSaveState(gThis, shadow, saveState);
 
     expect(mockConsoleLog).toHaveBeenCalledWith(
       expect.stringContaining("Converted world contains"),

@@ -406,10 +406,10 @@ describe("Storage Dialog Module", () => {
       expect(dialog.dialog.querySelector("#worldNameInput")).not.toBeNull();
     });
 
-    test("dialog contains load saved game section", async () => {
+    test("dialog contains saved games in storage section", async () => {
       await dialog.createDialog();
 
-      expect(dialog.dialog.textContent).toContain("Load Saved Game");
+      expect(dialog.dialog.textContent).toContain("Saved Games in Storage");
       expect(dialog.dialog.querySelector("#savedGamesList")).not.toBeNull();
     });
 

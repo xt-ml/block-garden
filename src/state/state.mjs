@@ -321,6 +321,7 @@ export async function initState(gThis, version) {
   };
 }
 
+export const hasEnabledExtras = new Signal.State(false);
 export const hasDismissedTutorial = new Signal.State(false);
 export const tutorialToastShown = new Signal.State(false);
 export const tutorialListener = new Signal.State(null);

@@ -4,7 +4,6 @@
 import { jest } from "@jest/globals";
 
 import {
-  getIsoDateForFilename,
   compressToBinaryBlob,
   compressToBinaryFile,
   decompressFromBinaryFile,
@@ -13,66 +12,6 @@ import {
 } from "./compression.mjs";
 
 describe("compression module", () => {
-  describe("getIsoDateForFilename", () => {
-    test("returns a string in YYYY-MM-DD_HH-MM-SS.mmm format", () => {
-      const result = getIsoDateForFilename();
-
-      expect(typeof result).toBe("string");
-      expect(result).toMatch(/^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.\d{3}$/);
-    });
-
-    test("returns consistent format with proper padding", () => {
-      const result = getIsoDateForFilename();
-
-      // Check that each component has the right length
-      const [datePart, timeAndMs] = result.split("_");
-      const [year, month, day] = datePart.split("-");
-      const [_, ms] = timeAndMs.split(".");
-
-      expect(year).toHaveLength(4);
-      expect(month).toHaveLength(2);
-      expect(day).toHaveLength(2);
-      expect(ms).toHaveLength(3);
-    });
-
-    test("uses zero padding for single digit dates and times", () => {
-      // Mock Date to return specific values
-      const mockDate = new Date("2025-01-05T05:05:05.050Z");
-      jest.spyOn(global, "Date").mockImplementation(() => mockDate);
-
-      const result = getIsoDateForFilename();
-
-      expect(result).toContain("2025-01-05");
-      expect(result).toContain("05-05-05");
-      expect(result).toContain(".050");
-
-      jest.restoreAllMocks();
-    });
-
-    test("returns different values on repeated calls (unless called in same millisecond)", () => {
-      const result1 = getIsoDateForFilename();
-
-      // Small delay to ensure different millisecond
-      jest.useFakeTimers();
-      jest.advanceTimersByTime(1);
-
-      const result2 = getIsoDateForFilename();
-
-      jest.useRealTimers();
-
-      // Results should be different (unless by extremely unlikely coincidence)
-      expect(result1).not.toEqual(result2);
-    });
-
-    test("includes UTC timezone (not local)", () => {
-      // This test verifies UTC is used by checking format consistency
-      const result = getIsoDateForFilename();
-
-      // Should be in expected format (UTC formatted)
-      expect(result).toMatch(/^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.\d{3}$/);
-    });
-  });
-
   describe("compressToBinaryBlob", () => {
     beforeEach(() => {
       // Mock CompressionStream
@@ -315,10 +254,6 @@ describe("compression module", () => {
       jest.clearAllMocks();
     });
 
-    test("generates filename with getIsoDateForFilename", async () => {
-      expect(typeof runCompress).toBe("function");
-    });
-
     test("calls showSaveFilePicker when available", async () => {
       expect(typeof runCompress).toBe("function");
     });
@@ -397,17 +332,7 @@ describe("compression module", () => {
   });
 
   describe("integration", () => {
-    test("getIsoDateForFilename creates valid filenames", () => {
-      const timestamp = getIsoDateForFilename();
-      const filename = `sprite-garden-save-game-file-${timestamp}.sgs`;
-
-      expect(filename).toMatch(
-        /^sprite-garden-save-game-file-\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.\d{3}\.sgs$/,
-      );
-    });
-
     test("all compression functions are exported", () => {
-      expect(typeof getIsoDateForFilename).toBe("function");
       expect(typeof compressToBinaryBlob).toBe("function");
       expect(typeof compressToBinaryFile).toBe("function");
       expect(typeof decompressFromBinaryFile).toBe("function");
@@ -431,12 +356,6 @@ describe("compression module", () => {
   });
 
   describe("error handling", () => {
-    test("getIsoDateForFilename does not throw on any date", () => {
-      expect(() => {
-        getIsoDateForFilename();
-      }).not.toThrow();
-    });
-
     test("compressToBinaryBlob handles missing CompressionStream gracefully", async () => {
       delete global.CompressionStream;
 

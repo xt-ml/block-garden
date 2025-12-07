@@ -3,6 +3,9 @@ import { getCustomProperties } from "../util/colors/getCustomProperties.mjs";
 import { FogMap } from "../map/fog.mjs";
 import { WorldMap } from "../map/world.mjs";
 import { getTileById } from "./config/tiles.mjs";
+import { base64toBlob } from "../util/conversion.mjs";
+import { extractAttachments } from "../util/extractAttachments.mjs";
+import { extractJsonFromPng } from "../util/canvasToPngWithState.mjs";
 
 /**
  * Restores game state and config from a save file.
@@ -12,11 +15,24 @@ import { getTileById } from "./config/tiles.mjs";
  *
  * @param {typeof globalThis} gThis - Global this or window object with spriteGarden property
  * @param {ShadowRoot} shadow - Shadow root for canvas resizing
- * @param {Object} saveState - Save state object created by createSaveState
+ * @param {Object} state - Save state object created by createSaveState
  *
- * @returns {void}
+ * @returns {Promise<void>}
  */
-export function loadSaveState(gThis, shadow, saveState) {
+export async function loadSaveState(gThis, shadow, state) {
+  let saveState = state;
+
+  // handle loading pdfs
+  if (saveState?.type === "pdf") {
+    const blob = base64toBlob(gThis, saveState.contents, "application/pdf");
+
+    const [results] = await extractAttachments(
+      new File([blob], "sprite-garden-game-card.png"),
+    );
+
+    saveState = JSON.parse(await extractJsonFromPng(new Blob([results.data])));
+  }
+
   const gameConfig = gThis.spriteGarden.config;
   const gameState = gThis.spriteGarden.state;
 

@@ -1,10 +1,20 @@
 import localForage from "localforage";
 
+import { deleteSharedSave, retrieveSharedSave } from "../state/shareTarget.mjs";
+import { createSaveState } from "../state/createSave.mjs";
+import { hasEnabledExtras } from "../state/state.mjs";
+import { loadSaveState } from "../state/loadSave.mjs";
+
+import {
+  canvasToPngWithState,
+  extractJsonFromPng,
+} from "../util/canvasToPngWithState.mjs";
+
 import { arrayBufferToBase64, base64toBlob } from "../util/conversion.mjs";
 import { compressToBinaryBlob } from "../util/compression.mjs";
-import { createSaveState } from "../state/createSave.mjs";
-import { loadSaveState } from "../state/loadSave.mjs";
-import { retrieveSharedSave, deleteSharedSave } from "../state/shareTarget.mjs";
+import { getDateTime } from "../util/getDateTime.mjs";
+import { getShadowRoot } from "../util/getShadowRoot.mjs";
+import { extractAttachments } from "../util/extractAttachments.mjs";
 
 const TIME_SECONDS_ONE = 1000;
 const TIME_MINUTES_ONE = 1 * 60 * TIME_SECONDS_ONE;
@@ -137,7 +147,7 @@ export async function checkAutoSave(gThis, shadow) {
 
     const timestamp = new Date(autoSave.timestamp).toLocaleString();
     dialog.innerHTML = `
-      <h3 style="margin: 0 0 1rem 0">Auto-Save Detected</h3>
+      <h3 style="margin: 0 0 1rem 0">Auto Save Detected</h3>
       <p style="margin: 0 0 1rem 0">
         A saved game from ${timestamp} was found. Would you like to load it?
       </p>
@@ -166,59 +176,64 @@ export async function checkAutoSave(gThis, shadow) {
     dialog.showModal();
 
     return new Promise((resolve) => {
-      dialog
-        .querySelector("#autoSaveYes")
-        .addEventListener("click", async () => {
-          try {
-            const compressedBlob = base64toBlob(
-              gThis,
-              autoSave.data,
-              "application/gzip",
-            );
+      const autoSaveNo = dialog.querySelector("#autoSaveNo");
+      const autoSaveYes = dialog.querySelector("#autoSaveYes");
 
-            let stateJSON;
+      autoSaveYes.addEventListener("click", async () => {
+        autoSaveNo.setAttribute("disabled", "disabled");
 
-            if ("DecompressionStream" in gThis) {
-              const decompressedStream = compressedBlob
-                .stream()
-                .pipeThrough(new gThis.DecompressionStream("gzip"));
-              const decompressedBlob = await new gThis.Response(
-                decompressedStream,
-              ).blob();
+        try {
+          const compressedBlob = base64toBlob(
+            gThis,
+            autoSave.data,
+            "application/gzip",
+          );
 
-              stateJSON = await decompressedBlob.text();
-            } else {
-              throw new Error("DecompressionStream not supported");
-            }
+          let stateJSON;
 
-            const saveState = JSON.parse(stateJSON);
+          if ("DecompressionStream" in gThis) {
+            const decompressedStream = compressedBlob
+              .stream()
+              .pipeThrough(new gThis.DecompressionStream("gzip"));
+            const decompressedBlob = await new gThis.Response(
+              decompressedStream,
+            ).blob();
 
-            loadSaveState(gThis, shadow, saveState);
-
-            const { worldSeed } = saveState.config;
-            const seedInput = shadow.getElementById("worldSeedInput");
-            const currentSeedDisplay = shadow.getElementById("currentSeed");
-
-            if (seedInput instanceof HTMLInputElement) {
-              seedInput.value = worldSeed;
-            }
-
-            if (currentSeedDisplay) {
-              currentSeedDisplay.textContent = worldSeed;
-            }
-
-            console.log("Auto-save loaded successfully");
-          } catch (error) {
-            console.error("Failed to load auto-save:", error);
+            stateJSON = await decompressedBlob.text();
+          } else {
+            throw new Error("DecompressionStream not supported");
           }
 
-          dialog.close();
-          dialog.remove();
+          const saveState = JSON.parse(stateJSON);
 
-          resolve(true);
-        });
+          await loadSaveState(gThis, shadow, saveState);
 
-      dialog.querySelector("#autoSaveNo").addEventListener("click", () => {
+          const { worldSeed } = saveState.config;
+          const seedInput = shadow.getElementById("worldSeedInput");
+          const currentSeedDisplay = shadow.getElementById("currentSeed");
+
+          if (seedInput instanceof HTMLInputElement) {
+            seedInput.value = worldSeed;
+          }
+
+          if (currentSeedDisplay) {
+            currentSeedDisplay.textContent = worldSeed;
+          }
+
+          console.log("Auto save loaded successfully");
+        } catch (error) {
+          console.error("Failed to load auto-save:", error);
+        }
+
+        dialog.close();
+        dialog.remove();
+
+        resolve(true);
+      });
+
+      autoSaveNo.addEventListener("click", () => {
+        autoSaveYes.setAttribute("disabled", "disabled");
+
         dialog.close();
         dialog.remove();
 
@@ -238,9 +253,11 @@ export async function checkAutoSave(gThis, shadow) {
 
 /**
  * Check for and load shared saves from Web Share Target API
+ *
  * Displays a dialog asking user to load the shared save
  *
  * @param {typeof globalThis} gThis
+ *
  * @param {ShadowRoot} shadow
  *
  * @returns {Promise<boolean>} - true if a shared save was loaded, false otherwise
@@ -301,9 +318,26 @@ export async function checkSharedSave(gThis, shadow) {
         .querySelector("#sharedSaveYes")
         .addEventListener("click", async () => {
           try {
-            const saveState = sharedSave.data;
+            let saveState = sharedSave.data;
 
-            loadSaveState(gThis, shadow, saveState);
+            await loadSaveState(gThis, shadow, saveState);
+
+            // handle loading pdfs
+            if (saveState?.type === "pdf") {
+              const blob = base64toBlob(
+                gThis,
+                saveState.contents,
+                "application/pdf",
+              );
+
+              const [results] = await extractAttachments(
+                new File([blob], "sprite-garden-game-card.png"),
+              );
+
+              saveState = JSON.parse(
+                await extractJsonFromPng(new Blob([results.data])),
+              );
+            }
 
             const { worldSeed } = saveState.config;
             const seedInput = shadow.getElementById("worldSeedInput");
@@ -373,15 +407,18 @@ export class StorageDialog {
 
     this.close = this.close.bind(this);
     this.deleteSelectedGame = this.deleteSelectedGame.bind(this);
-    this.loadSelectedGame = this.loadSelectedGame.bind(this);
-    this.shareSelectedGame = this.shareSelectedGame.bind(this);
-    this.saveCurrentGame = this.saveCurrentGame.bind(this);
+    this.getPDFGameStateAttachment = this.getPDFGameStateAttachment.bind(this);
+    this.getSelectedGameAsPNG = this.getSelectedGameAsPNG.bind(this);
     this.handleDialogClick = this.handleDialogClick.bind(this);
-    this.handleWorldNameInput = this.handleWorldNameInput.bind(this);
-    this.handleDragOver = this.handleDragOver.bind(this);
     this.handleDragLeave = this.handleDragLeave.bind(this);
+    this.handleDragOver = this.handleDragOver.bind(this);
     this.handleFileDrop = this.handleFileDrop.bind(this);
     this.handleFileSelect = this.handleFileSelect.bind(this);
+    this.handleWorldNameInput = this.handleWorldNameInput.bind(this);
+    this.loadSelectedGame = this.loadSelectedGame.bind(this);
+    this.saveCurrentGame = this.saveCurrentGame.bind(this);
+    this.shareSelectedGame = this.shareSelectedGame.bind(this);
+    this.shareSelectedGameAsPDF = this.shareSelectedGameAsPDF.bind(this);
   }
 
   /** @returns {Promise<HTMLDialogElement>} */
@@ -468,7 +505,7 @@ export class StorageDialog {
       </div>
 
       <div>
-        <h4 style="margin: 0.625rem 0">Load Saved Game / Drag & Drop</h4>
+        <h4 style="margin: 0.625rem 0">Saved Games in Storage</h4>
         <div
           id="gameDropZone"
           style="
@@ -493,7 +530,7 @@ export class StorageDialog {
           <input
             id="fileInput"
             type="file"
-            accept=".sgs,text/plain"
+            accept=".sgs,.pdf,.txt,text/plain,application/pdf,application/gzip,application/*"
             style="display: none"
             multiple
           />
@@ -527,6 +564,21 @@ export class StorageDialog {
             "
           >
             Share Selected
+          </button>
+          <button
+            id="shareSelectedAsPdfBtn"
+            disabled
+            hidden
+            style="
+              background: var(--sg-color-medium-purple);
+              border-radius: 0.25rem;
+              border: none;
+              color: white;
+              cursor: pointer;
+              padding: 0.5rem 0.9375rem;
+            "
+          >
+            Share Selected As PDF
           </button>
           <button
             id="loadSelectedBtn"
@@ -692,13 +744,17 @@ export class StorageDialog {
 
     // Check if Web Share API supports files and enable/disable share button accordingly
     const shareBtn = this.dialog.querySelector("#shareSelectedBtn");
-    if (shareBtn instanceof HTMLButtonElement) {
+    const shareAsPdfBtn = this.dialog.querySelector("#shareSelectedAsPdfBtn");
+
+    if (
+      shareBtn instanceof HTMLButtonElement &&
+      shareAsPdfBtn instanceof HTMLButtonElement
+    ) {
       const canShareFiles =
         typeof navigator !== "undefined" &&
         typeof navigator.canShare !== "undefined";
+
       let canShare = false;
-      // const canShareFiles = true;
-      // let canShare = true;
       if (canShareFiles) {
         // Test if we can actually share files
         try {
@@ -708,21 +764,36 @@ export class StorageDialog {
           shareBtn.disabled = !isSelected;
           shareBtn.style.opacity = canShare ? "1" : "0.5";
           shareBtn.style.cursor = canShare ? "pointer" : "not-allowed";
+          shareAsPdfBtn.disabled = !isSelected;
+          shareAsPdfBtn.style.opacity = canShare ? "1" : "0.5";
+          shareAsPdfBtn.style.cursor = canShare ? "pointer" : "not-allowed";
         } catch {
           shareBtn.disabled = true;
           shareBtn.setAttribute("hidden", "hidden");
           shareBtn.style.opacity = "0.5";
           shareBtn.style.cursor = "not-allowed";
+          shareAsPdfBtn.disabled = true;
+          shareAsPdfBtn.setAttribute("hidden", "hidden");
+          shareAsPdfBtn.style.opacity = "0.5";
+          shareAsPdfBtn.style.cursor = "not-allowed";
         }
       } else {
         shareBtn.disabled = true;
         shareBtn.setAttribute("hidden", "hidden");
         shareBtn.style.opacity = "0.5";
         shareBtn.style.cursor = "not-allowed";
+        shareAsPdfBtn.disabled = true;
+        shareAsPdfBtn.setAttribute("hidden", "hidden");
+        shareAsPdfBtn.style.opacity = "0.5";
+        shareAsPdfBtn.style.cursor = "not-allowed";
       }
 
       if (canShare) {
         shareBtn.removeAttribute("hidden");
+
+        if (hasEnabledExtras.get()) {
+          shareAsPdfBtn.removeAttribute("hidden");
+        }
       }
     }
   }
@@ -763,6 +834,7 @@ export class StorageDialog {
     const loadBtn = this.dialog.querySelector("#loadSelectedBtn");
     const deleteBtn = this.dialog.querySelector("#deleteSelectedBtn");
     const shareBtn = this.dialog.querySelector("#shareSelectedBtn");
+    const shareAsPdfBtn = this.dialog.querySelector("#shareSelectedAsPdfBtn");
     const worldNameInput = this.dialog.querySelector("#worldNameInput");
     const gameDropZone = this.dialog.querySelector("#gameDropZone");
     const fileInput = this.dialog.querySelector("#fileInput");
@@ -772,6 +844,7 @@ export class StorageDialog {
     loadBtn.addEventListener("click", this.loadSelectedGame);
     deleteBtn.addEventListener("click", this.deleteSelectedGame);
     shareBtn.addEventListener("click", this.shareSelectedGame);
+    shareAsPdfBtn.addEventListener("click", this.shareSelectedGameAsPDF);
     worldNameInput.addEventListener("keydown", this.handleWorldNameInput);
 
     // Drag and drop for file upload
@@ -793,6 +866,7 @@ export class StorageDialog {
     const loadBtn = this.dialog.querySelector("#loadSelectedBtn");
     const deleteBtn = this.dialog.querySelector("#deleteSelectedBtn");
     const shareBtn = this.dialog.querySelector("#shareSelectedBtn");
+    const shareAsPDFBtn = this.dialog.querySelector("#shareSelectedAsPdfBtn");
     const worldNameInput = this.dialog.querySelector("#worldNameInput");
     const gameDropZone = this.dialog.querySelector("#gameDropZone");
     const fileInput = this.dialog.querySelector("#fileInput");
@@ -802,6 +876,7 @@ export class StorageDialog {
     loadBtn.removeEventListener("click", this.loadSelectedGame);
     deleteBtn.removeEventListener("click", this.deleteSelectedGame);
     shareBtn.removeEventListener("click", this.shareSelectedGame);
+    shareAsPDFBtn.removeEventListener("click", this.shareSelectedGameAsPDF);
     worldNameInput.removeEventListener("keydown", this.handleWorldNameInput);
 
     // Drag and drop
@@ -870,16 +945,23 @@ export class StorageDialog {
    */
   async processFiles(files) {
     for (const file of files) {
-      if (!file.name.endsWith(".sgs") && !file.name.endsWith(".sgs.json.txt")) {
+      if (
+        !file.name.endsWith(".sgs") &&
+        !file.name.endsWith(".txt") &&
+        !file.name.endsWith(".pdf")
+      ) {
         console.warn(`Skipping file ${file.name}: invalid extension`);
+
         continue;
       }
 
       try {
         const fileContent = await file.arrayBuffer();
+
         await this.loadGameFromFile(fileContent, file.name);
       } catch (error) {
         console.error(`Failed to load file ${file.name}:`, error);
+
         alert(`Failed to load file: ${file.name}. Check console for details.`);
       }
     }
@@ -897,11 +979,14 @@ export class StorageDialog {
     try {
       let stateJSON;
 
-      // Check if this is a .sgs.json.txt file (plain JSON text) or .sgs file (gzip compressed)
-      if (fileName.endsWith(".sgs.json.txt")) {
+      // Check if this is a .txt file (plain JSON text) or .sgs file (gzip compressed)
+      if (fileName.endsWith(".txt")) {
         // Plain JSON text file
         const decoder = new TextDecoder();
         stateJSON = decoder.decode(fileBuffer);
+      } else if (fileName.endsWith(".pdf")) {
+        const [results] = await extractAttachments(fileBuffer);
+        stateJSON = await extractJsonFromPng(new Blob([results.data]));
       } else {
         // Gzip compressed .sgs file
         const compressedBlob = new this.gThis.Blob([fileBuffer], {
@@ -926,7 +1011,7 @@ export class StorageDialog {
 
       // Parse and load save state
       const saveState = JSON.parse(stateJSON);
-      loadSaveState(this.gThis, this.shadow, saveState);
+      await loadSaveState(this.gThis, this.shadow, saveState);
 
       // Update UI elements
       const { worldSeed } = saveState.config;
@@ -1050,7 +1135,7 @@ export class StorageDialog {
 
       // Parse and load save state
       const saveState = JSON.parse(stateJSON);
-      loadSaveState(this.gThis, this.shadow, saveState);
+      await loadSaveState(this.gThis, this.shadow, saveState);
 
       // Update UI elements
       const { worldSeed } = saveState.config;
@@ -1105,8 +1190,406 @@ export class StorageDialog {
     }
   }
 
-  /** @returns {Promise<void>} */
-  async shareSelectedGame() {
+  /** @returns {Promise<{ game: any, file: File }>} */
+  async getPDFGameStateAttachment() {
+    const currentTime = getDateTime();
+    // @ts-ignore
+    const pdfLib = await import("https://cdn.jsdelivr.net/npm/pdf-lib/+esm");
+    const { PDFDocument, StandardFonts, rgb } = pdfLib;
+
+    // Fetch game image data and parse game state
+    const { game, pngSave } = await this.getSelectedGameAsPNG();
+    const pngBytes = await pngSave.arrayBuffer();
+
+    // Parse game state to extract stats
+    let gameState;
+    if ("DecompressionStream" in this.gThis) {
+      const decompressedStream = base64toBlob(
+        this.gThis,
+        game.data,
+        "application/gzip",
+      )
+        .stream()
+        .pipeThrough(new this.gThis.DecompressionStream("gzip"));
+
+      const decompressedBlob = await new this.gThis.Response(
+        decompressedStream,
+      ).blob();
+
+      const stateJSON = await decompressedBlob.text();
+      gameState = JSON.parse(stateJSON);
+    }
+
+    // Create PDF document
+    const pdfDoc = await PDFDocument.create();
+    const page = pdfDoc.addPage([800, 1100]);
+    const { width, height } = page.getSize();
+
+    // Fonts
+    const titleFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+    const bodyFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
+
+    // Colors
+    const blue500 = rgb(0.22, 0.55, 0.85);
+    const gray400 = rgb(0.68, 0.68, 0.68);
+    const gray50 = rgb(0.97, 0.97, 0.97);
+    const gray500 = rgb(0.6, 0.6, 0.6);
+    const gray900 = rgb(0.1, 0.1, 0.1);
+    const green500 = rgb(0.2, 0.65, 0.35);
+
+    // Background
+    page.drawRectangle({
+      x: 0,
+      y: 0,
+      width,
+      height,
+      color: gray50,
+    });
+
+    // Main title "Sprite Garden" (linked)
+    const mainTitle = "Sprite Garden";
+    const mainTitleSize = 38;
+    const mainTitleWidth = titleFont.widthOfTextAtSize(
+      mainTitle,
+      mainTitleSize,
+    );
+
+    const mainTitleX = (width - mainTitleWidth) / 2;
+    const mainTitleY = height - 80;
+
+    // Main title shadow
+    page.drawText(mainTitle, {
+      x: mainTitleX + 2,
+      y: mainTitleY - 2,
+      size: mainTitleSize,
+      font: titleFont,
+      color: gray400,
+    });
+
+    // Main title text
+    page.drawText(mainTitle, {
+      x: mainTitleX,
+      y: mainTitleY,
+      size: mainTitleSize,
+      font: titleFont,
+      color: green500,
+    });
+
+    // Add link annotation to main title
+    const mainTitleAnnotation = pdfDoc.context.obj({
+      Type: "Annot",
+      Subtype: "Link",
+      Rect: [
+        mainTitleX,
+        mainTitleY,
+        mainTitleX + mainTitleWidth,
+        mainTitleY + mainTitleSize,
+      ],
+      Border: [0, 0, 0],
+      A: pdfDoc.context.obj({
+        Type: "Action",
+        S: "URI",
+        URI: pdfLib.PDFString.of("https://kherrick.github.io/sprite-garden/"),
+      }),
+    });
+
+    // Subtitle "Game Save"
+    const subTitle = "Game Save";
+    const subTitleSize = 24;
+    const subTitleWidth = titleFont.widthOfTextAtSize(subTitle, subTitleSize);
+    const subTitleX = (width - subTitleWidth) / 2;
+    const subTitleY = mainTitleY - 35;
+
+    page.drawText(subTitle, {
+      x: subTitleX,
+      y: subTitleY,
+      size: subTitleSize,
+      font: bodyFont,
+      color: gray900,
+    });
+
+    // Embed Screenshot
+    const pngImage = await pdfDoc.embedPng(pngBytes);
+    const imgScale = 0.65;
+    const imgWidth = pngImage.width * imgScale;
+    const imgHeight = pngImage.height * imgScale;
+
+    const imgTopMargin = 40;
+    const imgY = subTitleY - imgHeight - imgTopMargin;
+    const imgX = (width - imgWidth) / 2;
+
+    // Image border
+    page.drawRectangle({
+      x: imgX - 4,
+      y: imgY - 4,
+      width: imgWidth + 8,
+      height: imgHeight + 8,
+      borderWidth: 1,
+      borderColor: gray500,
+      color: rgb(1, 1, 1),
+    });
+
+    page.drawImage(pngImage, {
+      x: imgX,
+      y: imgY,
+      width: imgWidth,
+      height: imgHeight,
+    });
+
+    // Add link annotation to image with seed parameter
+    const worldSeed = gameState?.config?.worldSeed || "";
+    const imageLink = worldSeed
+      ? `https://kherrick.github.io/sprite-garden/?seed=${worldSeed}`
+      : "https://kherrick.github.io/sprite-garden/";
+
+    const imageAnnotation = pdfDoc.context.obj({
+      Type: "Annot",
+      Subtype: "Link",
+      Rect: [imgX, imgY, imgX + imgWidth, imgY + imgHeight],
+      Border: [0, 0, 0],
+      A: pdfDoc.context.obj({
+        Type: "Action",
+        S: "URI",
+        URI: pdfLib.PDFString.of(imageLink),
+      }),
+    });
+
+    const annotations = page.node.get(pdfLib.PDFName.of("Annots"));
+    if (annotations) {
+      annotations.push(mainTitleAnnotation);
+      annotations.push(imageAnnotation);
+    } else {
+      page.node.set(
+        pdfLib.PDFName.of("Annots"),
+        pdfDoc.context.obj([mainTitleAnnotation, imageAnnotation]),
+      );
+    }
+
+    // Calculate total seeds
+    const seedInventory = gameState?.state?.seedInventory || {};
+    const totalSeeds = Object.values(seedInventory).reduce(
+      (sum, count) => sum + count,
+      0,
+    );
+
+    // Info box with game stats
+    const boxMargin = 30;
+    const boxHeight = 390;
+    const boxY = imgY - boxMargin - boxHeight;
+    const boxWidth = width - 160;
+    const boxX = (width - boxWidth) / 2;
+
+    // Info box
+    page.drawRectangle({
+      x: boxX,
+      y: boxY,
+      width: boxWidth,
+      height: boxHeight,
+      borderWidth: 2,
+      borderColor: gray900,
+      color: gray50,
+    });
+
+    // Localized date/time
+    const now = new Date();
+    const lastSaved = now.toLocaleString(undefined, {
+      dateStyle: "medium",
+      timeStyle: "short",
+    });
+
+    let currentY = boxY + boxHeight - 25;
+    const leftMargin = boxX + 20;
+    const lineHeight = 18;
+
+    // Game stats with bold labels
+    page.drawText("Saved On:", {
+      x: leftMargin,
+      y: currentY,
+      size: 12,
+      font: titleFont,
+      color: gray900,
+    });
+
+    page.drawText(lastSaved, {
+      x: leftMargin + titleFont.widthOfTextAtSize("Saved On: ", 12),
+      y: currentY,
+      size: 12,
+      font: bodyFont,
+      color: gray900,
+    });
+
+    currentY -= lineHeight;
+
+    page.drawText("World Name:", {
+      x: leftMargin,
+      y: currentY,
+      size: 12,
+      font: titleFont,
+      color: gray900,
+    });
+
+    page.drawText(game.name, {
+      x: leftMargin + titleFont.widthOfTextAtSize("World Name: ", 12),
+      y: currentY,
+      size: 12,
+      font: bodyFont,
+      color: gray900,
+    });
+
+    currentY -= lineHeight;
+
+    page.drawText("Total Seeds:", {
+      x: leftMargin,
+      y: currentY,
+      size: 12,
+      font: titleFont,
+      color: gray900,
+    });
+
+    page.drawText(`${totalSeeds}`, {
+      x: leftMargin + titleFont.widthOfTextAtSize("Total Seeds: ", 12),
+      y: currentY,
+      size: 12,
+      font: bodyFont,
+      color: gray900,
+    });
+
+    currentY -= lineHeight;
+
+    page.drawText("Game Time:", {
+      x: leftMargin,
+      y: currentY,
+      size: 12,
+      font: titleFont,
+      color: gray900,
+    });
+
+    page.drawText(`${Math.floor(gameState?.state?.gameTime || 0)}`, {
+      x: leftMargin + titleFont.widthOfTextAtSize("Game Time: ", 12),
+      y: currentY,
+      size: 12,
+      font: bodyFont,
+      color: gray900,
+    });
+
+    currentY -= lineHeight + 8;
+
+    // Seed Inventory Table
+    page.drawText("Seed Inventory:", {
+      x: leftMargin,
+      y: currentY,
+      size: 11,
+      font: titleFont,
+      color: gray900,
+    });
+
+    currentY -= lineHeight;
+
+    const colWidth = (boxWidth - 60) / 2;
+    let col = 0;
+    let rowY = currentY;
+
+    // Sort seeds alphabetically
+    const sortedSeeds = Object.entries(seedInventory).sort((a, b) =>
+      a[0].localeCompare(b[0]),
+    );
+
+    for (const [seedType, count] of sortedSeeds) {
+      const xPos = leftMargin + col * colWidth;
+      const displayName = seedType.replace(/_/g, " ");
+      page.drawText(`${displayName}: ${count}`, {
+        x: xPos,
+        y: rowY,
+        size: 9,
+        font: bodyFont,
+        color: gray900,
+      });
+
+      col++;
+
+      if (col >= 2) {
+        col = 0;
+        rowY -= 14;
+      }
+    }
+
+    if (col !== 0) {
+      rowY -= 14;
+    }
+
+    currentY = rowY - 8;
+
+    // Materials Inventory Table
+    page.drawText("Materials Inventory:", {
+      x: leftMargin,
+      y: currentY,
+      size: 11,
+      font: titleFont,
+      color: gray900,
+    });
+
+    currentY -= lineHeight;
+
+    const materialsInventory = gameState?.state?.materialsInventory || {};
+    col = 0;
+    rowY = currentY;
+
+    // Sort materials alphabetically
+    const sortedMaterials = Object.entries(materialsInventory).sort((a, b) =>
+      a[0].localeCompare(b[0]),
+    );
+
+    for (const [materialType, count] of sortedMaterials) {
+      const xPos = leftMargin + col * colWidth;
+      const displayName = materialType.replace(/_/g, " ");
+      page.drawText(`${displayName}: ${count}`, {
+        x: xPos,
+        y: rowY,
+        size: 9,
+        font: bodyFont,
+        color: gray900,
+      });
+
+      col++;
+      if (col >= 2) {
+        col = 0;
+        rowY -= 14;
+      }
+    }
+
+    // Footer tag
+    const footerText = "Generated by Sprite Garden";
+    const footerSize = 12;
+    page.drawText(footerText, {
+      x: (width - bodyFont.widthOfTextAtSize(footerText, footerSize)) / 2,
+      y: 40,
+      size: footerSize,
+      font: bodyFont,
+      color: green500,
+    });
+
+    // Attach PNG backup
+    const filename = `sprite-garden-game-card-${currentTime}.png`;
+    pdfDoc.attach(new Uint8Array(pngBytes), filename, {
+      mimeType: "image/png",
+      description: "Sprite Garden Game Card",
+    });
+
+    // Finalize PDF
+    const pdfBytes = await pdfDoc.save();
+    const blob = new Blob([pdfBytes], { type: "application/pdf" });
+
+    return {
+      game,
+      file: new File([blob], `Sprite-Garden-Game-Save-${currentTime}.pdf`, {
+        type: blob.type,
+        lastModified: Date.now(),
+      }),
+    };
+  }
+
+  /** @returns {Promise<{ game: any, pngSave: Blob}>} */
+  async getSelectedGameAsPNG() {
     const selected = this.dialog.querySelector(
       'input[name="selectedGame"]:checked',
     );
@@ -1140,13 +1623,92 @@ export class StorageDialog {
       throw new Error("DecompressionStream not supported");
     }
 
+    const cnvs = getShadowRoot(
+      globalThis.document,
+      "sprite-garden",
+    ).querySelector("canvas");
+    const pngSave = await canvasToPngWithState(cnvs, stateJSON);
+
+    return { game, pngSave };
+  }
+
+  /** @returns {Promise<void>} */
+  async shareSelectedGameAsPDF() {
+    const { game, file } = await this.getPDFGameStateAttachment();
+
+    try {
+      // Check if we can share this file
+      if (
+        typeof navigator !== "undefined" &&
+        typeof navigator.canShare !== "undefined" &&
+        navigator.canShare({ files: [file] })
+      ) {
+        await navigator.share({
+          files: [file],
+          title: "Sprite Garden Game Save",
+          url: "https://kherrick.github.io/sprite-garden",
+          text: `Visit Sprite Garden, then 'Load' and checkout my world: ${game.name}\n\n`,
+        });
+
+        console.log("Game shared successfully:", game.name);
+      } else {
+        alert("Web Share API is not available on this device or browser.");
+      }
+    } catch (error) {
+      // Only log if it's not a user cancellation
+      if (error.name !== "AbortError") {
+        console.error("Failed to share game:", error);
+        alert("Failed to share game. Check console for details.");
+      } else {
+        console.log("Game sharing was cancelled by the user");
+      }
+    }
+  }
+
+  /** @returns {Promise<void>} */
+  async shareSelectedGame() {
+    const currentTime = getDateTime();
+    const selected = this.dialog.querySelector(
+      'input[name="selectedGame"]:checked',
+    );
+
+    if (!selected) {
+      return;
+    }
+
+    let game;
+    if (selected instanceof HTMLInputElement) {
+      const gameIndex = parseInt(selected.value);
+
+      game = this.savedGames[gameIndex];
+    }
+
+    let stateJSON;
+    if ("DecompressionStream" in globalThis) {
+      const decompressedStream = base64toBlob(
+        globalThis,
+        game.data,
+        "application/gzip",
+      )
+        .stream()
+        .pipeThrough(new globalThis.DecompressionStream("gzip"));
+
+      const decompressedBlob = await new globalThis.Response(
+        decompressedStream,
+      ).blob();
+
+      stateJSON = await decompressedBlob.text();
+    } else {
+      throw new Error("DecompressionStream not supported");
+    }
+
     try {
       // Create base64 text blob
-      const base64Blob = new Blob([stateJSON], { type: "text/plain" });
+      const jsonBlob = new Blob([stateJSON], { type: "text/plain" });
 
-      // Create File object with .sgs.json.txt extension
-      const fileName = `${game.name.replace(/[^a-zA-Z0-9]/g, "_")}-${game.timestamp}.sgs.json.txt`;
-      const file = new File([base64Blob], fileName, { type: "text/plain" });
+      // Create File object with .txt extension
+      const fileName = `Sprite-Garden-Game-Save-${currentTime}.json.txt`;
+      const file = new File([jsonBlob], fileName, { type: "text/plain" });
 
       // Check if we can share this file
       if (

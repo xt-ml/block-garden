@@ -8,6 +8,7 @@ import {
   gameConfig,
   gameState,
   hasDismissedTutorial,
+  hasEnabledExtras,
 } from "../state/state.mjs";
 import { getCustomProperties } from "../util/colors/getCustomProperties.mjs";
 import { getRandomSeed } from "../misc/getRandomSeed.mjs";
@@ -43,6 +44,8 @@ import {
 import { initFog } from "./fog.mjs";
 import { initNewWorld } from "./newWorld.mjs";
 import { dismissTutorialToast } from "../util/dismissTutorialToast.mjs";
+import { extractAttachments } from "../util/extractAttachments.mjs";
+import { extractJsonFromPng } from "../util/canvasToPngWithState.mjs";
 
 /** @typedef {import('./game.mjs').CustomShadowHost} CustomShadowHost */
 
@@ -228,7 +231,7 @@ export function initDocumentEventListeners(gThis, shadow) {
     );
 
     settingsContainer.removeAttribute("hidden");
-
+    hasEnabledExtras.set(true);
     handler.disable();
   });
 
@@ -584,7 +587,8 @@ export function initDocumentEventListeners(gThis, shadow) {
               description: "Sprite Garden Save Game Files",
               accept: {
                 "application/*": [".sgs"],
-                "text/plain": [".sgs.json.txt"],
+                "application/pdf": [".pdf"],
+                "text/plain": [".txt"],
               },
             },
           ],
@@ -595,7 +599,8 @@ export function initDocumentEventListeners(gThis, shadow) {
         // Fallback for browsers without showOpenFilePicker
         const input = gThis.document.createElement("input");
         input.type = "file";
-        input.accept = ".sgs,.sgs.json.txt";
+        input.accept =
+          ".sgs,.pdf,.txt,text/plain,application/pdf,application/gzip,application/*";
         input.style.display = "none";
 
         shadow.append(input);
@@ -611,10 +616,17 @@ export function initDocumentEventListeners(gThis, shadow) {
       }
 
       let stateJSON = "{}";
-      const isJSON = file.name.endsWith(".sgs.json.txt");
-      if (isJSON) {
+
+      if (file.name.endsWith(".txt")) {
         stateJSON = (await file.text()).replace(/\s+/g, "");
-      } else if ("DecompressionStream" in gThis) {
+      }
+
+      if (file.name.endsWith(".pdf")) {
+        const [results] = await extractAttachments(file);
+        stateJSON = await extractJsonFromPng(new Blob([results.data]));
+      }
+
+      if (file.name.endsWith(".sgs")) {
         const decompressedStream = file
           .stream()
           .pipeThrough(new gThis.DecompressionStream("gzip"));
@@ -624,12 +636,24 @@ export function initDocumentEventListeners(gThis, shadow) {
         ).blob();
 
         stateJSON = await decompressedBlob.text();
-      } else {
-        throw new Error("No JSON detect and DecompressionStream not supported");
       }
 
-      const saveState = JSON.parse(stateJSON);
-      loadSaveState(gThis, shadow, saveState);
+      // Validate the file is a valid game state before sharing
+      let saveState;
+      try {
+        saveState = JSON.parse(stateJSON);
+      } catch (parseError) {
+        throw new Error("Invalid game state file: not valid JSON.");
+      }
+
+      // Verify required game state properties
+      if (!saveState.config || !saveState.state) {
+        throw new Error(
+          "Invalid game state file: missing required config or state.",
+        );
+      }
+
+      await loadSaveState(gThis, shadow, saveState);
 
       const { worldSeed } = saveState.config;
 
@@ -680,7 +704,8 @@ export function initDocumentEventListeners(gThis, shadow) {
                 description: "Sprite Garden Save Game Files",
                 accept: {
                   "application/*": [".sgs"],
-                  "text/plain": [".sgs.json.txt"],
+                  "application/pdf": [".pdf"],
+                  "text/plain": [".txt"],
                 },
               },
             ],
@@ -691,7 +716,8 @@ export function initDocumentEventListeners(gThis, shadow) {
           // Fallback for browsers without showOpenFilePicker
           const input = gThis.document.createElement("input");
           input.type = "file";
-          input.accept = ".sgs,.sgs.json.txt";
+          input.accept =
+            ".sgs,.pdf,.txt,text/plain,application/pdf,application/gzip,application/*";
           input.style.display = "none";
 
           shadow.append(input);
@@ -706,11 +732,18 @@ export function initDocumentEventListeners(gThis, shadow) {
           shadow.removeChild(input);
         }
 
-        let stateJSON;
-        const isJSON = file.name.endsWith(".sgs.json.txt");
-        if (isJSON) {
+        let stateJSON = "{}";
+
+        if (file.name.endsWith(".txt")) {
           stateJSON = (await file.text()).replace(/\s+/g, "");
-        } else if ("DecompressionStream" in gThis) {
+        }
+
+        if (file.name.endsWith(".pdf")) {
+          const [results] = await extractAttachments(file);
+          stateJSON = await extractJsonFromPng(new Blob([results.data]));
+        }
+
+        if (file.name.endsWith(".sgs")) {
           const decompressedStream = file
             .stream()
             .pipeThrough(new gThis.DecompressionStream("gzip"));
@@ -720,8 +753,6 @@ export function initDocumentEventListeners(gThis, shadow) {
           ).blob();
 
           stateJSON = await decompressedBlob.text();
-        } else {
-          throw new Error("Unable to read game state file.");
         }
 
         // Validate the file is a valid game state before sharing

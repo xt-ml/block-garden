@@ -1,22 +1,4 @@
-/**
- * Generates an ISO-like timestamp string suitable for use in filenames.
- *
- * Format: YYYY-MM-DD_HH-MM-SS.mmm (in UTC).
- *
- * @returns {string} Timestamp string for filename (e.g., '2025-11-26_14-30-45.123')
- */
-export function getIsoDateForFilename() {
-  const now = new Date();
-  const year = now.getUTCFullYear();
-  const month = `${now.getUTCMonth() + 1}`.padStart(2, "0");
-  const day = `${now.getUTCDate()}`.padStart(2, "0");
-  const hour = `${now.getUTCHours()}`.padStart(2, "0");
-  const minute = `${now.getUTCMinutes()}`.padStart(2, "0");
-  const second = `${now.getUTCSeconds()}`.padStart(2, "0");
-  const millisecond = `${now.getUTCMilliseconds()}`.padStart(3, "0");
-
-  return `${year}-${month}-${day}_${hour}-${minute}-${second}.${millisecond}`;
-}
+import { getDateTime } from "./getDateTime.mjs";
 
 /**
  * Compresses a string using the CompressionStream API (gzip format).
@@ -93,7 +75,7 @@ export async function decompressFromBinaryFile(inputFile, outputFileHandle) {
  * @returns {Promise<void>}
  */
 export async function runCompress(gThis, stringData) {
-  const filename = `sprite-garden-save-game-file-${getIsoDateForFilename()}.sgs`;
+  const filename = `Sprite-Garden-Game-Save-${getDateTime()}.sgs`;
 
   let outputFileHandle;
 

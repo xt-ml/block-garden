@@ -1,8 +1,8 @@
 /**
  * Custom Service Worker for handling Web Share Target
- * This runs before Workbox and handles share/share-target.html POST requests
  *
- * This file is imported by Workbox-generated service-worker.js via importScripts
+ * This runs before Workbox and handles share/share-target.html POST requests
+ * and is imported by Workbox-generated service-worker.js via importScripts
  */
 
 let pendingShareData = null;
@@ -29,6 +29,7 @@ self.addEventListener("message", (event) => {
   if (event.data.type === "REQUEST_SHARED_SAVE") {
     if (pendingShareData) {
       event.ports[0].postMessage(pendingShareData);
+
       pendingShareData = null;
     }
   }
@@ -36,7 +37,9 @@ self.addEventListener("message", (event) => {
 
 /**
  * Handle share target POST requests
+ *
  * @param {Request} request
+ *
  * @returns {Promise<Response>}
  */
 async function handleShareTarget(request) {
@@ -49,40 +52,30 @@ async function handleShareTarget(request) {
       throw new Error("No gameState file in form data");
     }
 
-    // Handle both .sgs (gzip) and .sgs.json.txt (non compressed) game save files
-    const isJSON = file.name.endsWith(".sgs.json.txt");
+    // Handle .sgs (gzip), .txt (non compressed), and .pdf (pdf with game card (picture + game state)) game save files
+    let stateJSON = "{}";
 
-    let stateJSON;
-    let gzipFile = file;
-
-    if (isJSON) {
+    if (file.name.endsWith(".txt")) {
       stateJSON = (await file.text()).replace(/\s+/g, "");
+    }
 
-      // Compress stateJSON into gzipFile using CompressionStream
-      const encoder = new TextEncoder();
-      const byteData = encoder.encode(stateJSON);
+    if (file.name.endsWith(".pdf")) {
+      const arrayBuffer = await file.arrayBuffer();
+      const uint8Array = new Uint8Array(arrayBuffer);
+      const binaryString = String.fromCharCode.apply(null, uint8Array);
 
-      const compressionStream = new CompressionStream("gzip");
-      const writer = compressionStream.writable.getWriter();
-      writer.write(byteData);
-      writer.close();
-
-      gzipFile = await new Response(compressionStream.readable).blob();
-    } else {
-      // Read the gzipped file (now always a proper gzip File)
-      const arrayBuffer = await gzipFile.arrayBuffer();
-
-      // Decompress the gzip data
-      const stream = new ReadableStream({
-        start(controller) {
-          controller.enqueue(new Uint8Array(arrayBuffer));
-          controller.close();
-        },
+      // pass along the contents for further processing later
+      const contents = btoa(binaryString);
+      stateJSON = JSON.stringify({
+        type: "pdf",
+        contents,
       });
+    }
 
-      const decompressedStream = stream.pipeThrough(
-        new DecompressionStream("gzip"),
-      );
+    if (file.name.endsWith(".sgs")) {
+      const decompressedStream = file
+        .stream()
+        .pipeThrough(new DecompressionStream("gzip"));
 
       const decompressedBlob = await new Response(decompressedStream).blob();
 
@@ -95,7 +88,7 @@ async function handleShareTarget(request) {
     // Store for the page to retrieve
     pendingShareData = {
       saveData,
-      fileName: gzipFile.name, // Use normalized filename
+      fileName: file.name,
     };
 
     console.log("[ShareTarget] Stored shared save data in Service Worker");
@@ -142,6 +135,8 @@ async function handleShareTarget(request) {
             <p>${error.message}</p>
 
             <p>Sprite Garden will continue without loading the shared file...</p>
+
+            <p>Trying loading the file using the "Settings > World State > Load Game File From Disk" button.</p>
           </div>
         </body>
       </html>

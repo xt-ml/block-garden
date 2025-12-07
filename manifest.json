@@ -87,7 +87,7 @@
       "files": [
         {
           "name": "gameState",
-          "accept": [".sgs", ".sgs.json.txt", "text/plain", "application/gzip", "application/*"]
+          "accept": [".sgs", ".pdf", ".txt", "text/plain", "application/pdf", "application/gzip", "application/*"]
         }
       ]
     }

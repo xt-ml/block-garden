@@ -44,7 +44,7 @@ Tap the bottom corner panel for mobile controls.
 - Mine resources by breaking blocks (R key) - you'll collect materials automatically
 - Fog clears as exploration progresses
 - Save your game frequently using the World State menu (Ctrl+S)
-- Share interesting world seeds with friends!
+- Share interesting worlds with friends!
 
 ## To play locally
 

@@ -1765,18 +1765,18 @@ export class SpriteGarden extends HTMLElement {
             <p>Current seed: <span id="currentSeed"></span></p>
           </div>
 
-          <h4>Load / Save / Store</h4>
+          <h4>Store / Save / Load</h4>
 
           <div class="seed-controls__save-load">
-            <button id="loadExternalGameFile">💾 Load Game File From Disk</button>
-            <button id="saveExternalGameFile">🗃️ Save Game File To Disk</button>
             <button id="openStorageBtn">🗄️ Open Game Storage</button>
+            <button id="saveExternalGameFile">🗃️ Save Game File To Disk</button>
+            <button id="loadExternalGameFile">💾 Load Game File From Disk</button>
           </div>
 
           <h4 class="seed-controls__header seed-controls--share" hidden>Share</h4>
 
           <div class="seed-controls__save-load seed-controls--share" hidden>
-            <button id="shareExternalGameFile">🌍 Share External Game File</button>
+            <button id="shareExternalGameFile">🌍 Share Game File From Disk</button>
           </div>
 
           <h4>Mode</h4>

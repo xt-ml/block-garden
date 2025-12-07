@@ -25,7 +25,8 @@ export async function loadSharedSaveIfPending(gThis, shadow) {
 
     // Load the shared save into the game state
     const saveState = sharedSave.data;
-    loadSaveState(gThis, shadow, saveState);
+
+    await loadSaveState(gThis, shadow, saveState);
 
     // Delete the shared save after loading it
     await deleteSharedSave();
