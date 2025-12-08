@@ -120,6 +120,7 @@ function setupMapEditorControls(shadow, fogMode, viewMode) {
           gameState.growthTimers,
           gameState.plantStructures,
           gameState.player,
+          gameState.materialsInventory,
           gameState.seedInventory,
         );
 

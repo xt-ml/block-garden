@@ -20,6 +20,7 @@ import { WorldMap } from "../map/world.mjs";
  * @param {Signal.State} growthTimers
  * @param {Signal.State} plantStructures
  * @param {Signal.State} player
+ * @param {Signal.State} materialsInventory
  * @param {Signal.State} seedInventory
  * @param {number} [newSeed=null]
  *
@@ -37,6 +38,7 @@ export function initNewWorld(
   growthTimers,
   plantStructures,
   player,
+  materialsInventory,
   seedInventory,
   newSeed = null,
 ) {
@@ -74,6 +76,18 @@ export function initNewWorld(
   );
 
   seedInventory.set(initialSeedInventory);
+
+  // Reset materials inventory to 0
+  const initialMaterialsInventory = Object.fromEntries(
+    Object.entries(tiles)
+      .filter(
+        ([name, tile]) =>
+          !name.toLowerCase().startsWith("tree_") && tile.drops && !tile.isSeed,
+      )
+      .map(([name, _]) => [name, 0]),
+  );
+
+  materialsInventory.set(initialMaterialsInventory);
 
   // Find a good spawn location
   let spawnX = Math.floor(worldWidth / 2);

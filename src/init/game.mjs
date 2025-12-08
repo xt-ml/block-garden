@@ -157,6 +157,7 @@ export async function initGame(gThis, shadow, cnvs) {
       gameState.growthTimers,
       gameState.plantStructures,
       gameState.player,
+      gameState.materialsInventory,
       gameState.seedInventory,
     );
 

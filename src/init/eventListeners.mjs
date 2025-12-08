@@ -432,6 +432,7 @@ export function initDocumentEventListeners(gThis, shadow) {
       gameState.growthTimers,
       gameState.plantStructures,
       gameState.player,
+      gameState.materialsInventory,
       gameState.seedInventory,
       Number(seedInputValue),
     );
@@ -475,6 +476,7 @@ export function initDocumentEventListeners(gThis, shadow) {
       gameState.growthTimers,
       gameState.plantStructures,
       gameState.player,
+      gameState.materialsInventory,
       gameState.seedInventory,
       randomSeed,
     );
